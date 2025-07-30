@@ -218,8 +218,8 @@ Contributions are welcome! To contribute:
 5. Open a pull request on `https://github.com/oliverbross/morserino-web`.
 
 ## License
-[MIT License](LICENSE) (to be added).
+[MIT License](LICENSE).
 
 ## Contact
-For issues or suggestions, open an issue on GitHub or contact [your.email@example.com].
+For issues or suggestions, open an issue on GitHub and I'll see what I can do :-).
 
