@@ -330,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
             mainContent.style.display = 'none';
             trainingArea.style.display = 'block';
             statsArea.style.display = 'none';
-            nextTarget();
+            await nextTarget();
         } catch (error) {
             console.error('Session error:', error);
             alert('Failed to start session: ' + error.message);
@@ -357,14 +357,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Current target:', currentTarget, 'Index:', currentIndex, 'Items presented:', itemsPresented);
 
         try {
-            await closePort(port);
-            await port.open({
-                baudRate: 115200,
-                dataBits: 8,
-                stopBits: 1,
-                parity: 'none',
-                flowControl: 'none'
-            });
             const encoder = new TextEncoder();
             writer = port.writable.getWriter();
             await writer.write(encoder.encode(`${currentTarget}\n`));
@@ -376,15 +368,27 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error sending target:', error);
             feedback.textContent = 'Error communicating with Morserino';
             feedback.classList.add('text-red-600');
+            throw error;
         }
     }
 
     async function startReading() {
+        if (!port.readable) {
+            console.error('Port not readable, attempting to reopen');
+            await closePort(port);
+            await port.open({
+                baudRate: 115200,
+                dataBits: 8,
+                stopBits: 1,
+                parity: 'none',
+                flowControl: 'none'
+            });
+        }
         try {
             const decoder = new TextDecoder();
             reader = port.readable.getReader();
             let inputBuffer = '';
-            while (port.readable) {
+            while (port.readable && !isProcessingInput) {
                 try {
                     const { value, done } = await reader.read();
                     if (done) {
@@ -436,15 +440,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 correctCount++;
                 currentIndex++;
                 setTimeout(() => {
-                    nextTarget();
                     isProcessingInput = false;
+                    nextTarget();
                 }, 1000);
             } else {
                 feedback.textContent = 'Incorrect, try again!';
                 feedback.classList.remove('text-green-600');
                 feedback.classList.add('text-red-600');
                 userInput = '';
-                inputText.textContent = '';
+                inputText.textContent = inputBuffer;
                 isProcessingInput = false;
             }
         } catch (error) {
@@ -453,16 +457,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    nextButton.addEventListener('click', () => {
+    nextButton.addEventListener('click', async () => {
         console.log('Next button clicked, advancing to index:', currentIndex + 1);
         currentIndex++;
         isProcessingInput = false;
-        nextTarget();
+        await closePort(port);
+        await nextTarget();
     });
 
-    backButton.addEventListener('click', () => {
+    backButton.addEventListener('click', async () => {
         statsArea.style.display = 'none';
         mainContent.style.display = 'block';
+        await closePort(port);
         console.log('Back to training clicked');
     });
 
