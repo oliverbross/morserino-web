@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morserino Training App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="custom_styles_supplement_tailwind_css.css">
+    <script src="callsign_generator.js"></script>
+    <script src="stats_class.js"></script>
+    <script src="dom_elements_and_handlers.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div id="authSection" class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-4">Morserino Training App</h1>
+        <div class="mb-4">
+            <input id="username" type="text" placeholder="Username" class="border p-2 mr-2">
+            <input id="password" type="password" placeholder="Password" class="border p-2 mr-2">
+            <button id="registerButton" class="bg-blue-500 text-white px-4 py-2 rounded">Register</button>
+            <button id="loginButton" class="bg-green-500 text-white px-4 py-2 rounded">Login</button>
+        </div>
+    </div>
+    <div id="mainSection" class="container mx-auto p-4 hidden">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <button id="connectButton" class="bg-blue-500 text-white px-4 py-2 rounded">Connect to Morserino</button>
+                <span id="portStatus" class="ml-2 text-gray-600">No port connected</span>
+            </div>
+            <div>
+                <button id="accountButton" class="bg-gray-500 text-white px-4 py-2 rounded mr-2">Account</button>
+                <button id="logoutButton" class="bg-red-500 text-white px-4 py-2 rounded">Logout</button>
+            </div>
+        </div>
+        <div class="mb-4">
+            <select id="modeSelect" class="border p-2 mr-2">
+                <option value="qso">QSO</option>
+                <option value="callsigns">Callsigns</option>
+                <option value="words" selected>Real Words</option>
+            </select>
+            <input id="numItems" type="number" min="1" max="100" value="5" class="border p-2 mr-2 w-20">
+            <input id="userCallsign" type="text" placeholder="Your Callsign (e.g., KK6M)" class="border p-2 mr-2">
+            <button id="startButton" class="bg-green-500 text-white px-4 py-2 rounded" disabled>Start Training</button>
+        </div>
+        <div id="statsArea" class="mb-4 hidden">
+            <h2 class="text-xl font-bold mb-2">Last Session</h2>
+            <div id="statsSummary"></div>
+            <h2 class="text-xl font-bold mb-2 mt-4">Session History</h2>
+            <div id="statsHistory"></div>
+            <button id="backButton" class="bg-blue-500 text-white px-4 py-2 rounded mt-4">Back to Training</button>
+        </div>
+        <div class="mb-4">
+            <canvas id="statsChart" width="400" height="200"></canvas>
+        </div>
+        <div id="trainingArea" class="hidden">
+            <h2 class="text-xl font-bold mb-2">Training</h2>
+            <p>Target: <span id="targetText" class="font-mono"></span></p>
+            <p>Your Input: <span id="inputText" class="font-mono"></span></p>
+            <p id="feedback" class="mt-2"></p>
+            <button id="nextButton" class="bg-blue-500 text-white px-4 py-2 rounded mt-4">Next</button>
+        </div>
+    </div>
+</body>
+</html>

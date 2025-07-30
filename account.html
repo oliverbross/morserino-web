@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Management - Morse Code Trainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="custom_styles_supplement_tailwind_css.css">
+    <script src="stats_class.js"></script>
+    <script src="account.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div id="accountApp" class="mx-auto p-4">
+        <div id="accountSection">
+            <div id="accountDebug" class="text-red-600 hidden"></div>
+            <h2 class="text-xl font-bold mb-4">Account Management</h2>
+            <p><strong>Username:</strong> <span id="currentUsername" class="font-mono"></span></p>
+            <div class="mb-4">
+                <label for="newPassword" class="block text-sm font-medium text-gray-700">New Password:</label>
+                <input type="password" id="newPassword" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+            </div>
+            <div class="mb-4">
+                <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm New Password:</label>
+                <input type="password" id="confirmPassword" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+            </div>
+            <button id="changePasswordButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Change Password
+            </button>
+            <div class="mt-4 mb-4">
+                <label for="recoveryEmail" class="block text-sm font-medium text-gray-700">Recovery Email:</label>
+                <input type="email" id="recoveryEmail" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+            </div>
+            <button id="saveEmailButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Save Recovery Email
+            </button>
+            <div class="mt-4 mb-4">
+                <label for="dateFormatSelect" class="block text-sm font-medium text-gray-700">Date Format:</label>
+                <select id="dateFormatSelect" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                    <option value="DD/MM/YYYY">DD/MM/YYYY (e.g., 30/07/2025)</option>
+                    <option value="MM/DD/YYYY">MM/DD/YYYY (e.g., 07/30/2025)</option>
+                    <option value="YYYY-MM-DD">YYYY-MM-DD (e.g., 2025-07-30)</option>
+                </select>
+            </div>
+            <div class="mt-4 mb-4">
+                <label for="timeFormatSelect" class="block text-sm font-medium text-gray-700">Time Format:</label>
+                <select id="timeFormatSelect" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                    <option value="12h">12-hour (e.g., 12:15 PM)</option>
+                    <option value="24h">24-hour (e.g., 00:15)</option>
+                </select>
+            </div>
+            <div class="mt-4">
+                <h3 class="text-lg font-bold mb-2">Your Statistics</h3>
+                <p id="accountStats" class="text-sm"></p>
+            </div>
+            <button id="exportStatsButton" class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                Export Statistics to CSV
+            </button>
+            <button id="deleteAccountButton" class="mt-4 bg-red-600 hover:bg-red-800 text-white font-bold py2 px-4 rounded">
+                Delete Account
+            </button>
+            <button id="accountLogoutButton" class="mt-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                Logout
+            </button>
+            <button id="backToTrainingFromAccount" class="mt-4 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                Back to Training
+            </button>
+        </div>
+    </div>
+</body>
+</html>

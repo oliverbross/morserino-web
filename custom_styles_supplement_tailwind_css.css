@@ -1,0 +1,39 @@
+/* Custom styles to supplement Tailwind CSS */
+#app, #accountApp {
+    max-width: 28rem;
+}
+.font-mono {
+    font-family: 'Courier New', Courier, monospace;
+}
+#statsSummary, #statsHistory, #accountStats {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+.hidden {
+    display: none !important;
+}
+#accountSection {
+    max-width: 28rem;
+    margin: 0 auto;
+    padding: 1rem;
+    background-color: #f9fafb; /* Tailwind gray-50 */
+}
+#accountSection h2, #accountSection h3, #accountSection p, #accountSection input, #accountSection select, #accountSection button, #accountSection span, #accountSection div {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-bottom: 0.5rem;
+}
+#accountSection #currentUsername {
+    font-size: 1rem;
+    color: #1f2937; /* Tailwind gray-800 */
+}
+#accountSection select {
+    width: 100%;
+    padding: 0.5rem;
+}
+#accountSection #accountDebug:not(.hidden) {
+    background-color: #fee2e2; /* Tailwind red-100 */
+    padding: 1rem;
+    border: 1px solid #f87171; /* Tailwind red-400 */
+}
