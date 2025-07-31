@@ -89,7 +89,7 @@ try {
         }
         $username = $_SESSION['username'];
         $updates = [];
-        $params = [$username];
+        $params = [];
         if (isset($input['email'])) {
             $updates[] = "email = ?";
             $params[] = $input['email'];
@@ -112,9 +112,11 @@ try {
             error_log("Settings.php: No changes provided for username: $username");
             exit;
         }
+        // Add username as the last parameter for the WHERE clause
+        $params[] = $username;
         $query = "UPDATE users SET " . implode(', ', $updates) . " WHERE username = ?";
         $stmt = $conn->prepare($query);
-        $stmt->execute(array_reverse($params));
+        $stmt->execute($params);
         $rowCount = $stmt->rowCount();
         error_log("Settings.php: Update executed, rows affected: $rowCount, username: $username");
         if ($rowCount > 0) {
