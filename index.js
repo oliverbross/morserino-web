@@ -132,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (content && content.classList.contains('hidden')) {
                 content.classList.remove('hidden');
                 if (icon) icon.classList.add('rotate-180');
+                console.log(`Expanded section: ${sectionId}`);
             }
         });
     }, 100);
@@ -551,10 +552,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     inputBuffer += char;
                     userInput.value = inputBuffer;
 
-                    // Check for word completion on space or when buffer equals target length
-                    if (char === ' ' || inputBuffer.trim() === currentTarget) {
+                    // Only evaluate when user sends SPACE (word separator)
+                    if (char === ' ') {
                         const cleanInput = inputBuffer.trim().toUpperCase();
-                        console.log('Evaluating input:', cleanInput, 'vs target:', currentTarget);
+                        console.log('SPACE received - Evaluating input:', cleanInput, 'vs target:', currentTarget);
                         
                         if (cleanInput === currentTarget) {
                             // Correct answer
@@ -569,10 +570,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 sessionData.targets.push(currentTarget);
                                 sessionData.responses.push(cleanInput);
                                 updateSessionDisplay();
-                                console.log('Updated session data:', sessionData);
+                                console.log('Correct! Updated session data:', sessionData);
                             }
                             
-                            showToast(`Correct! (${sessionData.correct}/${sessionData.total})`, 'bg-green-600');
+                            showToast(`Correct! "${cleanInput}" (${sessionData.correct}/${sessionData.total})`, 'bg-green-600');
                             inputBuffer = '';
                             userInput.value = '';
                             
@@ -584,8 +585,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             } else {
                                 await nextTarget();
                             }
-                        } else if (char === ' ') {
-                            // Incorrect answer (only on space, not on length)
+                        } else {
+                            // Incorrect answer
                             sessionData.total++;
                             
                             if (hasEnhancedTracking) {
@@ -597,7 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 sessionData.targets.push(currentTarget);
                                 sessionData.responses.push(cleanInput);
                                 updateSessionDisplay();
-                                console.log('Updated session data (incorrect):', sessionData);
+                                console.log('Incorrect! Updated session data:', sessionData);
                             }
                             
                             showToast(`Incorrect: "${cleanInput}" ≠ "${currentTarget}" (${sessionData.correct}/${sessionData.total})`, 'bg-red-600');
@@ -614,6 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         }
                     }
+                    // Continue accumulating characters until space is received
                 }
             }
         } catch (error) {
@@ -828,15 +830,24 @@ Time: ${timeSeconds.toFixed(1)}s`;
     setTimeout(() => {
         const isLoggedIn = sessionStorage.getItem('username');
         const loginContent = document.getElementById('login-register-content');
+        const loggedInDiv = document.getElementById('loggedIn');
         
-        if (isLoggedIn && loginContent && !loginContent.classList.contains('hidden')) {
-            console.log('Hiding login section for logged in user');
-            toggleSection('login-register');
-        } else if (!isLoggedIn && loginContent && loginContent.classList.contains('hidden')) {
-            console.log('Showing login section for non-logged in user');
-            toggleSection('login-register');
+        console.log('Login check - isLoggedIn:', isLoggedIn, 'loginContent hidden:', loginContent?.classList.contains('hidden'), 'loggedInDiv hidden:', loggedInDiv?.classList.contains('hidden'));
+        
+        if (isLoggedIn && loggedInDiv && !loggedInDiv.classList.contains('hidden')) {
+            // User is logged in, hide login section
+            if (loginContent && !loginContent.classList.contains('hidden')) {
+                console.log('Hiding login section for logged in user');
+                toggleSection('login-register');
+            }
+        } else if (!isLoggedIn) {
+            // User is not logged in, show login section
+            if (loginContent && loginContent.classList.contains('hidden')) {
+                console.log('Showing login section for non-logged in user');
+                toggleSection('login-register');
+            }
         }
-    }, 500);
+    }, 1000);
     
     console.log('Morserino Web initialized successfully');
 });
