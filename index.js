@@ -279,57 +279,369 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Fetch historical stats
-    async function fetchHistoricalStats(username) {
+    // Comprehensive Dashboard Functions
+    async function loadTrainingDashboard(username) {
         try {
-            const response = await fetch(`${apiBaseUrl}/get_stats.php?username=${encodeURIComponent(username)}&limit=5`, {
+            const response = await fetch(`${apiBaseUrl}/get_stats.php?username=${encodeURIComponent(username)}&limit=20`, {
                 method: 'GET',
                 credentials: 'include'
             });
             const data = await response.json();
             
             if (response.ok && Array.isArray(data)) {
-                statsList.innerHTML = '';
                 if (data.length === 0) {
-                    statsList.innerHTML = '<li>No historical stats available</li>';
+                    showEmptyDashboard();
                 } else {
-                    const modeDisplay = {
-                        realWords: 'Real Words',
-                        abbreviations: 'Abbreviations', 
-                        callsigns: 'Callsigns',
-                        qrCodes: 'QR-codes',
-                        topWords: 'Top Words in CW',
-                        mixed: 'Mixed'
-                    };
-                    data.forEach(stat => {
-                        const mode = modeDisplay[stat.mode] || stat.mode;
-                        const percentage = stat.total > 0 ? ((stat.correct / stat.total) * 100).toFixed(2) : '0.00';
-                        const li = document.createElement('li');
-                        
-                        if (stat.enhanced) {
-                            const timeDisplay = stat.time_seconds > 0 ? ` | Time: ${stat.time_seconds}s` : '';
-                            const speedDisplay = stat.wpm > 0 ? ` | ${stat.wpm} WPM` : '';
-                            const characterBreakdown = `L:${stat.letters} N:${stat.numbers} S:${stat.signs} E:${stat.errors}`;
-                            li.innerHTML = `
-                                <div class="text-sm mb-1">
-                                    <strong>${mode}</strong>: ${stat.correct}/${stat.total} (${percentage}%)${speedDisplay}${timeDisplay}
-                                    <br><span class="text-gray-400">${characterBreakdown} - ${formatTimestamp(new Date(stat.timestamp))}</span>
-                                </div>
-                            `;
-                        } else {
-                            li.textContent = `${mode}: ${stat.correct}/${stat.total} (${percentage}%), ${formatTimestamp(new Date(stat.timestamp))}`;
-                        }
-                        
-                        statsList.appendChild(li);
-                    });
+                    populatePerformanceOverview(data);
+                    populateRecentSessions(data.slice(0, 5));
+                    populateProgressCharts(data);
+                    populateTrainingInsights(data);
+                    populateModePerformance(data);
                 }
             } else {
-                statsList.innerHTML = '<li>Failed to load stats</li>';
+                showEmptyDashboard();
             }
         } catch (error) {
-            console.error('Stats fetch error:', error);
-            statsList.innerHTML = '<li>Error loading stats</li>';
+            console.error('Dashboard load error:', error);
+            showEmptyDashboard();
         }
+    }
+
+    function showEmptyDashboard() {
+        document.getElementById('performanceOverview').innerHTML = `
+            <div class="col-span-full text-center py-8 text-gray-400">
+                <p class="text-lg">📊 No training data yet</p>
+                <p class="text-sm">Complete some training sessions to see your progress!</p>
+            </div>
+        `;
+    }
+
+    function populatePerformanceOverview(data) {
+        const overview = document.getElementById('performanceOverview');
+        const recent = data.slice(0, 10); // Last 10 sessions
+        
+        if (recent.length === 0) {
+            showEmptyDashboard();
+            return;
+        }
+
+        // Calculate key metrics
+        const avgAccuracy = recent.reduce((sum, s) => {
+            const accuracy = s.characters_attempted > 0 
+                ? (s.characters_correct / s.characters_attempted) * 100 
+                : (s.total > 0 ? (s.correct / s.total) * 100 : 0);
+            return sum + accuracy;
+        }, 0) / recent.length;
+
+        const avgSpeed = recent.filter(s => s.wpm > 0)
+            .reduce((sum, s, _, arr) => sum + s.wpm / arr.length, 0);
+
+        const totalSessions = data.length;
+        const totalCharacters = recent.reduce((sum, s) => sum + (s.characters_attempted || s.letters + s.numbers + s.signs), 0);
+
+        overview.innerHTML = `
+            <div class="bg-blue-900 p-4 rounded-lg text-center">
+                <div class="text-2xl font-bold text-blue-300">${avgAccuracy.toFixed(1)}%</div>
+                <div class="text-xs text-blue-200">Avg Accuracy</div>
+            </div>
+            <div class="bg-green-900 p-4 rounded-lg text-center">
+                <div class="text-2xl font-bold text-green-300">${avgSpeed.toFixed(1)}</div>
+                <div class="text-xs text-green-200">Avg Speed (WPM)</div>
+            </div>
+            <div class="bg-purple-900 p-4 rounded-lg text-center">
+                <div class="text-2xl font-bold text-purple-300">${totalSessions}</div>
+                <div class="text-xs text-purple-200">Total Sessions</div>
+            </div>
+            <div class="bg-yellow-900 p-4 rounded-lg text-center">
+                <div class="text-2xl font-bold text-yellow-300">${totalCharacters}</div>
+                <div class="text-xs text-yellow-200">Characters Sent</div>
+            </div>
+        `;
+    }
+
+    function populateRecentSessions(sessions) {
+        const container = document.getElementById('recentSessions');
+        const modeDisplay = {
+            realWords: 'Real Words', abbreviations: 'Abbreviations', 
+            callsigns: 'Callsigns', qrCodes: 'QR-codes',
+            topWords: 'Top Words in CW', mixed: 'Mixed'
+        };
+
+        if (sessions.length === 0) {
+            container.innerHTML = '<p class="text-gray-400 text-center py-4">No recent sessions</p>';
+            return;
+        }
+
+        container.innerHTML = sessions.map(stat => {
+            const mode = modeDisplay[stat.mode] || stat.mode;
+            const accuracy = stat.characters_attempted > 0 
+                ? ((stat.characters_correct / stat.characters_attempted) * 100).toFixed(1)
+                : (stat.total > 0 ? ((stat.correct / stat.total) * 100).toFixed(1) : '0.0');
+            
+            const accuracyColor = accuracy >= 95 ? 'text-green-400' : 
+                                 accuracy >= 85 ? 'text-yellow-400' : 'text-red-400';
+            
+            const speedDisplay = stat.wpm > 0 ? `${stat.wpm} WPM` : 'N/A';
+            const date = formatTimestamp(new Date(stat.timestamp));
+
+            return `
+                <div class="bg-gray-900 p-4 rounded-lg border-l-4 border-blue-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-semibold text-white">${mode}</div>
+                            <div class="text-sm text-gray-300">${stat.correct}/${stat.total} words completed</div>
+                            <div class="text-xs text-gray-400">${date}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold ${accuracyColor}">${accuracy}%</div>
+                            <div class="text-sm text-gray-300">${speedDisplay}</div>
+                        </div>
+                    </div>
+                    ${stat.enhanced ? `
+                        <div class="mt-2 pt-2 border-t border-gray-700 text-xs text-gray-400">
+                            📝 L:${stat.letters} N:${stat.numbers} S:${stat.signs} E:${stat.character_errors || stat.errors}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    function populateProgressCharts(data) {
+        // Create accuracy trend chart
+        createAccuracyChart(data.slice(0, 10).reverse());
+        // Create speed trend chart  
+        createSpeedChart(data.slice(0, 10).reverse());
+    }
+
+    function createAccuracyChart(data) {
+        const ctx = document.getElementById('accuracyChart');
+        if (!ctx) return;
+
+        // Destroy existing chart if it exists
+        if (window.accuracyChartInstance) {
+            window.accuracyChartInstance.destroy();
+        }
+
+        const chartData = data.map(stat => {
+            return stat.characters_attempted > 0 
+                ? ((stat.characters_correct / stat.characters_attempted) * 100).toFixed(1)
+                : (stat.total > 0 ? ((stat.correct / stat.total) * 100).toFixed(1) : 0);
+        });
+
+        window.accuracyChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map((_, i) => `Session ${i + 1}`),
+                datasets: [{
+                    label: 'Character Accuracy %',
+                    data: chartData,
+                    borderColor: '#60A5FA',
+                    backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        max: 100,
+                        grid: { color: '#374151' },
+                        ticks: { color: '#9CA3AF' }
+                    },
+                    x: { 
+                        grid: { color: '#374151' },
+                        ticks: { color: '#9CA3AF' }
+                    }
+                }
+            }
+        });
+    }
+
+    function createSpeedChart(data) {
+        const ctx = document.getElementById('speedChart');
+        if (!ctx) return;
+
+        // Destroy existing chart if it exists
+        if (window.speedChartInstance) {
+            window.speedChartInstance.destroy();
+        }
+
+        const speedData = data.map(stat => stat.wpm || 0);
+
+        window.speedChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map((_, i) => `Session ${i + 1}`),
+                datasets: [{
+                    label: 'WPM',
+                    data: speedData,
+                    borderColor: '#34D399',
+                    backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#374151' },
+                        ticks: { color: '#9CA3AF' }
+                    },
+                    x: { 
+                        grid: { color: '#374151' },
+                        ticks: { color: '#9CA3AF' }
+                    }
+                }
+            }
+        });
+    }
+
+    function populateTrainingInsights(data) {
+        const container = document.getElementById('trainingInsights');
+        const recent = data.slice(0, 5);
+        
+        if (recent.length === 0) {
+            container.innerHTML = '<p class="text-gray-400">Complete more sessions for personalized insights!</p>';
+            return;
+        }
+
+        // Analyze performance trends
+        const avgAccuracy = recent.reduce((sum, s) => {
+            const acc = s.characters_attempted > 0 
+                ? (s.characters_correct / s.characters_attempted) * 100 
+                : (s.total > 0 ? (s.correct / s.total) * 100 : 0);
+            return sum + acc;
+        }, 0) / recent.length;
+
+        const avgSpeed = recent.filter(s => s.wpm > 0)
+            .reduce((sum, s, _, arr) => sum + s.wpm / arr.length, 0) || 0;
+
+        let insights = [];
+        
+        if (avgAccuracy >= 95) {
+            insights.push("🎉 Excellent accuracy! You're mastering character recognition.");
+        } else if (avgAccuracy >= 85) {
+            insights.push("👍 Good accuracy. Focus on consistency to reach 95%+.");
+        } else {
+            insights.push("💪 Work on accuracy first before increasing speed. Aim for 85%+.");
+        }
+
+        if (avgSpeed >= 20) {
+            insights.push("⚡ Great speed! You're operating at advanced level.");
+        } else if (avgSpeed >= 15) {
+            insights.push("📈 Good speed progress. Push towards 20+ WPM.");
+        } else if (avgSpeed >= 10) {
+            insights.push("🚀 Building good speed foundation. Keep practicing!");
+        } else if (avgSpeed > 0) {
+            insights.push("🎯 Focus on smooth, consistent sending for better speed.");
+        }
+
+        // Mode recommendations
+        const modeStats = {};
+        recent.forEach(s => {
+            if (!modeStats[s.mode]) modeStats[s.mode] = [];
+            modeStats[s.mode].push(s);
+        });
+
+        const worstMode = Object.entries(modeStats).reduce((worst, [mode, sessions]) => {
+            const avgAcc = sessions.reduce((sum, s) => {
+                const acc = s.characters_attempted > 0 
+                    ? (s.characters_correct / s.characters_attempted) * 100 
+                    : (s.total > 0 ? (s.correct / s.total) * 100 : 0);
+                return sum + acc;
+            }, 0) / sessions.length;
+            return avgAcc < worst.accuracy ? { mode, accuracy: avgAcc } : worst;
+        }, { mode: null, accuracy: 100 });
+
+        if (worstMode.mode && worstMode.accuracy < 90) {
+            const modeNames = {
+                realWords: 'Real Words', abbreviations: 'Abbreviations',
+                callsigns: 'Callsigns', qrCodes: 'QR-codes',
+                topWords: 'Top Words', mixed: 'Mixed'
+            };
+            insights.push(`🎯 Consider more practice with ${modeNames[worstMode.mode] || worstMode.mode} (${worstMode.accuracy.toFixed(1)}% accuracy).`);
+        }
+
+        container.innerHTML = `
+            <div class="space-y-2">
+                ${insights.map(insight => `<p class="text-sm text-gray-300">• ${insight}</p>`).join('')}
+            </div>
+        `;
+    }
+
+    function populateModePerformance(data) {
+        const container = document.getElementById('modePerformance');
+        const modeStats = {};
+        const modeNames = {
+            realWords: 'Real Words', abbreviations: 'Abbreviations',
+            callsigns: 'Callsigns', qrCodes: 'QR-codes',
+            topWords: 'Top Words', mixed: 'Mixed'
+        };
+
+        // Group by mode
+        data.forEach(stat => {
+            if (!modeStats[stat.mode]) {
+                modeStats[stat.mode] = { sessions: 0, totalAccuracy: 0, totalSpeed: 0, speedCount: 0 };
+            }
+            modeStats[stat.mode].sessions++;
+            const accuracy = stat.characters_attempted > 0 
+                ? (stat.characters_correct / stat.characters_attempted) * 100 
+                : (stat.total > 0 ? (stat.correct / stat.total) * 100 : 0);
+            modeStats[stat.mode].totalAccuracy += accuracy;
+            if (stat.wpm > 0) {
+                modeStats[stat.mode].totalSpeed += stat.wpm;
+                modeStats[stat.mode].speedCount++;
+            }
+        });
+
+        if (Object.keys(modeStats).length === 0) {
+            container.innerHTML = '<p class="text-gray-400 text-center">No mode data available</p>';
+            return;
+        }
+
+        container.innerHTML = Object.entries(modeStats).map(([mode, stats]) => {
+            const avgAccuracy = (stats.totalAccuracy / stats.sessions).toFixed(1);
+            const avgSpeed = stats.speedCount > 0 ? (stats.totalSpeed / stats.speedCount).toFixed(1) : '0.0';
+            const accuracyColor = avgAccuracy >= 95 ? 'bg-green-600' : 
+                                 avgAccuracy >= 85 ? 'bg-yellow-600' : 'bg-red-600';
+
+            return `
+                <div class="bg-gray-900 p-3 rounded-lg">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold text-white">${modeNames[mode] || mode}</span>
+                        <span class="text-sm text-gray-400">${stats.sessions} sessions</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-1">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-gray-400">Accuracy</span>
+                                <span class="text-white">${avgAccuracy}%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="${accuracyColor} h-2 rounded-full" style="width: ${avgAccuracy}%"></div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-semibold text-blue-400">${avgSpeed} WPM</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Legacy function for compatibility
+    async function fetchHistoricalStats(username) {
+        await loadTrainingDashboard(username);
     }
 
     // Login/Register functionality
@@ -441,8 +753,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (loginContent && loginContent.classList.contains('hidden')) {
                     toggleSection('login-register');
                 }
-                statsList.innerHTML = '';
-                sessionStats.textContent = 'No stats available';
+                // Clear dashboard on logout
+                document.getElementById('performanceOverview').innerHTML = '';
+                document.getElementById('recentSessions').innerHTML = '';
+                document.getElementById('trainingInsights').innerHTML = '';
+                document.getElementById('modePerformance').innerHTML = '';
+                // Destroy charts to prevent memory leaks
+                if (window.accuracyChartInstance) {
+                    window.accuracyChartInstance.destroy();
+                    window.accuracyChartInstance = null;
+                }
+                if (window.speedChartInstance) {
+                    window.speedChartInstance.destroy();
+                    window.speedChartInstance = null;
+                }
                 showToast('Logged out successfully!', 'bg-green-600');
             }
         } catch (error) {

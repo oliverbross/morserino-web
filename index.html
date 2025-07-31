@@ -150,13 +150,59 @@
                     <svg class="w-6 h-6 transform transition-transform" data-id="session-statistics-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
                 <div id="session-statistics-content" class="mt-4 hidden">
-                    <div id="sessionStats" class="text-lg">No stats available</div>
-                    <ul id="statsList" class="list-disc list-inside mt-2"></ul>
+                    <!-- Performance Overview -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-3 text-blue-400">📊 Performance Overview</h3>
+                        <div id="performanceOverview" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                            <!-- Dynamic performance cards will be inserted here -->
+                        </div>
+                    </div>
+
+                    <!-- Recent Sessions -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-3 text-green-400">📈 Recent Sessions</h3>
+                        <div id="recentSessions" class="space-y-3">
+                            <!-- Recent session cards will be inserted here -->
+                        </div>
+                    </div>
+
+                    <!-- Progress Charts -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-3 text-purple-400">📈 Progress Trends</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="bg-gray-900 p-4 rounded-lg">
+                                <h4 class="text-sm font-semibold mb-2 text-gray-300">Character Accuracy Trend</h4>
+                                <canvas id="accuracyChart" width="400" height="200"></canvas>
+                            </div>
+                            <div class="bg-gray-900 p-4 rounded-lg">
+                                <h4 class="text-sm font-semibold mb-2 text-gray-300">Speed Progress (WPM)</h4>
+                                <canvas id="speedChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Training Insights -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-3 text-yellow-400">💡 Training Insights</h3>
+                        <div id="trainingInsights" class="bg-gray-900 p-4 rounded-lg">
+                            <!-- Training recommendations will be inserted here -->
+                        </div>
+                    </div>
+
+                    <!-- Mode Performance Breakdown -->
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold mb-3 text-cyan-400">🎯 Training Mode Performance</h3>
+                        <div id="modePerformance" class="space-y-2">
+                            <!-- Mode performance bars will be inserted here -->
+                        </div>
+                    </div>
+
                     <button id="backToTraining" class="w-full bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg transition mt-4">Back to Training</button>
                 </div>
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="Sortable.min.js"></script>
     <script src="index.js"></script>
 </body>
