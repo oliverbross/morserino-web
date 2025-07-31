@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Expand all sections by default
     setTimeout(() => {
-        const allSections = ['mode-selection', 'connection', 'training', 'live-session-tracking', 'session-report', 'session-statistics'];
+        const allSections = ['login-register', 'mode-selection', 'connection', 'training', 'live-tracking', 'session-report', 'session-statistics'];
         allSections.forEach(sectionId => {
             const content = document.getElementById(`${sectionId}-content`);
             const icon = document.querySelector(`[data-id="${sectionId}-icon"]`);
@@ -1368,19 +1368,7 @@ Character Breakdown:
         sessionTimer.textContent = '00:00.0';
     }
     
-    // Expand all sections by default
-    setTimeout(() => {
-        const allSections = ['mode-selection', 'connection', 'training', 'live-tracking', 'session-report', 'session-statistics'];
-        allSections.forEach(sectionId => {
-            const content = document.getElementById(`${sectionId}-content`);
-            const icon = document.querySelector(`[data-id="${sectionId}-icon"]`);
-            if (content && content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                if (icon) icon.classList.add('rotate-180');
-                console.log(`Expanded section: ${sectionId}`);
-            }
-        });
-    }, 200);
+
 
     // Double-check login section visibility after a brief delay
     setTimeout(() => {
