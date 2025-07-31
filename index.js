@@ -712,11 +712,6 @@ document.addEventListener('DOMContentLoaded', () => {
             : 'Session ended with no data';
             
         sessionStats.textContent = sessionSummary;
-
-        // Calculate real accuracy based on character-level success
-        const charAccuracy = sessionData.charactersAttempted > 0 
-            ? ((sessionData.charactersCorrect / sessionData.charactersAttempted) * 100).toFixed(2)
-            : '100.00';
         
         // Show detailed session report
         if (hasEnhancedTracking && sessionData.total > 0) {
