@@ -1,0 +1,21 @@
+/* Custom styles for Morserino Web */
+.section {
+    cursor: move;
+    transition: transform 0.2s;
+}
+
+.section:active {
+    transform: scale(0.98);
+}
+
+.section:hover {
+    background-color: #2d3748;
+}
+
+.error {
+    background-color: #e53e3e;
+    color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
