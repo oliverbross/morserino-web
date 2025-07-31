@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statsList = document.getElementById('statsList');
     const backToTraining = document.getElementById('backToTraining');
     
-    // Live session tracking elements
+    // Live session tracking elements (optional - enhanced features)
     const lettersCount = document.getElementById('lettersCount');
     const numbersCount = document.getElementById('numbersCount');
     const signsCount = document.getElementById('signsCount');
@@ -43,16 +43,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const sessionReport = document.getElementById('sessionReport');
     const startNewSession = document.getElementById('startNewSession');
 
-    // Verify DOM elements exist
-    if (!debug || !loggedIn || !notLoggedIn || !currentUsername || !logoutButton || !accountButton ||
-        !showLoginButton || !showRegisterButton || !loginForm || !registerForm ||
-        !loginUsername || !loginPassword || !loginButton || !registerUsername || !registerPassword ||
-        !registerEmail || !registerButton || !realWordsButton || !abbreviationsButton || !callsignsButton ||
-        !qrCodesButton || !topWordsButton || !mixedButton || !numItems || !connectButton || !connectionStatus || 
-        !startButton || !target || !userInput || !nextButton || !sessionStats || !statsList || !backToTraining ||
-        !lettersCount || !numbersCount || !signsCount || !errorsCount || !sessionTimer || !sessionReport || !startNewSession) {
-        console.error('Critical DOM elements missing');
-        debug.textContent = 'Error: Page failed to load correctly. Please try again.';
+    // Check if enhanced tracking is available
+    const hasEnhancedTracking = lettersCount && numbersCount && signsCount && errorsCount && sessionTimer && sessionReport && startNewSession;
+    if (hasEnhancedTracking) {
+        console.log('Enhanced session tracking available');
+    } else {
+        console.log('Enhanced session tracking not available - using basic mode');
+    }
+
+    // Verify critical DOM elements exist (only essential ones)
+    const criticalElements = {
+        debug, loggedIn, notLoggedIn, currentUsername, logoutButton, accountButton,
+        showLoginButton, showRegisterButton, loginForm, registerForm,
+        loginUsername, loginPassword, loginButton, registerUsername, registerPassword,
+        registerEmail, registerButton, realWordsButton, abbreviationsButton, callsignsButton,
+        qrCodesButton, topWordsButton, mixedButton, numItems, connectButton, connectionStatus,
+        startButton, target, userInput, nextButton, sessionStats, statsList, backToTraining
+    };
+    
+    const missingCritical = [];
+    for (const [name, element] of Object.entries(criticalElements)) {
+        if (!element) {
+            missingCritical.push(name);
+        }
+    }
+    
+    if (missingCritical.length > 0) {
+        console.error('Missing critical DOM elements:', missingCritical);
+        debug.textContent = `Error: Missing critical elements: ${missingCritical.join(', ')}. Please check the HTML.`;
         debug.classList.remove('hidden');
         return;
     }
@@ -173,10 +191,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateSessionDisplay() {
-        lettersCount.textContent = sessionData.letters;
-        numbersCount.textContent = sessionData.numbers;
-        signsCount.textContent = sessionData.signs;
-        errorsCount.textContent = sessionData.errors;
+        if (hasEnhancedTracking) {
+            lettersCount.textContent = sessionData.letters;
+            numbersCount.textContent = sessionData.numbers;
+            signsCount.textContent = sessionData.signs;
+            errorsCount.textContent = sessionData.errors;
+        }
     }
 
     function analyzeCharacters(text) {
@@ -195,7 +215,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startSessionTimer() {
         sessionData.startTime = new Date();
-        sessionTimer_interval = setInterval(updateTimerDisplay, 100); // Update every 100ms
+        if (hasEnhancedTracking) {
+            sessionTimer_interval = setInterval(updateTimerDisplay, 100); // Update every 100ms
+        }
     }
 
     function stopSessionTimer() {
@@ -207,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateTimerDisplay() {
-        if (!sessionData.startTime) return;
+        if (!sessionData.startTime || !hasEnhancedTracking) return;
         
         const now = new Date();
         const elapsed = now - sessionData.startTime;
@@ -257,8 +279,10 @@ Speed (cpm): ${stats.cpm}
 Speed (wpm): ${stats.wpm}
 ==========================================`;
         
-        sessionReport.textContent = report;
-        startNewSession.classList.remove('hidden');
+        if (hasEnhancedTracking) {
+            sessionReport.textContent = report;
+            startNewSession.classList.remove('hidden');
+        }
         
         return { ...sessionData, ...stats };
     }
@@ -861,8 +885,10 @@ Speed (wpm): ${stats.wpm}
         target.textContent = '';
         userInput.value = '';
         
-        // Show session report section
-        toggleSection('session-report');
+        // Show session report section if enhanced tracking is available
+        if (hasEnhancedTracking) {
+            toggleSection('session-report');
+        }
     }
 
     // Legacy function for backwards compatibility
@@ -1064,12 +1090,14 @@ Speed (wpm): ${stats.wpm}
         await endSession();
     });
 
-    // Start new session button functionality
-    startNewSession.addEventListener('click', () => {
-        startNewSession.classList.add('hidden');
-        sessionReport.textContent = 'No session completed yet';
-        resetSessionCounters();
-        sessionTimer.textContent = '00:00.0';
-        showToast('Ready for new session!', 'bg-green-600');
-    });
+    // Start new session button functionality (only if enhanced tracking available)
+    if (hasEnhancedTracking) {
+        startNewSession.addEventListener('click', () => {
+            startNewSession.classList.add('hidden');
+            sessionReport.textContent = 'No session completed yet';
+            resetSessionCounters();
+            sessionTimer.textContent = '00:00.0';
+            showToast('Ready for new session!', 'bg-green-600');
+        });
+    }
 });
