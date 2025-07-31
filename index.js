@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('userInput');
     const nextButton = document.getElementById('nextButton');
     const sessionStats = document.getElementById('sessionStats');
+    const statsList = document.getElementById('statsList');
     const backToTraining = document.getElementById('backToTraining');
 
     // Verify DOM elements exist
@@ -37,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         !loginUsername || !loginPassword || !loginButton || !registerUsername || !registerPassword ||
         !registerEmail || !registerButton || !realWordsButton || !codeGroupsButton || !callsignsButton ||
         !mixedButton || !numItems || !connectButton || !connectionStatus || !startButton || !target || !userInput ||
-        !nextButton || !sessionStats || !backToTraining) {
+        !nextButton || !sessionStats || !statsList || !backToTraining) {
         console.error('Critical DOM elements missing');
         debug.textContent = 'Error: Page failed to load correctly. Please try again.';
         debug.classList.remove('hidden');
@@ -181,6 +182,60 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Sections after showLoginRegisterSection:', Array.from(sections).map(s => `${s.dataset.id}: ${s.classList.contains('hidden') ? 'hidden' : 'visible'}`));
     }
 
+    // Fetch historical stats
+    async function fetchHistoricalStats(username) {
+        try {
+            const response = await fetch(`${apiBaseUrl}/get_stats.php?username=${encodeURIComponent(username)}&limit=5`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            const text = await response.text();
+            console.log('Historical stats response:', response.status, 'Headers:', Object.fromEntries(response.headers), 'Body:', text);
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('Parse historical stats error:', e.message, 'Response text:', text);
+                showToast('Failed to load historical stats: Invalid response', 'bg-red-600');
+                statsList.innerHTML = '<li>Error loading historical stats</li>';
+                sessionStats.textContent = 'No stats available';
+                return;
+            }
+            if (response.ok && Array.isArray(data)) {
+                statsList.innerHTML = '';
+                sessionStats.textContent = ''; // Clear sessionStats when stats are loaded
+                if (data.length === 0) {
+                    statsList.innerHTML = '<li>No historical stats available</li>';
+                    sessionStats.textContent = 'No stats available';
+                } else {
+                    const modeDisplay = {
+                        realWords: 'Real Words',
+                        codeGroups: 'Code Groups',
+                        callsigns: 'Callsigns',
+                        mixed: 'Mixed'
+                    };
+                    data.forEach(stat => {
+                        const mode = modeDisplay[stat.mode] || stat.mode;
+                        const percentage = stat.total > 0 ? ((stat.correct / stat.total) * 100).toFixed(2) : '0.00';
+                        const li = document.createElement('li');
+                        li.textContent = `${mode}: ${stat.correct}/${stat.total} (${percentage}%), ${stat.timestamp}`;
+                        statsList.appendChild(li);
+                    });
+                }
+            } else {
+                console.error('Historical stats fetch failed:', data.message || 'No stats returned', 'Response text:', text);
+                showToast(`Failed to load historical stats: ${data.message || 'Unknown error'}`, 'bg-red-600');
+                statsList.innerHTML = '<li>Error loading historical stats</li>';
+                sessionStats.textContent = 'No stats available';
+            }
+        } catch (error) {
+            console.error('Historical stats fetch error:', error.message);
+            showToast(`Failed to load historical stats: ${error.message}`, 'bg-red-600');
+            statsList.innerHTML = '<li>Error loading historical stats</li>';
+            sessionStats.textContent = 'No stats available';
+        }
+    }
+
     // Session and WebSerial state
     let port = null;
     let currentMode = 'realWords';
@@ -218,6 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 loggedIn.classList.remove('hidden');
                 notLoggedIn.classList.add('hidden');
                 showAllSections();
+                fetchHistoricalStats(data.username); // Load historical stats on login
             } else {
                 console.log('No session');
                 sessionStorage.removeItem('username');
@@ -286,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 loginPassword.value = '';
                 showToast('Login successful!', 'bg-green-600');
                 showAllSections();
+                fetchHistoricalStats(username); // Load historical stats after login
             } else {
                 showToast(`Login failed: ${data.message || 'Unknown error'}`, 'bg-red-600');
             }
@@ -330,6 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 registerEmail.value = '';
                 showToast('Registration successful!', 'bg-green-600');
                 showAllSections();
+                fetchHistoricalStats(username); // Load historical stats after registration
             } else {
                 showToast(`Registration failed: ${data.message || 'Unknown error'}`, 'bg-red-600');
             }
@@ -360,6 +418,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 loggedIn.classList.add('hidden');
                 notLoggedIn.classList.remove('hidden');
                 showLoginRegisterSection();
+                statsList.innerHTML = ''; // Clear historical stats on logout
+                sessionStats.textContent = 'No stats available';
                 showToast('Logged out successfully!', 'bg-green-600');
             } else {
                 showToast(`Logout failed: ${data.message || 'Unknown error'}`, 'bg-red-600');
@@ -475,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }[currentMode] || currentMode;
         sessionStats.textContent = sessionData.total > 0
             ? `Current ${modeDisplay} Session: Correct: ${sessionData.correct}/${sessionData.total} (${((sessionData.correct/sessionData.total)*100).toFixed(2)}%)`
-            : 'No stats available';
+            : '';
         startButton.classList.remove('hidden');
         nextButton.classList.add('hidden');
         userInput.classList.add('hidden');
@@ -486,11 +546,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!username) {
             console.error('No username for saving stats');
             showToast('Failed to save session: No user logged in', 'bg-red-600');
+            statsList.innerHTML = '<li>No historical stats available</li>';
+            sessionStats.textContent = 'No stats available';
             return;
         }
         if (sessionData.total === 0) {
             console.warn('No stats to save (total=0)');
             showToast('No stats to save for this session', 'bg-yellow-600');
+            fetchHistoricalStats(username); // Refresh historical stats even if no new stats
             return;
         }
 
@@ -522,10 +585,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         return trySaveStats(attempt + 1);
                     }
                     showToast('Failed to save session: Invalid server response', 'bg-red-600');
+                    fetchHistoricalStats(username); // Refresh historical stats on failure
                     return;
                 }
                 if (response.ok && data.message === 'Stats saved successfully') {
                     showToast('Session stats saved!', 'bg-green-600');
+                    fetchHistoricalStats(username); // Refresh historical stats after saving
                 } else {
                     console.error('Stats save failed:', data.message || 'Unknown error', 'Response text:', text);
                     if (attempt < 2) {
@@ -539,6 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         showToast(`Failed to save session: ${data.message || 'Unknown error'}`, 'bg-red-600');
                     }
+                    fetchHistoricalStats(username); // Refresh historical stats on failure
                 }
             } catch (error) {
                 console.error('Stats save error:', error.message);
@@ -547,6 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return trySaveStats(attempt + 1);
                 }
                 showToast(`Failed to save session: ${error.message}`, 'bg-red-600');
+                fetchHistoricalStats(username); // Refresh historical stats on failure
             }
         }
 

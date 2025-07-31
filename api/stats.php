@@ -1,59 +1,64 @@
-  <?php
-     session_start();
-     header('Content-Type: application/json');
-     header('Access-Control-Allow-Origin: https://om0rx.com');
-     header('Access-Control-Allow-Credentials: true');
+<?php
+session_start();
+header('Content-Type: application/json');
 
-require_once __DIR__ . '/../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->load();
-$dbHost = $_ENV['DB_HOST'];
-$dbName = $_ENV['DB_NAME'];
-$dbUser = $_ENV['DB_USER'];
-$dbPass = $_ENV['DB_PASS'];
+// Database connection
+$dbHost = 'localhost';
+$dbUser = 'm@om0rx.com';
+$dbPass = 'N3DhN5kIMhbmceM';
+$dbName = 'morserino';
+$conn = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 
-     try {
-         $pdo = new PDO("mysql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
-         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-     } catch (PDOException $e) {
-         http_response_code(500);
-         echo json_encode(['message' => 'Database connection failed: ' . $e->getMessage()]);
-         exit;
-     }
+if ($conn->connect_error) {
+    http_response_code(500);
+    echo json_encode(['message' => 'Database connection failed: ' . $conn->connect_error]);
+    exit;
+}
 
-     if (!isset($_SESSION['username'])) {
-         http_response_code(401);
-         echo json_encode(['message' => 'Unauthorized.']);
-         exit;
-     }
+// Check if user is logged in
+if (!isset($_SESSION['username'])) {
+    http_response_code(401);
+    echo json_encode(['message' => 'Not logged in']);
+    exit;
+}
 
-     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-         $username = $_GET['username'] ?? '';
-         if ($username !== $_SESSION['username']) {
-             http_response_code(401);
-             echo json_encode(['message' => 'Unauthorized.']);
-             exit;
-         }
-         $stmt = $pdo->prepare('SELECT correct, total, mode, date FROM stats WHERE username = ? ORDER BY date');
-         $stmt->execute([$username]);
-         $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-         http_response_code(200);
-         echo json_encode(['sessions' => $sessions]);
-     } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-         $data = json_decode(file_get_contents('php://input'), true);
-         $username = $data['username'] ?? '';
-         $session = $data['session'] ?? [];
-         if ($username !== $_SESSION['username'] || empty($session)) {
-             http_response_code(401);
-             echo json_encode(['message' => 'Unauthorized or invalid session data.']);
-             exit;
-         }
-         $stmt = $pdo->prepare('INSERT INTO stats (username, correct, total, mode, date) VALUES (?, ?, ?, ?, ?)');
-         $stmt->execute([$username, $session['correct'], $session['total'], $session['mode'], $session['date']]);
-         http_response_code(200);
-         echo json_encode(['message' => 'Session saved.']);
-     } else {
-         http_response_code(405);
-         echo json_encode(['message' => 'Method not allowed.']);
-     }
-     ?>
+// Get POST data
+$input = json_decode(file_get_contents('php://input'), true);
+if (!$input) {
+    http_response_code(400);
+    echo json_encode(['message' => 'Invalid JSON input']);
+    exit;
+}
+
+$username = $input['username'] ?? '';
+$mode = $input['mode'] ?? '';
+$correct = isset($input['correct']) ? (int)$input['correct'] : 0;
+$total = isset($input['total']) ? (int)$input['total'] : 0;
+
+// Validate input
+if ($username !== $_SESSION['username'] || !in_array($mode, ['realWords', 'codeGroups', 'callsigns', 'mixed']) || $correct < 0 || $total < 0 || $correct > $total) {
+    http_response_code(400);
+    echo json_encode(['message' => 'Invalid data']);
+    exit;
+}
+
+// Insert new session stats
+$stmt = $conn->prepare('INSERT INTO stats (username, mode, correct, total, timestamp) VALUES (?, ?, ?, ?, NOW())');
+if (!$stmt) {
+    http_response_code(500);
+    echo json_encode(['message' => 'Database error: ' . $conn->error]);
+    exit;
+}
+
+$stmt->bind_param('ssii', $username, $mode, $correct, $total);
+if ($stmt->execute()) {
+    http_response_code(200);
+    echo json_encode(['message' => 'Stats saved successfully']);
+} else {
+    http_response_code(500);
+    echo json_encode(['message' => 'Failed to save stats: ' . $stmt->error]);
+}
+
+$stmt->close();
+$conn->close();
+?>

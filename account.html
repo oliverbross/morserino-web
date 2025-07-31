@@ -3,42 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Morserino Web - Account</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Account Settings</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Re-enable styles.css to test for conflicts, or keep commented -->
+    <!-- <link href="styles.css" rel="stylesheet"> -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        .section-header {
+            position: relative !important;
+            display: flex !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            width: 100% !important;
+            min-height: 40px !important;
+            padding: 8px 40px 8px 8px !important;
+        }
+        .section-header h2 {
+            flex: 1 1 auto !important;
+            margin: 0 !important;
+            font-size: 1.25rem !important;
+        }
+        .icon-container {
+            position: absolute !important;
+            right: 8px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            width: 24px !important;
+            height: 24px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .section-header svg {
+            width: 24px !important;
+            height: 24px !important;
+            stroke: white !important;
+        }
+        select, select option {
+            color: white !important;
+            background-color: #4b5563 !important;
+            font-size: 16px !important;
+            line-height: 1.5 !important;
+            opacity: 1 !important;
+            padding: 8px !important;
+            font-family: Arial, sans-serif !important;
+            text-indent: 0 !important;
+            -webkit-appearance: menulist !important;
+            -moz-appearance: menulist !important;
+            appearance: menulist !important;
+        }
+        select {
+            animation: force-repaint 0.2s ease-in-out 5 !important;
+        }
+        @keyframes force-repaint {
+            0% { opacity: 0.98; transform: scale(1); }
+            50% { opacity: 0.99; transform: scale(1.01); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Account Settings</h1>
-        <div id="accountDebug" class="error hidden"></div>
-        <p>Logged in as: <span id="currentUsername"></span></p>
-        <h2>Change Password</h2>
-        <input type="password" id="newPassword" placeholder="New Password">
-        <input type="password" id="confirmPassword" placeholder="Confirm Password">
-        <button id="changePasswordButton">Change Password</button>
-        <h2>Recovery Email</h2>
-        <input type="email" id="recoveryEmail" placeholder="Recovery Email">
-        <button id="saveEmailButton">Save Email</button>
-        <h2>Date and Time Format</h2>
-        <label for="dateFormatSelect">Date Format:</label>
-        <select id="dateFormatSelect">
-            <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-            <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-            <option value="YYYY/MM/DD">YYYY/MM/DD</option>
-        </select>
-        <label for="timeFormatSelect">Time Format:</label>
-        <select id="timeFormatSelect">
-            <option value="12h">12-hour (AM/PM)</option>
-            <option value="24h">24-hour</option>
-        </select>
-        <button id="saveSettingsButton">Save Settings</button>
-        <h2>Statistics</h2>
-        <p id="accountStats">Loading statistics...</p>
-        <button id="exportStatsButton">Export Statistics</button>
-        <h2>Account Actions</h2>
-        <button id="deleteAccountButton">Delete Account</button>
-        <button id="accountLogoutButton">Log Out</button>
-        <button id="backToTrainingFromAccount">Back to Training</button>
+<body class="bg-gray-800 text-white min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="container mx-auto max-w-2xl">
+        <h1 class="text-3xl font-bold mb-6 text-center">Account Settings</h1>
+
+        <div id="accountDebug" class="error hidden bg-red-600 p-2 rounded">Style Check: If visible, check console for errors.</div>
+
+        <div id="sortable-sections" class="space-y-4">
+            <div class="section bg-gray-700 shadow-lg rounded-lg p-4" data-id="account-info">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">Account Information</h2>
+                    <div class="icon-container">
+                        <svg data-id="account-info-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="account-info-content" class="mt-2">
+                    <p>Logged in as: <span id="currentUsername" class="font-semibold"></span></p>
+                </div>
+            </div>
+
+            <div class="section bg-gray-700 shadow-lg rounded-lg p-4" data-id="change-password">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">Change Password</h2>
+                    <div class="icon-container">
+                        <svg data-id="change-password-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="change-password-content" class="mt-2 space-y-4">
+                    <input id="newPassword" type="password" placeholder="New Password" class="w-full p-2 bg-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input id="confirmPassword" type="password" placeholder="Confirm Password" class="w-full p-2 bg-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="changePasswordButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">Change Password</button>
+                </div>
+            </div>
+
+            <div class="section bg-gray-700 shadow-lg rounded-lg p-4" data-id="recovery-email">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">Recovery Email</h2>
+                    <div class="icon-container">
+                        <svg data-id="recovery-email-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="recovery-email-content" class="mt-2 space-y-4">
+                    <input id="recoveryEmail" type="email" placeholder="Email" class="w-full p-2 bg-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="saveEmailButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">Save Email</button>
+                </div>
+            </div>
+
+            <div class="section bg-gray-700 shadow-lg rounded-lg p-4" data-id="date-time-settings">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">Date & Time Settings</h2>
+                    <div class="icon-container">
+                        <svg data-id="date-time-settings-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="date-time-settings-content" class="mt-2 space-y-4">
+                    <select id="dateFormatSelect" class="w-full p-2 bg-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="DD/MM/YYYY" selected>DD/MM/YYYY</option>
+                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                    </select>
+                    <select id="timeFormatSelect" class="w-full p-2 bg-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="12h">12-hour</option>
+                        <option value="24h" selected>24-hour</option>
+                    </select>
+                    <button id="saveSettingsButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">Save Settings</button>
+                </div>
+            </div>
+
+            <div class="section bg-gray-700 shadow-lg rounded-lg p-4" data-id="statistics">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">Statistics</h2>
+                    <div class="icon-container">
+                        <svg data-id="statistics-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="statistics-content" class="mt-2 space-y-4">
+                    <p id="accountStats" class="text-lg">No stats available</p>
+                    <ul id="recentSessions" class="list-disc list-inside"></ul>
+                    <button id="exportStatsButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">Export Statistics</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex space-x-2 mt-6">
+            <button id="deleteAccountButton" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">Delete Account</button>
+            <button id="accountLogoutButton" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">Log Out</button>
+            <button id="backToTrainingFromAccount" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">Back to Training</button>
+        </div>
     </div>
+
     <script src="account.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Inline script: Initializing dropdowns');
+            const dateFormatSelect = document.getElementById('dateFormatSelect');
+            const timeFormatSelect = document.getElementById('timeFormatSelect');
+
+            // Function to rebuild and force repaint dropdowns
+            function rebuildDropdowns() {
+                const dateValue = dateFormatSelect.value || 'DD/MM/YYYY';
+                const timeValue = timeFormatSelect.value || '24h';
+
+                // Rebuild options
+                dateFormatSelect.innerHTML = `
+                    <option value="DD/MM/YYYY" ${dateValue === 'DD/MM/YYYY' ? 'selected' : ''}>DD/MM/YYYY</option>
+                    <option value="MM/DD/YYYY" ${dateValue === 'MM/DD/YYYY' ? 'selected' : ''}>MM/DD/YYYY</option>
+                `;
+                timeFormatSelect.innerHTML = `
+                    <option value="12h" ${timeValue === '12h' ? 'selected' : ''}>12-hour</option>
+                    <option value="24h" ${timeValue === '24h' ? 'selected' : ''}>24-hour</option>
+                `;
+
+                // Set selectedIndex explicitly
+                dateFormatSelect.selectedIndex = dateValue === 'DD/MM/YYYY' ? 0 : 1;
+                timeFormatSelect.selectedIndex = timeValue === '12h' ? 0 : 1;
+
+                // Force repaint with multiple events
+                dateFormatSelect.style.display = 'none';
+                timeFormatSelect.style.display = 'none';
+                setTimeout(() => {
+                    dateFormatSelect.style.display = 'block';
+                    timeFormatSelect.style.display = 'block';
+                    dateFormatSelect.value = dateValue;
+                    timeFormatSelect.value = timeValue;
+                    dateFormatSelect.dispatchEvent(new Event('change'));
+                    timeFormatSelect.dispatchEvent(new Event('change'));
+                    dateFormatSelect.dispatchEvent(new Event('input'));
+                    timeFormatSelect.dispatchEvent(new Event('input'));
+                    // Simulate click to force render
+                    dateFormatSelect.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                    timeFormatSelect.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                    console.log('Inline script: Dropdowns rebuilt:', {
+                        dateFormat: dateFormatSelect.value,
+                        timeFormat: timeFormatSelect.value,
+                        dateSelectedIndex: dateFormatSelect.selectedIndex,
+                        timeSelectedIndex: timeFormatSelect.selectedIndex,
+                        dateOptions: Array.from(dateFormatSelect.options).map(o => ({ value: o.value, selected: o.selected, text: o.textContent })),
+                        timeOptions: Array.from(timeFormatSelect.options).map(o => ({ value: o.value, selected: o.selected, text: o.textContent }))
+                    });
+                }, 0);
+            }
+
+            // Initial rebuild
+            rebuildDropdowns();
+
+            // Multiple rebuild attempts
+            setTimeout(() => rebuildDropdowns(), 100);
+            setTimeout(() => rebuildDropdowns(), 500);
+
+            // Poll for fetchUserSettings completion
+            let attempts = 0;
+            const checkSettings = setInterval(() => {
+                attempts++;
+                if (dateFormatSelect.value && timeFormatSelect.value) {
+                    rebuildDropdowns();
+                    console.log(`Inline script: fetchUserSettings complete after ${attempts} attempts`);
+                    clearInterval(checkSettings);
+                }
+                if (attempts >= 50) {
+                    rebuildDropdowns();
+                    console.log('Inline script: fetchUserSettings timeout, forced defaults');
+                    clearInterval(checkSettings);
+                }
+            }, 100);
+
+            // Log styles for debugging
+            console.log('Select styles:', {
+                dateFormatSelect: {
+                    color: window.getComputedStyle(dateFormatSelect).color,
+                    opacity: window.getComputedStyle(dateFormatSelect).opacity,
+                    display: window.getComputedStyle(dateFormatSelect).display,
+                    fontSize: window.getComputedStyle(dateFormatSelect).fontSize,
+                    textIndent: window.getComputedStyle(dateFormatSelect).textIndent
+                },
+                timeFormatSelect: {
+                    color: window.getComputedStyle(timeFormatSelect).color,
+                    opacity: window.getComputedStyle(timeFormatSelect).opacity,
+                    display: window.getComputedStyle(timeFormatSelect).display,
+                    fontSize: window.getComputedStyle(timeFormatSelect).fontSize,
+                    textIndent: window.getComputedStyle(timeFormatSelect).textIndent
+                }
+            });
+        });
+    </script>
 </body>
 </html>

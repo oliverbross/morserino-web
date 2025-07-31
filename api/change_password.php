@@ -57,17 +57,17 @@ try {
         }
         $input = json_decode(file_get_contents('php://input'), true);
         error_log("Change_password.php: Input received: " . json_encode($input));
-        if (!$input || !isset($input['password']) || empty($input['password'])) {
+        if (!$input || !isset($input['username']) || $input['username'] !== $_SESSION['username'] || !isset($input['password']) || empty($input['password'])) {
             http_response_code(400);
-            echo json_encode(['message' => 'Invalid or empty password']);
-            error_log("Change_password.php: Invalid or empty password");
+            echo json_encode(['message' => 'Invalid input or unauthorized']);
+            error_log("Change_password.php: Invalid input or username mismatch");
             exit;
         }
-        // Use password_hash (bcrypt) to match common PHP auth practices
-        $hashedPassword = password_hash($input['password'], PASSWORD_DEFAULT);
-        // Clear salt since bcrypt includes it in the hash
-        $stmt = $conn->prepare("UPDATE users SET hash = ?, salt = '' WHERE username = ?");
-        $stmt->execute([$hashedPassword, $_SESSION['username']]);
+        // Generate salt and hash to match login.php
+        $salt = bin2hex(random_bytes(16));
+        $hashedPassword = password_hash($input['password'] . $salt, PASSWORD_DEFAULT);
+        $stmt = $conn->prepare("UPDATE users SET hash = ?, salt = ? WHERE username = ?");
+        $stmt->execute([$hashedPassword, $salt, $_SESSION['username']]);
         $rowCount = $stmt->rowCount();
         error_log("Change_password.php: Update executed, rows affected: $rowCount, username: " . $_SESSION['username']);
         if ($rowCount > 0) {
