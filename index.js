@@ -234,10 +234,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('username', data.username);
                 loggedIn.classList.remove('hidden');
                 notLoggedIn.classList.add('hidden');
-                // Hide login/register section when logged in
-                const loginContent = document.getElementById('login-register-content');
-                if (loginContent && !loginContent.classList.contains('hidden')) {
-                    toggleSection('login-register');
+                // Hide entire login/register section when logged in
+                const loginSection = document.querySelector('[data-id="login-register"]');
+                if (loginSection) {
+                    loginSection.style.display = 'none';
                 }
                 await fetchHistoricalStats(data.username);
             } else {
@@ -347,10 +347,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('username', username);
                 loggedIn.classList.remove('hidden');
                 notLoggedIn.classList.add('hidden');
-                // Hide login/register section after successful login
-                const loginContent = document.getElementById('login-register-content');
-                if (loginContent && !loginContent.classList.contains('hidden')) {
-                    toggleSection('login-register');
+                // Hide entire login/register section after successful login
+                const loginSection = document.querySelector('[data-id="login-register"]');
+                if (loginSection) {
+                    loginSection.style.display = 'none';
                 }
                 showToast('Login successful!', 'bg-green-600');
                 await fetchHistoricalStats(username);
@@ -386,10 +386,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('username', username);
                 loggedIn.classList.remove('hidden');
                 notLoggedIn.classList.add('hidden');
-                // Hide login/register section after successful registration
-                const loginContent = document.getElementById('login-register-content');
-                if (loginContent && !loginContent.classList.contains('hidden')) {
-                    toggleSection('login-register');
+                // Hide entire login/register section after successful registration
+                const loginSection = document.querySelector('[data-id="login-register"]');
+                if (loginSection) {
+                    loginSection.style.display = 'none';
                 }
                 showToast('Registration successful!', 'bg-green-600');
                 await fetchHistoricalStats(username);
@@ -829,21 +829,26 @@ Time: ${timeSeconds.toFixed(1)}s`;
     // Double-check login section visibility after a brief delay
     setTimeout(() => {
         const isLoggedIn = sessionStorage.getItem('username');
+        const loginSection = document.querySelector('[data-id="login-register"]');
         const loginContent = document.getElementById('login-register-content');
         const loggedInDiv = document.getElementById('loggedIn');
+        const notLoggedInDiv = document.getElementById('notLoggedIn');
         
         console.log('Login check - isLoggedIn:', isLoggedIn, 'loginContent hidden:', loginContent?.classList.contains('hidden'), 'loggedInDiv hidden:', loggedInDiv?.classList.contains('hidden'));
         
         if (isLoggedIn && loggedInDiv && !loggedInDiv.classList.contains('hidden')) {
-            // User is logged in, hide login section
-            if (loginContent && !loginContent.classList.contains('hidden')) {
-                console.log('Hiding login section for logged in user');
-                toggleSection('login-register');
+            // User is logged in, hide entire login section
+            if (loginSection) {
+                loginSection.style.display = 'none';
+                console.log('Hiding entire login section for logged in user');
             }
         } else if (!isLoggedIn) {
             // User is not logged in, show login section
-            if (loginContent && loginContent.classList.contains('hidden')) {
+            if (loginSection) {
+                loginSection.style.display = 'block';
                 console.log('Showing login section for non-logged in user');
+            }
+            if (loginContent && loginContent.classList.contains('hidden')) {
                 toggleSection('login-register');
             }
         }
