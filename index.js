@@ -191,11 +191,18 @@ document.addEventListener('DOMContentLoaded', () => {
             lettersCount.textContent = sessionData.letters;
             numbersCount.textContent = sessionData.numbers;
             signsCount.textContent = sessionData.signs;
-            // Show character accuracy percentage in the errors box
+            
+            // Show character accuracy percentage
             const charAccuracy = sessionData.charactersAttempted > 0 
                 ? ((sessionData.charactersCorrect / sessionData.charactersAttempted) * 100).toFixed(1)
                 : '100.0';
-            errorsCount.textContent = `${charAccuracy}%`;
+            const characterAccuracyElement = document.getElementById('characterAccuracy');
+            if (characterAccuracyElement) {
+                characterAccuracyElement.textContent = `${charAccuracy}%`;
+            }
+            
+            // Show character errors count
+            errorsCount.textContent = sessionData.characterErrors || 0;
         }
     }
 
@@ -624,10 +631,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 await endSession();
                                 return;
                             } else {
-                                // Quick delay before next target to allow user to see result
-                                setTimeout(() => {
-                                    nextTarget().catch(console.error);
-                                }, 800);
+                                // Immediate next target for natural CW flow
+                                nextTarget().catch(console.error);
                             }
                         }
                     } else {
