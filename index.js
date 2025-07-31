@@ -408,20 +408,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateProgressCharts(data) {
-        // Create accuracy trend chart
-        createAccuracyChart(data.slice(0, 10).reverse());
-        // Create speed trend chart  
-        createSpeedChart(data.slice(0, 10).reverse());
+        // Only create charts if they don't already exist
+        if (!window.accuracyChartInstance) {
+            createAccuracyChart(data.slice(0, 10).reverse());
+        }
+        if (!window.speedChartInstance) {
+            createSpeedChart(data.slice(0, 10).reverse());
+        }
     }
 
     function createAccuracyChart(data) {
         const ctx = document.getElementById('accuracyChart');
         if (!ctx) return;
 
-        // Destroy existing chart if it exists
+        // Get the canvas context and clear it completely
+        const canvas = ctx.getContext('2d');
+        
+        // Destroy existing chart instance if it exists
         if (window.accuracyChartInstance) {
             window.accuracyChartInstance.destroy();
+            window.accuracyChartInstance = null;
         }
+
+        // Clear the canvas completely
+        canvas.clearRect(0, 0, ctx.width, ctx.height);
 
         const chartData = data.map(stat => {
             return stat.characters_attempted > 0 
@@ -429,80 +439,93 @@ document.addEventListener('DOMContentLoaded', () => {
                 : (stat.total > 0 ? ((stat.correct / stat.total) * 100).toFixed(1) : 0);
         });
 
-        window.accuracyChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: data.map((_, i) => `Session ${i + 1}`),
-                datasets: [{
-                    label: 'Character Accuracy %',
-                    data: chartData,
-                    borderColor: '#60A5FA',
-                    backgroundColor: 'rgba(96, 165, 250, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { 
-                        beginAtZero: true, 
-                        max: 100,
-                        grid: { color: '#374151' },
-                        ticks: { color: '#9CA3AF' }
-                    },
-                    x: { 
-                        grid: { color: '#374151' },
-                        ticks: { color: '#9CA3AF' }
+        // Only create chart if we don't already have one
+        if (!window.accuracyChartInstance) {
+            window.accuracyChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map((_, i) => `Session ${i + 1}`),
+                    datasets: [{
+                        label: 'Character Accuracy %',
+                        data: chartData,
+                        borderColor: '#60A5FA',
+                        backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            max: 100,
+                            grid: { color: '#374151' },
+                            ticks: { color: '#9CA3AF' }
+                        },
+                        x: { 
+                            grid: { color: '#374151' },
+                            ticks: { color: '#9CA3AF' }
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     function createSpeedChart(data) {
         const ctx = document.getElementById('speedChart');
         if (!ctx) return;
 
-        // Destroy existing chart if it exists
+        // Get the canvas context and clear it completely
+        const canvas = ctx.getContext('2d');
+        
+        // Destroy existing chart instance if it exists
         if (window.speedChartInstance) {
             window.speedChartInstance.destroy();
+            window.speedChartInstance = null;
         }
+
+        // Clear the canvas completely
+        canvas.clearRect(0, 0, ctx.width, ctx.height);
 
         const speedData = data.map(stat => stat.wpm || 0);
 
-        window.speedChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: data.map((_, i) => `Session ${i + 1}`),
-                datasets: [{
-                    label: 'WPM',
-                    data: speedData,
-                    borderColor: '#34D399',
-                    backgroundColor: 'rgba(52, 211, 153, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { 
-                        beginAtZero: true,
-                        grid: { color: '#374151' },
-                        ticks: { color: '#9CA3AF' }
-                    },
-                    x: { 
-                        grid: { color: '#374151' },
-                        ticks: { color: '#9CA3AF' }
+        // Only create chart if we don't already have one
+        if (!window.speedChartInstance) {
+            window.speedChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map((_, i) => `Session ${i + 1}`),
+                    datasets: [{
+                        label: 'WPM',
+                        data: speedData,
+                        borderColor: '#34D399',
+                        backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            grid: { color: '#374151' },
+                            ticks: { color: '#374151' }
+                        },
+                        x: { 
+                            grid: { color: '#374151' },
+                            ticks: { color: '#9CA3AF' }
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     function populateTrainingInsights(data) {
