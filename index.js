@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Add section header listeners
+    // Add section header listeners and expand all sections by default
     document.querySelectorAll('.section-header').forEach(header => {
         header.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -122,6 +122,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Expand all sections by default
+    setTimeout(() => {
+        const allSections = ['mode-selection', 'connection', 'training', 'live-session-tracking', 'session-report', 'session-statistics'];
+        allSections.forEach(sectionId => {
+            const content = document.getElementById(`${sectionId}-content`);
+            const icon = document.querySelector(`[data-id="${sectionId}-icon"]`);
+            if (content && content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                if (icon) icon.classList.add('rotate-180');
+            }
+        });
+    }, 100);
 
     // Initialize Sortable
     if (typeof Sortable !== 'undefined') {
@@ -220,10 +233,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('username', data.username);
                 loggedIn.classList.remove('hidden');
                 notLoggedIn.classList.add('hidden');
+                // Hide login/register section when logged in
+                toggleSection('login-register');
                 await fetchHistoricalStats(data.username);
             } else {
                 notLoggedIn.classList.remove('hidden');
                 loggedIn.classList.add('hidden');
+                // Show login/register section when not logged in
+                const loginContent = document.getElementById('login-register-content');
+                if (loginContent && loginContent.classList.contains('hidden')) {
+                    toggleSection('login-register');
+                }
             }
         } catch (error) {
             console.error('Session check failed:', error);
@@ -323,6 +343,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('username', username);
                 loggedIn.classList.remove('hidden');
                 notLoggedIn.classList.add('hidden');
+                // Hide login/register section after successful login
+                const loginContent = document.getElementById('login-register-content');
+                if (loginContent && !loginContent.classList.contains('hidden')) {
+                    toggleSection('login-register');
+                }
                 showToast('Login successful!', 'bg-green-600');
                 await fetchHistoricalStats(username);
             } else {
@@ -357,6 +382,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('username', username);
                 loggedIn.classList.remove('hidden');
                 notLoggedIn.classList.add('hidden');
+                // Hide login/register section after successful registration
+                const loginContent = document.getElementById('login-register-content');
+                if (loginContent && !loginContent.classList.contains('hidden')) {
+                    toggleSection('login-register');
+                }
                 showToast('Registration successful!', 'bg-green-600');
                 await fetchHistoricalStats(username);
             } else {
@@ -379,6 +409,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.removeItem('username');
                 loggedIn.classList.add('hidden');
                 notLoggedIn.classList.remove('hidden');
+                // Show login/register section after logout
+                const loginContent = document.getElementById('login-register-content');
+                if (loginContent && loginContent.classList.contains('hidden')) {
+                    toggleSection('login-register');
+                }
                 statsList.innerHTML = '';
                 sessionStats.textContent = 'No stats available';
                 showToast('Logged out successfully!', 'bg-green-600');
@@ -392,19 +427,46 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = '/morserino/account.html';
     });
 
-    // Mode selection
+    // Mode selection with better colors and feedback
     [realWordsButton, abbreviationsButton, callsignsButton, qrCodesButton, topWordsButton, mixedButton].forEach(button => {
         button.addEventListener('click', () => {
+            // Remove active class from all buttons
             [realWordsButton, abbreviationsButton, callsignsButton, qrCodesButton, topWordsButton, mixedButton].forEach(btn => {
-                btn.classList.remove('bg-blue-600');
+                btn.classList.remove('bg-green-600', 'bg-green-700');
                 btn.classList.add('bg-blue-500');
+                btn.classList.remove('bg-blue-600');
             });
-            button.classList.remove('bg-blue-500');
-            button.classList.add('bg-blue-600');
+            
+            // Add active class to clicked button
+            button.classList.remove('bg-blue-500', 'bg-blue-600');
+            button.classList.add('bg-green-600');
+            button.classList.add('hover:bg-green-700');
+            
+            const oldMode = currentMode;
             currentMode = button.id.replace('Button', '');
+            
+            // Show feedback toast
+            const modeNames = {
+                realWords: 'Real Words',
+                abbreviations: 'Abbreviations',
+                callsigns: 'Callsigns',
+                qrCodes: 'QR-codes',
+                topWords: 'Top Words in CW',
+                mixed: 'Mixed'
+            };
+            
+            showToast(`Mode changed to: ${modeNames[currentMode]}`, 'bg-blue-600');
             console.log('Mode selected:', currentMode);
         });
     });
+
+    // Set default mode selection visual
+    setTimeout(() => {
+        if (realWordsButton) {
+            realWordsButton.classList.remove('bg-blue-500');
+            realWordsButton.classList.add('bg-green-600');
+        }
+    }, 200);
 
     // Connection to Morserino
     connectButton.addEventListener('click', async () => {
@@ -426,25 +488,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Training functionality
+    // Training functionality - fixed API endpoint
     async function nextTarget() {
         try {
-            const response = await fetch(`/morserino/data/words.php?mode=${currentMode}`);
+            // Try the correct data endpoint first  
+            const response = await fetch(`https://om0rx.com/morserino/data/words.php?mode=${currentMode}`);
             if (response.ok) {
                 const data = await response.text();
                 currentTarget = data.trim().toUpperCase();
+                console.log('Fetched target from API:', currentTarget);
             } else {
-                throw new Error('Failed to fetch target');
+                throw new Error('API failed, using fallback');
             }
         } catch (error) {
-            console.log('Using fallback target');
+            console.log('Using fallback target for mode:', currentMode);
             const fallbackTargets = {
-                realWords: ['HELLO', 'WORLD', 'MORSE', 'CODE'],
-                abbreviations: ['CQ', 'DE', 'TNX', 'FB'],
-                callsigns: ['OM0RX', 'W1AW', 'K9LA'],
-                qrCodes: ['QRA', 'QRB', 'QRG'],
-                topWords: ['THE', 'AND', 'FOR'],
-                mixed: ['HELLO', 'CQ', 'OM0RX']
+                realWords: [
+                    'THE', 'AND', 'FOR', 'ARE', 'BUT', 'NOT', 'YOU', 'ALL', 'CAN', 'HER', 'WAS', 'ONE', 'OUR', 'HAD', 
+                    'HAVE', 'WHAT', 'WERE', 'SAID', 'EACH', 'WHICH', 'THEIR', 'TIME', 'WILL', 'ABOUT', 'WOULD', 
+                    'THERE', 'COULD', 'OTHER', 'AFTER', 'FIRST', 'WELL', 'WATER', 'BEEN', 'CALL', 'WHO', 'OIL', 
+                    'NOW', 'FIND', 'LONG', 'DOWN', 'DAY', 'DID', 'GET', 'HAS', 'HIM', 'HOW', 'MAN', 'NEW', 'OLD', 
+                    'SEE', 'TWO', 'WAY', 'BOY', 'ITS', 'WORD', 'WORK', 'LIFE', 'YEAR', 'BACK', 'GOOD', 'GIVE',
+                    'HELLO', 'WORLD', 'MORSE', 'CODE', 'RADIO', 'SIGNAL', 'STATION', 'ANTENNA', 'CIRCUIT', 'DEVICE'
+                ],
+                abbreviations: ['CQ', 'DE', 'TNX', 'FB', 'QSL', 'QRT', 'CUL', '73', 'ARRL', 'DX', 'QTH', 'WX', 'HR', 'RIG', 'ANT'],
+                callsigns: ['OM0RX', 'W1AW', 'K9LA', 'VE3ABC', 'G0XYZ', 'DL1QRS', 'JA1TNX', 'VK2DEF', 'S51MNO', '2E0ABC'],
+                qrCodes: ['QRA', 'QRB', 'QRG', 'QRH', 'QRI', 'QRK', 'QRL', 'QRM', 'QRN', 'QRO', 'QRP', 'QRQ', 'QRS', 'QRT', 'QRU'],
+                topWords: ['I', 'AND', 'THE', 'YOU', 'THAT', 'A', 'TO', 'KNOW', 'OF', 'IT', 'YEAH', 'IN', 'THEY', 'DO', 'SO', 'BUT'],
+                mixed: ['HELLO', 'CQ', 'OM0RX', 'QRA', 'THE', 'W1AW', 'TNX', 'AND', 'QRB', 'DX']
             };
             const options = fallbackTargets[currentMode] || fallbackTargets.realWords;
             currentTarget = options[Math.floor(Math.random() * options.length)];
@@ -452,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
         target.textContent = currentTarget;
         userInput.value = '';
         inputBuffer = '';
-        console.log('Next target:', currentTarget);
+        console.log('Next target set:', currentTarget);
     }
 
     async function readMorseInput() {
@@ -475,8 +546,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     inputBuffer += char;
                     userInput.value = inputBuffer;
 
-                    if (inputBuffer.length >= currentTarget.length) {
-                        if (inputBuffer === currentTarget) {
+                    // Check if we have a complete word or if we should evaluate
+                    if (char === ' ' || inputBuffer.length >= currentTarget.length) {
+                        // Remove any trailing spaces
+                        const cleanInput = inputBuffer.trim();
+                        
+                        if (cleanInput === currentTarget) {
                             // Correct
                             sessionData.correct++;
                             sessionData.total++;
@@ -487,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 sessionData.numbers += charAnalysis.numbers;
                                 sessionData.signs += charAnalysis.signs;
                                 sessionData.targets.push(currentTarget);
-                                sessionData.responses.push(inputBuffer);
+                                sessionData.responses.push(cleanInput);
                                 updateSessionDisplay();
                             }
                             
@@ -500,12 +575,20 @@ document.addEventListener('DOMContentLoaded', () => {
                             } else {
                                 await nextTarget();
                             }
-                        } else {
-                            // Incorrect
+                        } else if (inputBuffer.length >= currentTarget.length) {
+                            // Incorrect - only trigger on length match, not on space
+                            sessionData.total++;
+                            
                             if (hasEnhancedTracking) {
                                 sessionData.errors++;
+                                const charAnalysis = analyzeCharacters(currentTarget);
+                                sessionData.letters += charAnalysis.letters;
+                                sessionData.numbers += charAnalysis.numbers;
+                                sessionData.signs += charAnalysis.signs;
+                                sessionData.targets.push(currentTarget);
+                                sessionData.responses.push(cleanInput);
+                                updateSessionDisplay();
                             }
-                            sessionData.total++;
                             
                             showToast('Incorrect. Try again or skip.', 'bg-red-600');
                             inputBuffer = '';
@@ -513,6 +596,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             
                             if (sessionData.total >= maxItems) {
                                 await endSession();
+                            } else {
+                                // Continue with same target for retry
+                                break;
                             }
                         }
                     }
@@ -574,14 +660,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add enhanced data if available
         if (hasEnhancedTracking) {
+            const timeSeconds = sessionData.endTime && sessionData.startTime 
+                ? (sessionData.endTime - sessionData.startTime) / 1000 
+                : 0;
+            const totalCharacters = sessionData.letters + sessionData.numbers + sessionData.signs;
+            const cpm = timeSeconds > 0 ? (totalCharacters / timeSeconds) * 60 : 0;
+            const wpm = timeSeconds > 0 ? (totalCharacters / 5 / timeSeconds) * 60 : 0; // Standard: 5 chars = 1 word
+            
             payload.letters = sessionData.letters;
             payload.numbers = sessionData.numbers;
             payload.signs = sessionData.signs;
             payload.errors = sessionData.errors;
-            payload.timeSeconds = sessionData.endTime && sessionData.startTime 
-                ? (sessionData.endTime - sessionData.startTime) / 1000 
-                : 0;
-            payload.accuracy = sessionData.total > 0 ? ((sessionData.correct / sessionData.total) * 100) : 0;
+            payload.timeSeconds = parseFloat(timeSeconds.toFixed(3));
+            payload.accuracy = parseFloat((sessionData.total > 0 ? ((sessionData.correct / sessionData.total) * 100) : 0).toFixed(2));
+            payload.cpm = parseFloat(cpm.toFixed(2));
+            payload.wpm = parseFloat(wpm.toFixed(2));
         }
 
         try {
@@ -620,6 +713,11 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionActive = true;
         resetSessionCounters();
         startSessionTimer();
+        
+        // Initialize enhanced tracking display if available
+        if (hasEnhancedTracking) {
+            updateSessionDisplay();
+        }
         
         startButton.classList.add('hidden');
         nextButton.classList.remove('hidden');
@@ -670,5 +768,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize
     checkSession();
+    
+    // Initialize enhanced tracking display if available
+    if (hasEnhancedTracking) {
+        resetSessionCounters();
+        updateSessionDisplay();
+        sessionTimer.textContent = '00:00.0';
+    }
+    
     console.log('Morserino Web initialized successfully');
 });
