@@ -165,7 +165,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetSessionCounters() {
         if (hasEnhancedTracking) {
             sessionData = {
-                letters: 0, numbers: 0, signs: 0, errors: 0, correct: 0, total: 0,
+                letters: 0, numbers: 0, signs: 0, 
+                errors: 0,           // Character errors (for compatibility)
+                characterErrors: 0,  // Wrong characters sent
+                wordAttempts: 0,     // Failed word attempts (for accuracy calculation)
+                correct: 0, total: 0,
                 startTime: null, endTime: null, targets: [], responses: []
             };
             updateSessionDisplay();
@@ -556,17 +560,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         continue;
                     }
                     
-                    // Add character to buffer
-                    inputBuffer += char.toUpperCase();
-                    userInput.value = inputBuffer;
-                    console.log('📝 Added char to buffer:', char.toUpperCase(), 'Buffer now:', inputBuffer);
-
-                    // Evaluate when buffer length matches target length
-                    if (inputBuffer.length === currentTarget.length) {
-                        console.log('🔍 Buffer length matches target - Evaluating:', inputBuffer, 'vs', currentTarget);
+                    const upperChar = char.toUpperCase();
+                    const expectedChar = currentTarget[inputBuffer.length];
+                    
+                    // Check if this character matches the expected character at this position
+                    if (upperChar === expectedChar) {
+                        // Correct character at this position
+                        inputBuffer += upperChar;
+                        userInput.value = inputBuffer;
+                        console.log('✅ Correct char:', upperChar, 'at position', inputBuffer.length - 1, 'Buffer now:', inputBuffer);
                         
-                        if (inputBuffer === currentTarget) {
-                            // Correct answer
+                        // Evaluate when buffer length matches target length
+                        if (inputBuffer.length === currentTarget.length) {
+                            console.log('🎯 Word complete - Evaluating:', inputBuffer, 'vs', currentTarget);
+                            
+                            // Word is complete and correct
                             sessionData.correct++;
                             sessionData.total++;
                             
@@ -578,7 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 sessionData.targets.push(currentTarget);
                                 sessionData.responses.push(inputBuffer);
                                 updateSessionDisplay();
-                                console.log('✅ Correct! Updated session data:', sessionData);
+                                console.log('✅ Word complete! Updated session data:', sessionData);
                             }
                             
                             showToast(`✅ Correct! "${inputBuffer}" (${sessionData.correct}/${sessionData.total})`, 'bg-green-600');
@@ -596,32 +604,37 @@ document.addEventListener('DOMContentLoaded', () => {
                                     await nextTarget();
                                 }, 1500);
                             }
+                        }
+                    } else {
+                        // Wrong character at this position - reset and start over
+                        console.log('❌ Wrong char:', upperChar, 'expected:', expectedChar, 'at position', inputBuffer.length, '- resetting word');
+                        
+                        if (hasEnhancedTracking) {
+                            sessionData.characterErrors++;
+                            sessionData.errors++; // Keep for compatibility
+                            updateSessionDisplay();
+                        }
+                        
+                        // Start fresh with this character
+                        if (upperChar === currentTarget[0]) {
+                            // This character matches the first character, start building from here
+                            inputBuffer = upperChar;
+                            userInput.value = inputBuffer;
+                            showToast(`❌ Wrong position! Starting over with "${upperChar}"`, 'bg-orange-600');
+                            console.log('🔄 Starting fresh with correct first char:', upperChar);
                         } else {
-                            // Incorrect answer - DON'T increment total, allow retry
-                            if (hasEnhancedTracking) {
-                                sessionData.errors++;
-                                updateSessionDisplay();
-                                console.log('❌ Incorrect! Error count:', sessionData.errors);
-                            }
-                            
-                            showToast(`❌ Incorrect: "${inputBuffer}" ≠ "${currentTarget}". Try again!`, 'bg-red-600');
+                            // This character doesn't match the first character either, reset completely
                             inputBuffer = '';
                             userInput.value = '';
-                            
-                            // Add visual feedback - shake the target
-                            target.style.animation = 'shake 0.5s ease-in-out';
-                            setTimeout(() => {
-                                target.style.animation = '';
-                            }, 500);
-                            
-                            console.log('🔄 Allowing retry of same word:', currentTarget);
-                            // Stay on same word, don't advance
+                            showToast(`❌ Wrong char "${upperChar}"! Expected "${expectedChar}". Try again.`, 'bg-red-600');
+                            console.log('🔄 Complete reset - wrong first char');
                         }
-                    } else if (inputBuffer.length > currentTarget.length) {
-                        // Buffer is longer than target - this is an error
-                        console.log('⚠️ Buffer longer than target, resetting');
-                        inputBuffer = char.toUpperCase();
-                        userInput.value = inputBuffer;
+                        
+                        // Add visual feedback - shake the target
+                        target.style.animation = 'shake 0.5s ease-in-out';
+                        setTimeout(() => {
+                            target.style.animation = '';
+                        }, 500);
                     }
                 }
             }
@@ -656,13 +669,19 @@ document.addEventListener('DOMContentLoaded', () => {
             mixed: 'Mixed'
         }[currentMode] || currentMode;
         
-        const accuracy = sessionData.total > 0 ? ((sessionData.correct/sessionData.total)*100).toFixed(2) : '0.00';
+        // Display session summary - since we use character-by-character validation,
+        // users can only complete words correctly, so accuracy is 100% for completed words
         const sessionSummary = sessionData.total > 0
-            ? `${modeDisplay} Session Complete: ${sessionData.correct}/${sessionData.total} (${accuracy}%)`
+            ? `${modeDisplay} Session: ${sessionData.total} words completed successfully. Character errors made during typing: ${sessionData.characterErrors || sessionData.errors}`
             : 'Session ended with no data';
             
         sessionStats.textContent = sessionSummary;
 
+        // With character-by-character validation, completed words are always correct
+        // So accuracy is 100% for word completion, but we track character errors separately
+        const totalAttempts = sessionData.correct; // Only completed words count as attempts
+        const realAccuracy = '100.00'; // Always 100% since only correct completions are allowed
+        
         // Show detailed session report
         if (hasEnhancedTracking && sessionData.total > 0) {
             const timeSeconds = sessionData.endTime && sessionData.startTime 
@@ -671,7 +690,36 @@ document.addEventListener('DOMContentLoaded', () => {
             const cpm = timeSeconds > 0 ? ((sessionData.letters + sessionData.numbers + sessionData.signs) / timeSeconds) * 60 : 0;
             const wpm = timeSeconds > 0 ? ((sessionData.letters + sessionData.numbers + sessionData.signs) / 5 / timeSeconds) * 60 : 0;
             
-            // Create detailed session report
+            // Update session report section
+            const sessionReport = document.getElementById('sessionReport');
+            if (sessionReport) {
+                const reportText = `
+📊 Session Complete: ${new Date().toLocaleTimeString()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Mode: ${modeDisplay}
+Words Completed: ${sessionData.total}
+Word Completion Accuracy: ${realAccuracy}% (All completed words were correct)
+Character Errors During Typing: ${sessionData.characterErrors || sessionData.errors}
+Total Characters: ${sessionData.letters + sessionData.numbers + sessionData.signs}
+Time: ${timeSeconds.toFixed(1)}s
+Speed: ${cpm.toFixed(1)} CPM / ${wpm.toFixed(1)} WPM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Character Breakdown:
+• Letters: ${sessionData.letters}
+• Numbers: ${sessionData.numbers}  
+• Signs: ${sessionData.signs}
+• Character Errors: ${sessionData.characterErrors || sessionData.errors}`;
+                sessionReport.textContent = reportText;
+                
+                // Show session report section if it's hidden
+                const sessionReportContent = document.getElementById('session-report-content');
+                if (sessionReportContent && sessionReportContent.classList.contains('hidden')) {
+                    toggleSection('session-report');
+                }
+            }
+            
+            // Create detailed session modal
             const reportDiv = document.createElement('div');
             reportDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
             reportDiv.innerHTML = `
@@ -683,12 +731,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="font-semibold">${modeDisplay}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span>Correct Words:</span>
-                            <span class="font-semibold text-green-400">${sessionData.correct}/${sessionData.total}</span>
+                            <span>Words Completed:</span>
+                            <span class="font-semibold text-green-400">${sessionData.total}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span>Accuracy:</span>
-                            <span class="font-semibold text-blue-400">${accuracy}%</span>
+                            <span>Word Accuracy:</span>
+                            <span class="font-semibold text-blue-400">${realAccuracy}%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Character Errors:</span>
+                            <span class="font-semibold text-red-400">${sessionData.characterErrors || sessionData.errors}</span>  
                         </div>
                         <div class="flex justify-between">
                             <span>Time:</span>
@@ -717,8 +769,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <div>Signs</div>
                             </div>
                             <div class="text-center">
-                                <div class="text-red-400 font-semibold">${sessionData.errors}</div>
-                                <div>Errors</div>
+                                <div class="text-red-400 font-semibold">${sessionData.characterErrors || sessionData.errors}</div>
+                                <div>Char Errors</div>
                             </div>
                         </div>
                     </div>
@@ -780,7 +832,9 @@ document.addEventListener('DOMContentLoaded', () => {
             payload.signs = sessionData.signs;
             payload.errors = sessionData.errors;
             payload.timeSeconds = parseFloat(timeSeconds.toFixed(3));
-            payload.accuracy = parseFloat((sessionData.total > 0 ? ((sessionData.correct / sessionData.total) * 100) : 0).toFixed(2));
+            // With character-by-character validation, all completed words are correct (100% accuracy)
+            // We track character errors separately for learning insights
+            payload.accuracy = parseFloat((sessionData.total > 0 ? 100.00 : 0).toFixed(2));
             payload.cpm = parseFloat(cpm.toFixed(2));
             payload.wpm = parseFloat(wpm.toFixed(2));
         }
