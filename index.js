@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toast notification function
     function showToast(message, bgClass = 'bg-blue-600') {
         const toast = document.createElement('div');
-        toast.className = `fixed top-4 right-4 ${bgClass} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity`;
+        toast.className = `fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${bgClass} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity text-center`;
         toast.textContent = message;
         document.body.appendChild(toast);
         setTimeout(() => {
@@ -234,7 +234,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 loggedIn.classList.remove('hidden');
                 notLoggedIn.classList.add('hidden');
                 // Hide login/register section when logged in
-                toggleSection('login-register');
+                const loginContent = document.getElementById('login-register-content');
+                if (loginContent && !loginContent.classList.contains('hidden')) {
+                    toggleSection('login-register');
+                }
                 await fetchHistoricalStats(data.username);
             } else {
                 notLoggedIn.classList.remove('hidden');
@@ -533,6 +536,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const textDecoder = new TextDecoderStream();
             const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
             reader = textDecoder.readable.getReader();
+            
+            console.log('Starting Morse input reader...');
 
             while (sessionActive && reader) {
                 const { value, done } = await reader.read();
@@ -542,17 +547,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!sessionActive) break;
                     if (char === '\n' || char === '\r') continue;
                     
-                    console.log('Received char:', char);
+                    console.log('Received char:', char, 'Current target:', currentTarget, 'Buffer:', inputBuffer);
                     inputBuffer += char;
                     userInput.value = inputBuffer;
 
-                    // Check if we have a complete word or if we should evaluate
-                    if (char === ' ' || inputBuffer.length >= currentTarget.length) {
-                        // Remove any trailing spaces
-                        const cleanInput = inputBuffer.trim();
+                    // Check for word completion on space or when buffer equals target length
+                    if (char === ' ' || inputBuffer.trim() === currentTarget) {
+                        const cleanInput = inputBuffer.trim().toUpperCase();
+                        console.log('Evaluating input:', cleanInput, 'vs target:', currentTarget);
                         
                         if (cleanInput === currentTarget) {
-                            // Correct
+                            // Correct answer
                             sessionData.correct++;
                             sessionData.total++;
                             
@@ -564,19 +569,23 @@ document.addEventListener('DOMContentLoaded', () => {
                                 sessionData.targets.push(currentTarget);
                                 sessionData.responses.push(cleanInput);
                                 updateSessionDisplay();
+                                console.log('Updated session data:', sessionData);
                             }
                             
-                            showToast('Correct!', 'bg-green-600');
+                            showToast(`Correct! (${sessionData.correct}/${sessionData.total})`, 'bg-green-600');
                             inputBuffer = '';
                             userInput.value = '';
                             
+                            // Check if session should end
                             if (sessionData.total >= maxItems) {
+                                console.log('Session complete, ending...');
                                 await endSession();
+                                return;
                             } else {
                                 await nextTarget();
                             }
-                        } else if (inputBuffer.length >= currentTarget.length) {
-                            // Incorrect - only trigger on length match, not on space
+                        } else if (char === ' ') {
+                            // Incorrect answer (only on space, not on length)
                             sessionData.total++;
                             
                             if (hasEnhancedTracking) {
@@ -588,17 +597,20 @@ document.addEventListener('DOMContentLoaded', () => {
                                 sessionData.targets.push(currentTarget);
                                 sessionData.responses.push(cleanInput);
                                 updateSessionDisplay();
+                                console.log('Updated session data (incorrect):', sessionData);
                             }
                             
-                            showToast('Incorrect. Try again or skip.', 'bg-red-600');
+                            showToast(`Incorrect: "${cleanInput}" ≠ "${currentTarget}" (${sessionData.correct}/${sessionData.total})`, 'bg-red-600');
                             inputBuffer = '';
                             userInput.value = '';
                             
+                            // Check if session should end
                             if (sessionData.total >= maxItems) {
+                                console.log('Session complete, ending...');
                                 await endSession();
+                                return;
                             } else {
-                                // Continue with same target for retry
-                                break;
+                                await nextTarget();
                             }
                         }
                     }
@@ -611,13 +623,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function endSession() {
+        console.log('Ending session with data:', sessionData);
         sessionActive = false;
         stopSessionTimer();
         
         if (reader) {
-            await reader.cancel();
-            reader.releaseLock();
-            reader = null;
+            try {
+                await reader.cancel();
+                reader.releaseLock();
+                reader = null;
+            } catch (e) {
+                console.log('Reader cleanup error:', e);
+            }
         }
 
         // Display session results
@@ -630,18 +647,45 @@ document.addEventListener('DOMContentLoaded', () => {
             mixed: 'Mixed'
         }[currentMode] || currentMode;
         
-        sessionStats.textContent = sessionData.total > 0
-            ? `Current ${modeDisplay} Session: Correct: ${sessionData.correct}/${sessionData.total} (${((sessionData.correct/sessionData.total)*100).toFixed(2)}%)`
-            : '';
+        const accuracy = sessionData.total > 0 ? ((sessionData.correct/sessionData.total)*100).toFixed(2) : '0.00';
+        const sessionSummary = sessionData.total > 0
+            ? `${modeDisplay} Session Complete: ${sessionData.correct}/${sessionData.total} (${accuracy}%)`
+            : 'Session ended with no data';
+            
+        sessionStats.textContent = sessionSummary;
+
+        // Show detailed results if enhanced tracking is available
+        if (hasEnhancedTracking && sessionData.total > 0) {
+            const timeSeconds = sessionData.endTime && sessionData.startTime 
+                ? (sessionData.endTime - sessionData.startTime) / 1000 
+                : 0;
+            const detailedResults = `
+Session Complete!
+Correct: ${sessionData.correct}/${sessionData.total} (${accuracy}%)
+Letters: ${sessionData.letters}, Numbers: ${sessionData.numbers}
+Signs: ${sessionData.signs}, Errors: ${sessionData.errors}
+Time: ${timeSeconds.toFixed(1)}s`;
+            
+            showToast(detailedResults, 'bg-green-600');
+        } else {
+            showToast(sessionSummary, 'bg-green-600');
+        }
 
         startButton.classList.remove('hidden');
         nextButton.classList.add('hidden');
         userInput.classList.add('hidden');
         target.textContent = '';
+        
+        // Show session statistics section
         toggleSection('session-statistics');
 
-        // Save stats
-        await trySaveStats();
+        // Save stats - this is critical
+        if (sessionData.total > 0) {
+            console.log('Attempting to save stats...');
+            await trySaveStats();
+        } else {
+            console.log('No stats to save - session had no attempts');
+        }
     }
 
     async function trySaveStats() {
@@ -678,6 +722,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
+            console.log('Sending stats payload:', payload);
             const response = await fetch(`${apiBaseUrl}/stats.php`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -685,14 +730,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 credentials: 'include'
             });
             const data = await response.json();
+            console.log('Stats save response:', data);
 
             if (response.ok) {
-                showToast('Session stats saved!', 'bg-green-600');
+                showToast('Session stats saved successfully!', 'bg-green-600');
                 await fetchHistoricalStats(username);
             } else {
+                console.error('Stats save failed:', data);
                 showToast(`Failed to save stats: ${data.message}`, 'bg-red-600');
             }
         } catch (error) {
+            console.error('Stats save error:', error);
             showToast(`Failed to save stats: ${error.message}`, 'bg-red-600');
         }
     }
@@ -775,6 +823,20 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSessionDisplay();
         sessionTimer.textContent = '00:00.0';
     }
+    
+    // Double-check login section visibility after a brief delay
+    setTimeout(() => {
+        const isLoggedIn = sessionStorage.getItem('username');
+        const loginContent = document.getElementById('login-register-content');
+        
+        if (isLoggedIn && loginContent && !loginContent.classList.contains('hidden')) {
+            console.log('Hiding login section for logged in user');
+            toggleSection('login-register');
+        } else if (!isLoggedIn && loginContent && loginContent.classList.contains('hidden')) {
+            console.log('Showing login section for non-logged in user');
+            toggleSection('login-register');
+        }
+    }, 500);
     
     console.log('Morserino Web initialized successfully');
 });
