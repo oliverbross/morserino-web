@@ -33,6 +33,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const sessionStats = document.getElementById('sessionStats');
     const statsList = document.getElementById('statsList');
     const backToTraining = document.getElementById('backToTraining');
+    
+    // Live session tracking elements
+    const lettersCount = document.getElementById('lettersCount');
+    const numbersCount = document.getElementById('numbersCount');
+    const signsCount = document.getElementById('signsCount');
+    const errorsCount = document.getElementById('errorsCount');
+    const sessionTimer = document.getElementById('sessionTimer');
+    const sessionReport = document.getElementById('sessionReport');
+    const startNewSession = document.getElementById('startNewSession');
 
     // Verify DOM elements exist
     if (!debug || !loggedIn || !notLoggedIn || !currentUsername || !logoutButton || !accountButton ||
@@ -40,7 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
         !loginUsername || !loginPassword || !loginButton || !registerUsername || !registerPassword ||
         !registerEmail || !registerButton || !realWordsButton || !abbreviationsButton || !callsignsButton ||
         !qrCodesButton || !topWordsButton || !mixedButton || !numItems || !connectButton || !connectionStatus || 
-        !startButton || !target || !userInput || !nextButton || !sessionStats || !statsList || !backToTraining) {
+        !startButton || !target || !userInput || !nextButton || !sessionStats || !statsList || !backToTraining ||
+        !lettersCount || !numbersCount || !signsCount || !errorsCount || !sessionTimer || !sessionReport || !startNewSession) {
         console.error('Critical DOM elements missing');
         debug.textContent = 'Error: Page failed to load correctly. Please try again.';
         debug.classList.remove('hidden');
@@ -52,6 +62,26 @@ document.addEventListener('DOMContentLoaded', () => {
         dateFormat: 'DD/MM/YYYY',
         timeFormat: '24h'
     };
+
+    // Enhanced session tracking variables
+    let sessionData = {
+        letters: 0,
+        numbers: 0,
+        signs: 0,
+        errors: 0,
+        correct: 0,
+        total: 0,
+        startTime: null,
+        endTime: null,
+        targets: [],
+        responses: []
+    };
+    
+    let sessionTimer_interval = null;
+    let currentMode = 'realWords';
+    let currentTarget = '';
+    let maxItems = 10;
+    let port = null;
 
     // Load user preferences
     async function loadUserPreferences(username) {
@@ -123,6 +153,179 @@ document.addEventListener('DOMContentLoaded', () => {
             toast.classList.remove('opacity-90');
             setTimeout(() => toast.remove(), 300);
         }, 3000);
+    }
+
+    // Session tracking utility functions
+    function resetSessionCounters() {
+        sessionData = {
+            letters: 0,
+            numbers: 0,
+            signs: 0,
+            errors: 0,
+            correct: 0,
+            total: 0,
+            startTime: null,
+            endTime: null,
+            targets: [],
+            responses: []
+        };
+        updateSessionDisplay();
+    }
+
+    function updateSessionDisplay() {
+        lettersCount.textContent = sessionData.letters;
+        numbersCount.textContent = sessionData.numbers;
+        signsCount.textContent = sessionData.signs;
+        errorsCount.textContent = sessionData.errors;
+    }
+
+    function analyzeCharacters(text) {
+        const analysis = { letters: 0, numbers: 0, signs: 0 };
+        for (const char of text.toUpperCase()) {
+            if (char >= 'A' && char <= 'Z') {
+                analysis.letters++;
+            } else if (char >= '0' && char <= '9') {
+                analysis.numbers++;
+            } else if (/[^A-Z0-9\s]/.test(char)) {
+                analysis.signs++;
+            }
+        }
+        return analysis;
+    }
+
+    function startSessionTimer() {
+        sessionData.startTime = new Date();
+        sessionTimer_interval = setInterval(updateTimerDisplay, 100); // Update every 100ms
+    }
+
+    function stopSessionTimer() {
+        if (sessionTimer_interval) {
+            clearInterval(sessionTimer_interval);
+            sessionTimer_interval = null;
+        }
+        sessionData.endTime = new Date();
+    }
+
+    function updateTimerDisplay() {
+        if (!sessionData.startTime) return;
+        
+        const now = new Date();
+        const elapsed = now - sessionData.startTime;
+        const minutes = Math.floor(elapsed / 60000);
+        const seconds = Math.floor((elapsed % 60000) / 1000);
+        const milliseconds = Math.floor((elapsed % 1000) / 100);
+        
+        sessionTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds}`;
+    }
+
+    function calculateSessionStats() {
+        const totalTime = sessionData.endTime - sessionData.startTime;
+        const timeSeconds = totalTime / 1000;
+        const timeMinutes = timeSeconds / 60;
+        
+        const totalChars = sessionData.letters + sessionData.numbers + sessionData.signs;
+        const accuracy = sessionData.total > 0 ? ((sessionData.correct / sessionData.total) * 100) : 0;
+        const cpm = timeMinutes > 0 ? (totalChars / timeMinutes) : 0;
+        const wpm = cpm / 5; // Standard: 5 characters = 1 word
+        
+        return {
+            accuracy: accuracy.toFixed(2),
+            timeSeconds: timeSeconds.toFixed(3),
+            timeMinutes: timeMinutes.toFixed(2),
+            cpm: cpm.toFixed(2),
+            wpm: wpm.toFixed(2)
+        };
+    }
+
+    function generateSessionReport() {
+        const stats = calculateSessionStats();
+        const reportTime = formatTimestamp(new Date());
+        const username = sessionStorage.getItem('username') || 'Unknown';
+        
+        const report = `Report date: ${reportTime}
+User: ${username}
+==========================================
+Letters: ${sessionData.letters}
+Numbers: ${sessionData.numbers}
+Signs: ${sessionData.signs}
+Errors: ${sessionData.errors}
+Total: ${sessionData.total}
+Accuracy: ${stats.accuracy}%
+Time (secs): ${stats.timeSeconds}
+Time (mins): ${stats.timeMinutes}
+Speed (cpm): ${stats.cpm}
+Speed (wpm): ${stats.wpm}
+==========================================`;
+        
+        sessionReport.textContent = report;
+        startNewSession.classList.remove('hidden');
+        
+        return { ...sessionData, ...stats };
+    }
+
+    // Save enhanced session stats to database
+    async function trySaveEnhancedStats(reportData) {
+        const username = sessionStorage.getItem('username');
+        if (!username) {
+            console.error('No username for saving stats');
+            showToast('Failed to save session: No user logged in', 'bg-red-600');
+            return;
+        }
+        
+        if (sessionData.total === 0) {
+            console.warn('No stats to save (total=0)');
+            showToast('No stats to save for this session', 'bg-yellow-600');
+            return;
+        }
+
+        const payload = {
+            username,
+            mode: currentMode,
+            correct: sessionData.correct,
+            total: sessionData.total,
+            letters: sessionData.letters,
+            numbers: sessionData.numbers,
+            signs: sessionData.signs,
+            errors: sessionData.errors,
+            timeSeconds: parseFloat(reportData.timeSeconds),
+            accuracy: parseFloat(reportData.accuracy),
+            cpm: parseFloat(reportData.cpm),
+            wpm: parseFloat(reportData.wpm)
+        };
+
+        console.log('Saving enhanced session stats:', payload);
+
+        try {
+            const response = await fetch(`${apiBaseUrl}/stats.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+                credentials: 'include'
+            });
+
+            const text = await response.text();
+            console.log('Enhanced stats save response:', response.status, 'Body:', text);
+            
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('Failed to parse stats response:', e.message, 'Response:', text);
+                showToast('Stats saved, but response format invalid', 'bg-yellow-600');
+                return;
+            }
+
+            if (response.ok) {
+                showToast('Session stats saved successfully!', 'bg-green-600');
+                fetchHistoricalStats(username);
+            } else {
+                console.error('Enhanced stats save failed:', data.message || 'Unknown error');
+                showToast(`Failed to save stats: ${data.message || 'Unknown error'}`, 'bg-red-600');
+            }
+        } catch (error) {
+            console.error('Enhanced stats save error:', error.message);
+            showToast(`Failed to save stats: ${error.message}`, 'bg-red-600');
+        }
     }
 
     // Toggle section visibility without triggering Sortable
@@ -287,7 +490,23 @@ document.addEventListener('DOMContentLoaded', () => {
                         const mode = modeDisplay[stat.mode] || stat.mode;
                         const percentage = stat.total > 0 ? ((stat.correct / stat.total) * 100).toFixed(2) : '0.00';
                         const li = document.createElement('li');
-                        li.textContent = `${mode}: ${stat.correct}/${stat.total} (${percentage}%), ${formatTimestamp(stat.timestamp)}`;
+                        
+                        if (stat.enhanced) {
+                            // Enhanced display with detailed info
+                            const timeDisplay = stat.time_seconds > 0 ? ` | Time: ${stat.time_seconds}s` : '';
+                            const speedDisplay = stat.wpm > 0 ? ` | ${stat.wpm} WPM` : '';
+                            const characterBreakdown = `L:${stat.letters} N:${stat.numbers} S:${stat.signs} E:${stat.errors}`;
+                            li.innerHTML = `
+                                <div class="text-sm mb-1">
+                                    <strong>${mode}</strong>: ${stat.correct}/${stat.total} (${percentage}%)${speedDisplay}${timeDisplay}
+                                    <br><span class="text-gray-400">${characterBreakdown} - ${formatTimestamp(stat.timestamp)}</span>
+                                </div>
+                            `;
+                        } else {
+                            // Basic display for backwards compatibility
+                            li.textContent = `${mode}: ${stat.correct}/${stat.total} (${percentage}%), ${formatTimestamp(stat.timestamp)}`;
+                        }
+                        
                         statsList.appendChild(li);
                     });
                 }
@@ -307,11 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Session and WebSerial state
     let port = null;
-    let currentMode = 'realWords';
     let sessionActive = false;
-    let currentTarget = '';
-    let sessionData = { correct: 0, total: 0, completed: 0 };
-    let maxItems = 5;
     let reader = null;
 
     async function checkSession() {
@@ -561,11 +776,23 @@ document.addEventListener('DOMContentLoaded', () => {
                                 // Full target matched
                                 sessionData.correct++;
                                 sessionData.total++;
-                                sessionData.completed++;
+                                
+                                // Analyze characters in the correct target
+                                const charAnalysis = analyzeCharacters(currentTarget);
+                                sessionData.letters += charAnalysis.letters;
+                                sessionData.numbers += charAnalysis.numbers;
+                                sessionData.signs += charAnalysis.signs;
+                                
+                                // Store target and response for analysis
+                                sessionData.targets.push(currentTarget);
+                                sessionData.responses.push(inputBuffer);
+                                
+                                updateSessionDisplay();
                                 showToast('Correct!', 'bg-green-600');
                                 inputBuffer = '';
                                 userInput.value = '';
-                                if (sessionData.completed >= maxItems) {
+                                
+                                if (sessionData.total >= maxItems) {
                                     // End session
                                     await endSession();
                                 } else {
@@ -574,12 +801,31 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         } else {
                             // Incorrect character
+                            sessionData.errors++;
                             sessionData.total++;
+                            
+                            // Analyze characters in the target (even if incorrect)
+                            const charAnalysis = analyzeCharacters(currentTarget);
+                            sessionData.letters += charAnalysis.letters;
+                            sessionData.numbers += charAnalysis.numbers;
+                            sessionData.signs += charAnalysis.signs;
+                            
+                            // Store target and response for analysis
+                            sessionData.targets.push(currentTarget);
+                            sessionData.responses.push(inputBuffer);
+                            
+                            updateSessionDisplay();
                             showToast('Incorrect character sent!', 'bg-red-600');
                             inputBuffer = '';
                             userInput.value = '';
-                            // Keep currentTarget for retry
-                            break;
+                            
+                            if (sessionData.total >= maxItems) {
+                                // End session
+                                await endSession();
+                            } else {
+                                // Keep currentTarget for retry
+                                break;
+                            }
                         }
                     }
                 }
@@ -594,43 +840,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // End session and save stats
     async function endSession() {
         sessionActive = false;
+        stopSessionTimer();
+        
         if (reader) {
             await reader.cancel();
             reader.releaseLock();
             reader = null;
         }
-        const modeDisplay = {
-            realWords: 'Real Words',
-            abbreviations: 'Abbreviations',
-            callsigns: 'Callsigns',
-            qrCodes: 'QR-codes',
-            topWords: 'Top Words in CW',
-            mixed: 'Mixed'
-        }[currentMode] || currentMode;
-        sessionStats.textContent = sessionData.total > 0
-            ? `Current ${modeDisplay} Session: Correct: ${sessionData.correct}/${sessionData.total} (${((sessionData.correct/sessionData.total)*100).toFixed(2)}%)`
-            : '';
+
+        // Generate and display session report
+        const reportData = generateSessionReport();
+        
+        // Save enhanced stats to database
+        await trySaveEnhancedStats(reportData);
+        
+        // Reset UI
         startButton.classList.remove('hidden');
         nextButton.classList.add('hidden');
         userInput.classList.add('hidden');
         target.textContent = '';
-        toggleSection('session-statistics');
+        userInput.value = '';
+        
+        // Show session report section
+        toggleSection('session-report');
+    }
 
-        const username = sessionStorage.getItem('username');
-        if (!username) {
-            console.error('No username for saving stats');
-            showToast('Failed to save session: No user logged in', 'bg-red-600');
-            statsList.innerHTML = '<li>No historical stats available</li>';
-            sessionStats.textContent = 'No stats available';
-            return;
-        }
-        if (sessionData.total === 0) {
-            console.warn('No stats to save (total=0)');
-            showToast('No stats to save for this session', 'bg-yellow-600');
-            fetchHistoricalStats(username); // Refresh historical stats even if no new stats
-            return;
-        }
-
+    // Legacy function for backwards compatibility
+    async function trySaveStats() {
         const payload = {
             username: username,
             mode: currentMode,
@@ -710,7 +946,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         maxItems = numItemsValue;
         sessionActive = true;
-        sessionData = { correct: 0, total: 0, completed: 0 };
+        resetSessionCounters();
+        startSessionTimer();
         startButton.classList.add('hidden');
         nextButton.classList.remove('hidden');
         userInput.classList.remove('hidden');
@@ -800,11 +1037,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     nextButton.addEventListener('click', async () => {
         // Skip to next target without evaluating input
-        userInput.value = '';
         sessionData.total++;
+        
+        // Analyze characters in the skipped target
+        const charAnalysis = analyzeCharacters(currentTarget);
+        sessionData.letters += charAnalysis.letters;
+        sessionData.numbers += charAnalysis.numbers;
+        sessionData.signs += charAnalysis.signs;
+        
+        // Store target and empty response for skipped items
+        sessionData.targets.push(currentTarget);
+        sessionData.responses.push('SKIPPED');
+        
+        updateSessionDisplay();
+        userInput.value = '';
         showToast('Skipped to next target', 'bg-yellow-600');
-        sessionData.completed++;
-        if (sessionData.completed >= maxItems) {
+        
+        if (sessionData.total >= maxItems) {
             await endSession();
         } else {
             await nextTarget();
@@ -813,5 +1062,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     backToTraining.addEventListener('click', async () => {
         await endSession();
+    });
+
+    // Start new session button functionality
+    startNewSession.addEventListener('click', () => {
+        startNewSession.classList.add('hidden');
+        sessionReport.textContent = 'No session completed yet';
+        resetSessionCounters();
+        sessionTimer.textContent = '00:00.0';
+        showToast('Ready for new session!', 'bg-green-600');
     });
 });
