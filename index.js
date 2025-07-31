@@ -145,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 animation: 150,
                 handle: '.section'
             });
-        }
     }
 
     // User preferences
@@ -279,9 +278,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Global flag to prevent multiple dashboard loads
+    let isDashboardLoading = false;
+    let isDashboardLoaded = false;
+
     // Comprehensive Dashboard Functions
-    async function loadTrainingDashboard(username) {
+    async function loadTrainingDashboard(username, forceReload = false) {
+        // Prevent multiple simultaneous loads
+        if (isDashboardLoading) {
+            console.log('Dashboard already loading, skipping...');
+            return;
+        }
+        
+        // Skip if already loaded unless forced
+        if (isDashboardLoaded && !forceReload) {
+            console.log('Dashboard already loaded, use forceReload=true to reload');
+            return;
+        }
+
+        isDashboardLoading = true;
+        
         try {
+            // Always destroy existing charts before loading new data
+            destroyExistingCharts();
+            
             const response = await fetch(`${apiBaseUrl}/get_stats.php?username=${encodeURIComponent(username)}&limit=20`, {
                 method: 'GET',
                 credentials: 'include'
@@ -298,13 +318,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     populateTrainingInsights(data);
                     populateModePerformance(data);
                 }
+                isDashboardLoaded = true;
             } else {
                 showEmptyDashboard();
             }
         } catch (error) {
             console.error('Dashboard load error:', error);
             showEmptyDashboard();
+        } finally {
+            isDashboardLoading = false;
         }
+    }
+    
+    function destroyExistingCharts() {
+        // Destroy accuracy chart
+        if (window.accuracyChartInstance) {
+            window.accuracyChartInstance.destroy();
+            window.accuracyChartInstance = null;
+        }
+        // Destroy speed chart
+        if (window.speedChartInstance) {
+            window.speedChartInstance.destroy();
+            window.speedChartInstance = null;
+        }
+        console.log('Existing charts destroyed');
     }
 
     function showEmptyDashboard() {
@@ -408,13 +445,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateProgressCharts(data) {
-        // Only create charts if they don't already exist
-        if (!window.accuracyChartInstance) {
-            createAccuracyChart(data.slice(0, 10).reverse());
-        }
-        if (!window.speedChartInstance) {
-            createSpeedChart(data.slice(0, 10).reverse());
-        }
+        // Always create fresh charts (old ones were destroyed)
+        console.log('Creating fresh charts...');
+        createAccuracyChart(data.slice(0, 10).reverse());
+        createSpeedChart(data.slice(0, 10).reverse());
     }
 
     function createAccuracyChart(data) {
@@ -439,9 +473,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 : (stat.total > 0 ? ((stat.correct / stat.total) * 100).toFixed(1) : 0);
         });
 
-        // Only create chart if we don't already have one
-        if (!window.accuracyChartInstance) {
-            window.accuracyChartInstance = new Chart(ctx, {
+        // Create fresh chart (old one was destroyed)
+        window.accuracyChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: data.map((_, i) => `Session ${i + 1}`),
@@ -472,7 +505,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             });
-        }
     }
 
     function createSpeedChart(data) {
@@ -493,9 +525,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const speedData = data.map(stat => stat.wpm || 0);
 
-        // Only create chart if we don't already have one
-        if (!window.speedChartInstance) {
-            window.speedChartInstance = new Chart(ctx, {
+        // Create fresh chart (old one was destroyed)
+        window.speedChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: data.map((_, i) => `Session ${i + 1}`),
@@ -525,7 +556,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             });
-        }
     }
 
     function populateTrainingInsights(data) {
@@ -663,8 +693,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Legacy function for compatibility
-    async function fetchHistoricalStats(username) {
-        await loadTrainingDashboard(username);
+    async function fetchHistoricalStats(username, forceReload = false) {
+        await loadTrainingDashboard(username, forceReload);
     }
 
     // Login/Register functionality
@@ -781,15 +811,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('recentSessions').innerHTML = '';
                 document.getElementById('trainingInsights').innerHTML = '';
                 document.getElementById('modePerformance').innerHTML = '';
-                // Destroy charts to prevent memory leaks
-                if (window.accuracyChartInstance) {
-                    window.accuracyChartInstance.destroy();
-                    window.accuracyChartInstance = null;
-                }
-                if (window.speedChartInstance) {
-                    window.speedChartInstance.destroy();
-                    window.speedChartInstance = null;
-                }
+                // Destroy charts and reset flags
+                destroyExistingCharts();
+                isDashboardLoaded = false;
+                isDashboardLoading = false;
                 showToast('Logged out successfully!', 'bg-green-600');
             }
         } catch (error) {
@@ -1241,7 +1266,7 @@ Character Breakdown:
 
             if (response.ok) {
                 showToast('Session stats saved successfully!', 'bg-green-600');
-                await fetchHistoricalStats(username);
+                await fetchHistoricalStats(username, true); // Force reload after session save
             } else {
                 console.error('Stats save failed:', data);
                 showToast(`Failed to save stats: ${data.message}`, 'bg-red-600');
