@@ -6,6 +6,12 @@ Morserino Web is a web-based application designed to interact with the [Morserin
 
 **Key Enhancement**: The Real Words training mode now uses a comprehensive 4.2MB English dictionary containing 400,000+ words, providing virtually unlimited vocabulary variety for Morse code practice.
 
+**Recent Major Updates** ✨:
+- **Fixed Account Settings**: Resolved critical bug preventing date/time format preferences from saving
+- **Smart Date/Time Formatting**: Statistics now display timestamps according to user preferences (DD/MM/YYYY vs MM/DD/YYYY, 12h vs 24h)
+- **Enhanced User Experience**: Improved settings management and real-time preference updates
+- **Robust Error Handling**: Better fallback mechanisms and user feedback
+
 The project is hosted at [https://om0rx.com/morserino](https://om0rx.com/morserino) and aims to provide a user-friendly platform for Morse code enthusiasts to improve their skills.
 
 ## Goals
@@ -18,7 +24,6 @@ The project is hosted at [https://om0rx.com/morserino](https://om0rx.com/morseri
   - Support user-uploaded custom word lists and practice content.
   - Add difficulty progression system (word length, complexity-based training).
   - Improve user interface with responsive design and Tailwind CSS enhancements.
-  - Add account management features (e.g., password change, user preferences for date/time formats).
   - Implement QSO (amateur radio conversation) simulation mode.
   - Add practice session scheduling and reminders.
 
@@ -32,9 +37,11 @@ The project is hosted at [https://om0rx.com/morserino](https://om0rx.com/morseri
 - **Intelligent Word Selection**: Memory-efficient random sampling from large word database without loading entire file
 - **Robust Fallback System**: Multiple layers of error handling ensure continuous operation
 - **User Authentication**: Secure registration and login with password hashing.
-- **Session History**: Saves training session results to a MariaDB database (work in progress).
+- **Session History**: Saves training session results to a MariaDB database with timestamps.
 - **Statistics Visualization**: Displays correct/incorrect responses in a stacked bar chart using Chart.js.
-- **Account Management**: Basic account page for changing passwords (work in progress).
+- **Account Management**: Complete account management with password changes, email settings, and preferences.
+- **Personalized Date/Time Formatting**: Statistics display according to user preferences (DD/MM/YYYY vs MM/DD/YYYY, 12-hour vs 24-hour).
+- **Real-time Settings Updates**: Changes to date/time preferences are immediately reflected in statistics displays.
 
 ## Training Modes
 
@@ -187,6 +194,13 @@ cd morserino-web
       FOREIGN KEY (username) REFERENCES users(username)
   ) ENGINE=InnoDB;
 
+  -- Enhanced users table with preferences
+  ALTER TABLE users ADD COLUMN email VARCHAR(255);
+  ALTER TABLE users ADD COLUMN date_format VARCHAR(50) DEFAULT 'DD/MM/YYYY';
+  ALTER TABLE users ADD COLUMN time_format VARCHAR(50) DEFAULT '24h';
+  ALTER TABLE users ADD COLUMN section_order TEXT;
+  
+  -- Optional: Create separate preferences table (alternative approach)
   CREATE TABLE preferences (
       id INT AUTO_INCREMENT PRIMARY KEY,
       username VARCHAR(255) UNIQUE NOT NULL,
@@ -239,7 +253,8 @@ cd morserino-web
 - Log in, connect to the Morserino-32 via USB, and select a training mode.
 - **Try Enhanced Real Words**: Experience 400,000+ word vocabulary with intelligent random selection.
 - **Experiment with modes**: Compare Real Words vs Code Groups vs Callsigns vs Mixed mode.
-- Complete sessions and view stats (work in progress).
+- **Customize preferences**: Go to account settings to set your preferred date/time formats.
+- Complete sessions and view formatted statistics with your personal preferences.
 
 ### 6.1. Testing Enhanced Real Words Mode
 - **Verify Dictionary**: Check that `data/words.txt` exists and is ~4.2MB
@@ -263,6 +278,10 @@ cd morserino-web
     ini_set('display_startup_errors', 1);
     error_reporting(E_ALL);
     ```
+- **Settings/Preferences Issues**:
+  - **Settings not saving**: Check browser console for JavaScript errors and verify `api/settings.php` has proper write permissions
+  - **Date/time format not updating**: Refresh the page after saving settings, or check browser console for formatting errors
+  - **API test**: Use browser DevTools Network tab to verify settings API calls return success responses
 - **Enhanced Real Words Issues**:
   - **Dictionary not found**: Verify `data/words.txt` exists with proper permissions
   - **No word variety**: Check API logs in `api/error.log` for target.php errors
@@ -274,6 +293,16 @@ cd morserino-web
     sudo chown -R www-data:www-data /var/lib/php/sessions
     sudo chmod -R 770 /var/lib/php/sessions
     ```
+
+### 8. Recent Fixes & Improvements (January 2025)
+- **🔧 Fixed Critical Settings Bug**: Resolved parameter order issue in `api/settings.php` that prevented date/time preferences from saving
+- **📅 Smart Date/Time Formatting**: All statistics now display according to user preferences:
+  - **Date formats**: DD/MM/YYYY (31/01/2025) vs MM/DD/YYYY (01/31/2025)
+  - **Time formats**: 24-hour (16:33:57) vs 12-hour (4:33:57 PM)
+- **⚡ Real-time Updates**: Date/time preference changes are immediately applied to statistics displays
+- **🎯 Enhanced UX**: Improved error handling, user feedback, and settings management
+- **📊 Statistics Consistency**: Both main page and account page statistics use the same formatting system
+- **🔒 Robust Error Handling**: Better fallback mechanisms for preference loading and API calls
 
 ## Contributing
 Contributions are welcome! To contribute:
