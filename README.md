@@ -2,7 +2,9 @@
 # Morserino Web
 
 ## Overview
-Morserino Web is a web-based application designed to interact with the [Morserino-32](https://www.morserino.info/), a versatile Morse code training device. The application allows users to practice Morse code by connecting to the Morserino-32 via the Web Serial API, selecting training modes (e.g., real words, callsigns, QSOs), and tracking performance statistics. Built with HTML, JavaScript, and PHP, it uses a MariaDB database to store user accounts and session data, with Chart.js for visualizing training progress.
+Morserino Web is a web-based application designed to interact with the [Morserino-32](https://www.morserino.info/), a versatile Morse code training device. The application allows users to practice Morse code by connecting to the Morserino-32 via the Web Serial API, selecting training modes (e.g., real words from a comprehensive English dictionary, callsigns, QSOs), and tracking performance statistics. Built with HTML, JavaScript, and PHP, it uses a MariaDB database to store user accounts and session data, with Chart.js for visualizing training progress.
+
+**Key Enhancement**: The Real Words training mode now uses a comprehensive 4.2MB English dictionary containing 400,000+ words, providing virtually unlimited vocabulary variety for Morse code practice.
 
 The project is hosted at [https://om0rx.com/morserino](https://om0rx.com/morserino) and aims to provide a user-friendly platform for Morse code enthusiasts to improve their skills.
 
@@ -13,17 +15,59 @@ The project is hosted at [https://om0rx.com/morserino](https://om0rx.com/morseri
 - **Future Features**:
   - Add WPM (words per minute) control for customized training speed.
   - Enhance statistics with detailed metrics (e.g., accuracy over time, mode-specific performance).
-  - Support additional training modes (e.g., custom word lists).
+  - Support user-uploaded custom word lists and practice content.
+  - Add difficulty progression system (word length, complexity-based training).
   - Improve user interface with responsive design and Tailwind CSS enhancements.
   - Add account management features (e.g., password change, user preferences for date/time formats).
+  - Implement QSO (amateur radio conversation) simulation mode.
+  - Add practice session scheduling and reminders.
 
 ## Features
 - **Web Serial Integration**: Connects to the Morserino-32 via USB using the Web Serial API (supported in Chrome/Edge).
-- **Training Modes**: Practice with real words, callsigns, or simulated QSOs.
+- **Enhanced Training Modes**: 
+  - **Real Words**: 400,000+ English words from comprehensive dictionary with intelligent random selection
+  - **Code Groups**: Random alphanumeric sequences for technical practice
+  - **Callsigns**: Realistic amateur radio callsigns from various countries
+  - **Mixed Mode**: Combination of all training types for varied practice
+- **Intelligent Word Selection**: Memory-efficient random sampling from large word database without loading entire file
+- **Robust Fallback System**: Multiple layers of error handling ensure continuous operation
 - **User Authentication**: Secure registration and login with password hashing.
 - **Session History**: Saves training session results to a MariaDB database (work in progress).
 - **Statistics Visualization**: Displays correct/incorrect responses in a stacked bar chart using Chart.js.
 - **Account Management**: Basic account page for changing passwords (work in progress).
+
+## Training Modes
+
+### Real Words Mode 🆕 **Enhanced**
+- **Dictionary**: Uses comprehensive 4.2MB English dictionary with 400,000+ words
+- **Selection Algorithm**: Memory-efficient reservoir sampling for true random word selection
+- **Performance**: Selects words without loading entire file into memory (O(n) time, O(1) memory)
+- **Variety**: Includes everything from common words (THE, AND, HAVE) to advanced vocabulary
+- **Fallback**: 70+ high-frequency English words if dictionary unavailable
+- **Case**: All words converted to uppercase for optimal Morse code practice
+
+### Code Groups Mode
+- **Format**: Random alphanumeric sequences (4-6 characters)
+- **Characters**: A-Z, 0-9 for technical Morse code practice
+- **Purpose**: Improves character recognition without word context
+- **Examples**: ABC12, XYZ89, QRS67, TNX73
+
+### Callsigns Mode
+- **Realism**: Generates authentic amateur radio callsigns
+- **Formats**: Supports various international callsign patterns
+- **Prefixes**: K, W, N, A (USA), VE (Canada), G (UK), DL (Germany), JA (Japan), OM/OK (Slovakia), etc.
+- **Examples**: W1AW, OM0RX, VE3ABC, G0XYZ, DL1QRS
+
+### Mixed Mode
+- **Combination**: Randomly selects between Real Words, Code Groups, and Callsigns
+- **Variety**: Provides comprehensive Morse code training experience
+- **Adaptation**: Helps operators prepare for real-world amateur radio communications
+
+### Technical Implementation
+- **API Endpoint**: `/api/target.php` handles all training content generation
+- **Error Handling**: Multiple fallback layers ensure continuous operation
+- **Efficiency**: Optimized algorithms prevent memory overload with large datasets
+- **Scalability**: System handles files of any size without performance degradation
 
 ## Project Structure
 ```
@@ -42,9 +86,17 @@ morserino-web/
 │   ├── login.php            # Handles user login
 │   ├── session.php          # Checks session status
 │   ├── stats.php            # Saves and retrieves session data
+│   ├── target.php           # Central API for all training content generation
+│   ├── words.php            # Random word selection from dictionary (legacy)
 │   ├── change-password.php   # Updates user password
 │   ├── delete-account.php    # Deletes user account
 │   └── .env                 # Environment variables (not in Git)
+├── data/
+│   ├── words.txt            # 4.2MB comprehensive English dictionary (400,000+ words)
+│   ├── abbreviations.txt    # Common amateur radio abbreviations
+│   ├── callsigns.txt        # Sample callsigns for training
+│   ├── qr-codes.txt         # QR code content for training
+│   └── top-words-in-cw.txt  # Most common Morse code words
 ├── .gitignore                # Excludes sensitive files (e.g., .env)
 └── README.md                 # Project documentation
 ```
@@ -184,8 +236,17 @@ cd morserino-web
 ### 6. Run the Application
 - Access `https://your-domain.com/morserino/index.html` in Chrome or Edge.
 - Register a new user (e.g., username: `test`, password: `pass123`).
-- Log in, connect to the Morserino-32 via USB, and select a training mode (e.g., Real Words).
-- Complete a session and view stats (work in progress).
+- Log in, connect to the Morserino-32 via USB, and select a training mode.
+- **Try Enhanced Real Words**: Experience 400,000+ word vocabulary with intelligent random selection.
+- **Experiment with modes**: Compare Real Words vs Code Groups vs Callsigns vs Mixed mode.
+- Complete sessions and view stats (work in progress).
+
+### 6.1. Testing Enhanced Real Words Mode
+- **Verify Dictionary**: Check that `data/words.txt` exists and is ~4.2MB
+- **API Test**: Visit `https://your-domain.com/morserino/api/test_target.php` to test all training modes
+- **Word Variety**: Start multiple Real Words sessions - you should see diverse vocabulary
+- **Fallback Test**: Temporarily rename `words.txt` - system should use built-in word list
+- **Performance**: Real Words mode should load instantly regardless of dictionary size
 
 ### 7. Troubleshooting
 - **Web Serial Issues**:
@@ -202,6 +263,11 @@ cd morserino-web
     ini_set('display_startup_errors', 1);
     error_reporting(E_ALL);
     ```
+- **Enhanced Real Words Issues**:
+  - **Dictionary not found**: Verify `data/words.txt` exists with proper permissions
+  - **No word variety**: Check API logs in `api/error.log` for target.php errors
+  - **API test**: Use `api/test_target.php` to verify all modes work correctly
+  - **Memory issues**: Large dictionary uses efficient sampling, but verify PHP memory_limit ≥ 128MB
 - **Session Issues**:
   - Ensure session storage is writable:
     ```bash

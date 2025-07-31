@@ -7,7 +7,7 @@ error_log("target.php: Request started");
 
 // Get mode from query parameter
 $mode = isset($_GET['mode']) ? $_GET['mode'] : 'realWords';
-$validModes = ['realWords', 'abbreviations', 'callsigns', 'qrCodes', 'topWords', 'mixed'];
+$validModes = ['realWords', 'codeGroups', 'callsigns', 'mixed'];
 
 if (!in_array($mode, $validModes)) {
     http_response_code(400);
@@ -25,36 +25,24 @@ try {
         case 'realWords':
             $target = getRandomWord();
             break;
-        case 'abbreviations':
-            $target = getRandomFromFile('abbreviations.txt');
+        case 'codeGroups':
+            $target = generateCodeGroup();
             break;
         case 'callsigns':
-            $target = getRandomFromFile('callsigns.txt', true); // Use sampling for large file
-            break;
-        case 'qrCodes':
-            $target = getRandomFromFile('qr-codes.txt');
-            break;
-        case 'topWords':
-            $target = getRandomFromFile('top-words-in-cw.txt');
+            $target = generateCallsign();
             break;
         case 'mixed':
-            $mixedTypes = ['realWords', 'abbreviations', 'callsigns', 'qrCodes', 'topWords'];
+            $mixedTypes = ['realWords', 'codeGroups', 'callsigns'];
             $randomType = $mixedTypes[array_rand($mixedTypes)];
             switch ($randomType) {
                 case 'realWords':
                     $target = getRandomWord();
                     break;
-                case 'abbreviations':
-                    $target = getRandomFromFile('abbreviations.txt');
+                case 'codeGroups':
+                    $target = generateCodeGroup();
                     break;
                 case 'callsigns':
-                    $target = getRandomFromFile('callsigns.txt', true);
-                    break;
-                case 'qrCodes':
-                    $target = getRandomFromFile('qr-codes.txt');
-                    break;
-                case 'topWords':
-                    $target = getRandomFromFile('top-words-in-cw.txt');
+                    $target = generateCallsign();
                     break;
             }
             break;

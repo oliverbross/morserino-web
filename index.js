@@ -18,8 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerEmail = document.getElementById('registerEmail');
     const registerButton = document.getElementById('registerButton');
     const realWordsButton = document.getElementById('realWordsButton');
-    const codeGroupsButton = document.getElementById('codeGroupsButton');
+    const abbreviationsButton = document.getElementById('abbreviationsButton');
     const callsignsButton = document.getElementById('callsignsButton');
+    const qrCodesButton = document.getElementById('qrCodesButton');
+    const topWordsButton = document.getElementById('topWordsButton');
     const mixedButton = document.getElementById('mixedButton');
     const numItems = document.getElementById('numItems');
     const connectButton = document.getElementById('connectButton');
@@ -36,9 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!debug || !loggedIn || !notLoggedIn || !currentUsername || !logoutButton || !accountButton ||
         !showLoginButton || !showRegisterButton || !loginForm || !registerForm ||
         !loginUsername || !loginPassword || !loginButton || !registerUsername || !registerPassword ||
-        !registerEmail || !registerButton || !realWordsButton || !codeGroupsButton || !callsignsButton ||
-        !mixedButton || !numItems || !connectButton || !connectionStatus || !startButton || !target || !userInput ||
-        !nextButton || !sessionStats || !statsList || !backToTraining) {
+        !registerEmail || !registerButton || !realWordsButton || !abbreviationsButton || !callsignsButton ||
+        !qrCodesButton || !topWordsButton || !mixedButton || !numItems || !connectButton || !connectionStatus || 
+        !startButton || !target || !userInput || !nextButton || !sessionStats || !statsList || !backToTraining) {
         console.error('Critical DOM elements missing');
         debug.textContent = 'Error: Page failed to load correctly. Please try again.';
         debug.classList.remove('hidden');
@@ -210,8 +212,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     const modeDisplay = {
                         realWords: 'Real Words',
-                        codeGroups: 'Code Groups',
+                        abbreviations: 'Abbreviations',
                         callsigns: 'Callsigns',
+                        qrCodes: 'QR-codes',
+                        topWords: 'Top Words in CW',
                         mixed: 'Mixed'
                     };
                     data.forEach(stat => {
@@ -529,8 +533,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const modeDisplay = {
             realWords: 'Real Words',
-            codeGroups: 'Code Groups',
+            abbreviations: 'Abbreviations',
             callsigns: 'Callsigns',
+            qrCodes: 'QR-codes',
+            topWords: 'Top Words in CW',
             mixed: 'Mixed'
         }[currentMode] || currentMode;
         sessionStats.textContent = sessionData.total > 0
@@ -625,7 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Connect to Morserino first.', 'bg-red-600');
             return;
         }
-        if (!['realWords', 'codeGroups', 'callsigns', 'mixed'].includes(currentMode)) {
+        if (!['realWords', 'abbreviations', 'callsigns', 'qrCodes', 'topWords', 'mixed'].includes(currentMode)) {
             showToast('Invalid mode selected. Please choose a mode.', 'bg-red-600');
             return;
         }
@@ -649,10 +655,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function getFallbackTarget(mode) {
         console.log('Using fallback target for mode:', mode);
         const targets = {
-            realWords: ['HELLO', 'WORLD', 'MORSE'],
-            codeGroups: ['ABC12', 'XYZ89', 'KLM45'],
-            callsigns: ['OM0RX', 'W1AW', 'K9LA'],
-            mixed: ['HELLO', 'ABC12', 'OM0RX']
+            realWords: [
+                'THE', 'AND', 'FOR', 'ARE', 'BUT', 'NOT', 'YOU', 'ALL', 'CAN', 'HER', 'WAS', 'ONE', 'OUR', 'HAD', 
+                'HAVE', 'WHAT', 'WERE', 'SAID', 'EACH', 'WHICH', 'THEIR', 'TIME', 'WILL', 'ABOUT', 'WOULD', 
+                'THERE', 'COULD', 'OTHER', 'AFTER', 'FIRST', 'WELL', 'WATER', 'BEEN', 'CALL', 'WHO', 'OIL', 
+                'NOW', 'FIND', 'LONG', 'DOWN', 'DAY', 'DID', 'GET', 'HAS', 'HIM', 'HOW', 'MAN', 'NEW', 'OLD', 
+                'SEE', 'TWO', 'WAY', 'BOY', 'ITS', 'WORD', 'WORK', 'LIFE', 'YEAR', 'BACK', 'GOOD', 'GIVE',
+                'HELLO', 'WORLD', 'MORSE', 'CODE', 'RADIO', 'SIGNAL', 'STATION', 'ANTENNA', 'CIRCUIT', 'DEVICE'
+            ],
+            abbreviations: ['CQ', 'DE', 'TNX', 'FB', 'QSL', 'QRT', 'CUL', '73', 'ARRL', 'DX', 'QTH', 'WX', 'HR', 'RIG', 'ANT'],
+            callsigns: ['OM0RX', 'W1AW', 'K9LA', 'VE3ABC', 'G0XYZ', 'DL1QRS', 'JA1TNX', 'VK2DEF', 'S51MNO', '2E0ABC'],
+            qrCodes: ['QRA', 'QRB', 'QRG', 'QRH', 'QRI', 'QRK', 'QRL', 'QRM', 'QRN', 'QRO', 'QRP', 'QRQ', 'QRS', 'QRT', 'QRU'],
+            topWords: ['I', 'AND', 'THE', 'YOU', 'THAT', 'A', 'TO', 'KNOW', 'OF', 'IT', 'YEAH', 'IN', 'THEY', 'DO', 'SO', 'BUT'],
+            mixed: ['HELLO', 'CQ', 'OM0RX', 'QRA', 'THE', 'W1AW', 'TNX', 'AND', 'QRB', 'DX']
         };
         const options = targets[mode] || targets.realWords;
         return options[Math.floor(Math.random() * options.length)];

@@ -53,11 +53,13 @@
                     <svg class="w-6 h-6 transform transition-transform" data-id="mode-selection-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
                 <div id="mode-selection-content" class="mt-4 hidden">
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <button id="realWordsButton" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition">Real Words</button>
-                        <button id="codeGroupsButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition">Code Groups</button>
-                        <button id="callsignsButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition">Callsigns</button>
-                        <button id="mixedButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition">Mixed</button>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <button id="realWordsButton" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition text-sm">Real Words</button>
+                        <button id="abbreviationsButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition text-sm">Abbreviations</button>
+                        <button id="callsignsButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition text-sm">Callsigns</button>
+                        <button id="qrCodesButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition text-sm">QR-codes</button>
+                        <button id="topWordsButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition text-sm">Top Words in CW</button>
+                        <button id="mixedButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition text-sm">Mixed</button>
                     </div>
                     <input type="number" id="numItems" placeholder="Number of Items" min="1" class="w-full p-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>

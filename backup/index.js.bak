@@ -36,9 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!debug || !loggedIn || !notLoggedIn || !currentUsername || !logoutButton || !accountButton ||
         !showLoginButton || !showRegisterButton || !loginForm || !registerForm ||
         !loginUsername || !loginPassword || !loginButton || !registerUsername || !registerPassword ||
-        !registerEmail || !registerButton || !realWordsButton || !abbreviationsButton || !callsignsButton ||
-        !qrCodesButton || !topWordsButton || !mixedButton || !numItems || !connectButton || !connectionStatus || 
-        !startButton || !target || !userInput || !nextButton || !sessionStats || !statsList || !backToTraining) {
+        !registerEmail || !registerButton || !realWordsButton || !codeGroupsButton || !callsignsButton ||
+        !mixedButton || !numItems || !connectButton || !connectionStatus || !startButton || !target || !userInput ||
+        !nextButton || !sessionStats || !statsList || !backToTraining) {
         console.error('Critical DOM elements missing');
         debug.textContent = 'Error: Page failed to load correctly. Please try again.';
         debug.classList.remove('hidden');
@@ -210,10 +210,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     const modeDisplay = {
                         realWords: 'Real Words',
-                        abbreviations: 'Abbreviations',
+                        codeGroups: 'Code Groups',
                         callsigns: 'Callsigns',
-                        qrCodes: 'QR-codes',
-                        topWords: 'Top Words in CW',
                         mixed: 'Mixed'
                     };
                     data.forEach(stat => {
@@ -531,10 +529,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const modeDisplay = {
             realWords: 'Real Words',
-            abbreviations: 'Abbreviations',
+            codeGroups: 'Code Groups',
             callsigns: 'Callsigns',
-            qrCodes: 'QR-codes',
-            topWords: 'Top Words in CW',
             mixed: 'Mixed'
         }[currentMode] || currentMode;
         sessionStats.textContent = sessionData.total > 0
@@ -629,7 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Connect to Morserino first.', 'bg-red-600');
             return;
         }
-        if (!['realWords', 'abbreviations', 'callsigns', 'qrCodes', 'topWords', 'mixed'].includes(currentMode)) {
+        if (!['realWords', 'codeGroups', 'callsigns', 'mixed'].includes(currentMode)) {
             showToast('Invalid mode selected. Please choose a mode.', 'bg-red-600');
             return;
         }

@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let userInput = '';
     let isProcessingInput = false;
 
-    const words = ['the', 'be', 'to', 'of', 'and', 'in', 'that', 'have', 'it', 'for'];
+    // Words are now fetched from target.php API which uses words.txt file
 
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {

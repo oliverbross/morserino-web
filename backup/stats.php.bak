@@ -36,7 +36,7 @@ $correct = isset($input['correct']) ? (int)$input['correct'] : 0;
 $total = isset($input['total']) ? (int)$input['total'] : 0;
 
 // Validate input
-if ($username !== $_SESSION['username'] || !in_array($mode, ['realWords', 'abbreviations', 'callsigns', 'qrCodes', 'topWords', 'mixed']) || $correct < 0 || $total < 0 || $correct > $total) {
+if ($username !== $_SESSION['username'] || !in_array($mode, ['realWords', 'codeGroups', 'callsigns', 'mixed']) || $correct < 0 || $total < 0 || $correct > $total) {
     http_response_code(400);
     echo json_encode(['message' => 'Invalid data']);
     exit;
