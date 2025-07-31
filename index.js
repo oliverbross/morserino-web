@@ -438,10 +438,10 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = '/morserino/account.html';
     });
 
-    [realWordsButton, codeGroupsButton, callsignsButton, mixedButton].forEach(button => {
+    [realWordsButton, abbreviationsButton, callsignsButton, qrCodesButton, topWordsButton, mixedButton].forEach(button => {
         button.addEventListener('click', () => {
             currentMode = button.id.replace('Button', '');
-            [realWordsButton, codeGroupsButton, callsignsButton, mixedButton].forEach(btn => {
+            [realWordsButton, abbreviationsButton, callsignsButton, qrCodesButton, topWordsButton, mixedButton].forEach(btn => {
                 btn.classList.remove('bg-blue-600');
                 btn.classList.add('bg-blue-500');
             });

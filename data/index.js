@@ -18,8 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerEmail = document.getElementById('registerEmail');
     const registerButton = document.getElementById('registerButton');
     const realWordsButton = document.getElementById('realWordsButton');
-    const codeGroupsButton = document.getElementById('codeGroupsButton');
+    const abbreviationsButton = document.getElementById('abbreviationsButton');
     const callsignsButton = document.getElementById('callsignsButton');
+    const qrCodesButton = document.getElementById('qrCodesButton');
+    const topWordsButton = document.getElementById('topWordsButton');
     const mixedButton = document.getElementById('mixedButton');
     const numItems = document.getElementById('numItems');
     const connectButton = document.getElementById('connectButton');
@@ -436,10 +438,10 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = '/morserino/account.html';
     });
 
-    [realWordsButton, codeGroupsButton, callsignsButton, mixedButton].forEach(button => {
+    [realWordsButton, abbreviationsButton, callsignsButton, qrCodesButton, topWordsButton, mixedButton].forEach(button => {
         button.addEventListener('click', () => {
             currentMode = button.id.replace('Button', '');
-            [realWordsButton, codeGroupsButton, callsignsButton, mixedButton].forEach(btn => {
+            [realWordsButton, abbreviationsButton, callsignsButton, qrCodesButton, topWordsButton, mixedButton].forEach(btn => {
                 btn.classList.remove('bg-blue-600');
                 btn.classList.add('bg-blue-500');
             });

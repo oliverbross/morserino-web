@@ -130,6 +130,72 @@ function generateCodeGroup() {
     return $group;
 }
 
+// Generic function to get random content from any data file
+function getRandomFromFile($filename, $useSampling = false) {
+    $filePath = __DIR__ . '/../data/' . $filename;
+    if (!file_exists($filePath)) {
+        error_log("target.php: File not found: $filePath");
+        return getFallbackContent($filename);
+    }
+    
+    try {
+        if ($useSampling) {
+            // Use reservoir sampling for large files (like callsigns.txt)
+            $handle = fopen($filePath, 'r');
+            if ($handle === false) {
+                throw new Exception('Failed to open file');
+            }
+            
+            $selectedItem = '';
+            $lineNumber = 0;
+            
+            while (($line = fgets($handle)) !== false) {
+                $line = trim($line);
+                if ($line !== '') {
+                    $lineNumber++;
+                    // Reservoir sampling: replace with probability 1/lineNumber
+                    if (rand(1, $lineNumber) === 1) {
+                        $selectedItem = $line;
+                    }
+                }
+            }
+            fclose($handle);
+            
+            if (empty($selectedItem)) {
+                throw new Exception('No content found in file');
+            }
+            
+            return strtoupper($selectedItem);
+        } else {
+            // Load all lines for small files
+            $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            if (empty($lines)) {
+                throw new Exception('File is empty');
+            }
+            
+            $randomLine = $lines[array_rand($lines)];
+            return strtoupper(trim($randomLine));
+        }
+        
+    } catch (Exception $e) {
+        error_log("target.php: Error reading $filename: " . $e->getMessage());
+        return getFallbackContent($filename);
+    }
+}
+
+// Fallback content for each file type
+function getFallbackContent($filename) {
+    $fallbacks = [
+        'abbreviations.txt' => ['CQ', 'DE', 'TNX', 'FB', 'QSL', 'QRT', 'CUL', '73', 'ARRL', 'DX', 'QTH', 'WX', 'HR', 'RIG', 'ANT'],
+        'callsigns.txt' => ['OM0RX', 'W1AW', 'K9LA', 'VE3ABC', 'G0XYZ', 'DL1QRS', 'JA1TNX', 'VK2DEF', 'S51MNO', '2E0ABC'],
+        'qr-codes.txt' => ['QRA', 'QRB', 'QRG', 'QRH', 'QRI', 'QRK', 'QRL', 'QRM', 'QRN', 'QRO', 'QRP', 'QRQ', 'QRS', 'QRT', 'QRU'],
+        'top-words-in-cw.txt' => ['I', 'AND', 'THE', 'YOU', 'THAT', 'A', 'TO', 'KNOW', 'OF', 'IT', 'YEAH', 'IN', 'THEY', 'DO', 'SO', 'BUT']
+    ];
+    
+    $options = $fallbacks[$filename] ?? ['HELLO', 'WORLD', 'MORSE'];
+    return $options[array_rand($options)];
+}
+
 function generateCallsign() {
     // Generate realistic amateur radio callsigns
     $prefixes = ['K', 'W', 'N', 'A', 'VE', 'G', 'DL', 'JA', 'VK', 'OM', 'OK', 'LZ', 'UR', 'S5'];
