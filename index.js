@@ -597,36 +597,25 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }, 1500);
                             }
                         } else {
-                            // Incorrect answer
-                            sessionData.total++;
-                            
+                            // Incorrect answer - DON'T increment total, allow retry
                             if (hasEnhancedTracking) {
                                 sessionData.errors++;
-                                const charAnalysis = analyzeCharacters(currentTarget);
-                                sessionData.letters += charAnalysis.letters;
-                                sessionData.numbers += charAnalysis.numbers;
-                                sessionData.signs += charAnalysis.signs;
-                                sessionData.targets.push(currentTarget);
-                                sessionData.responses.push(inputBuffer);
                                 updateSessionDisplay();
-                                console.log('❌ Incorrect! Updated session data:', sessionData);
+                                console.log('❌ Incorrect! Error count:', sessionData.errors);
                             }
                             
-                            showToast(`❌ Incorrect: "${inputBuffer}" ≠ "${currentTarget}" (${sessionData.correct}/${sessionData.total})`, 'bg-red-600');
+                            showToast(`❌ Incorrect: "${inputBuffer}" ≠ "${currentTarget}". Try again!`, 'bg-red-600');
                             inputBuffer = '';
                             userInput.value = '';
                             
-                            // Check if session should end
-                            if (sessionData.total >= maxItems) {
-                                console.log('🏁 Session complete, ending...');
-                                await endSession();
-                                return;
-                            } else {
-                                // Delay before next target to allow user to see result
-                                setTimeout(async () => {
-                                    await nextTarget();
-                                }, 2000);
-                            }
+                            // Add visual feedback - shake the target
+                            target.style.animation = 'shake 0.5s ease-in-out';
+                            setTimeout(() => {
+                                target.style.animation = '';
+                            }, 500);
+                            
+                            console.log('🔄 Allowing retry of same word:', currentTarget);
+                            // Stay on same word, don't advance
                         }
                     } else if (inputBuffer.length > currentTarget.length) {
                         // Buffer is longer than target - this is an error
@@ -674,19 +663,74 @@ document.addEventListener('DOMContentLoaded', () => {
             
         sessionStats.textContent = sessionSummary;
 
-        // Show detailed results if enhanced tracking is available
+        // Show detailed session report
         if (hasEnhancedTracking && sessionData.total > 0) {
             const timeSeconds = sessionData.endTime && sessionData.startTime 
                 ? (sessionData.endTime - sessionData.startTime) / 1000 
                 : 0;
-            const detailedResults = `
-Session Complete!
-Correct: ${sessionData.correct}/${sessionData.total} (${accuracy}%)
-Letters: ${sessionData.letters}, Numbers: ${sessionData.numbers}
-Signs: ${sessionData.signs}, Errors: ${sessionData.errors}
-Time: ${timeSeconds.toFixed(1)}s`;
+            const cpm = timeSeconds > 0 ? ((sessionData.letters + sessionData.numbers + sessionData.signs) / timeSeconds) * 60 : 0;
+            const wpm = timeSeconds > 0 ? ((sessionData.letters + sessionData.numbers + sessionData.signs) / 5 / timeSeconds) * 60 : 0;
             
-            showToast(detailedResults, 'bg-green-600');
+            // Create detailed session report
+            const reportDiv = document.createElement('div');
+            reportDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            reportDiv.innerHTML = `
+                <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4 text-white">
+                    <h3 class="text-xl font-bold mb-4 text-center">🎯 Session Complete!</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span>Mode:</span>
+                            <span class="font-semibold">${modeDisplay}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Correct Words:</span>
+                            <span class="font-semibold text-green-400">${sessionData.correct}/${sessionData.total}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Accuracy:</span>
+                            <span class="font-semibold text-blue-400">${accuracy}%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Time:</span>
+                            <span class="font-semibold">${timeSeconds.toFixed(1)}s</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Speed (CPM):</span>
+                            <span class="font-semibold text-yellow-400">${cpm.toFixed(1)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Speed (WPM):</span>
+                            <span class="font-semibold text-yellow-400">${wpm.toFixed(1)}</span>
+                        </div>
+                        <hr class="border-gray-600">
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div class="text-center">
+                                <div class="text-blue-400 font-semibold">${sessionData.letters}</div>
+                                <div>Letters</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-green-400 font-semibold">${sessionData.numbers}</div>
+                                <div>Numbers</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-purple-400 font-semibold">${sessionData.signs}</div>
+                                <div>Signs</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-red-400 font-semibold">${sessionData.errors}</div>
+                                <div>Errors</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors">
+                        Close
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(reportDiv);
+            
+            showToast('Session saved successfully!', 'bg-green-600');
         } else {
             showToast(sessionSummary, 'bg-green-600');
         }
@@ -777,8 +821,13 @@ Time: ${timeSeconds.toFixed(1)}s`;
             return;
         }
 
+        // Reset everything for new session
         maxItems = numItemsValue;
         sessionActive = true;
+        inputBuffer = '';
+        userInput.value = '';
+        target.textContent = '';
+        
         resetSessionCounters();
         startSessionTimer();
         
@@ -791,9 +840,10 @@ Time: ${timeSeconds.toFixed(1)}s`;
         nextButton.classList.remove('hidden');
         userInput.classList.remove('hidden');
         
+        console.log('🚀 Starting new session with', maxItems, 'items in mode:', currentMode);
         await nextTarget();
         readMorseInput();
-        showToast('Session started!', 'bg-green-600');
+        showToast('Session started! Send Morse code, system evaluates when word is complete.', 'bg-green-600');
     });
 
     nextButton.addEventListener('click', async () => {
@@ -809,10 +859,13 @@ Time: ${timeSeconds.toFixed(1)}s`;
             updateSessionDisplay();
         }
         
+        // Reset input buffer and display
+        inputBuffer = '';
         userInput.value = '';
         showToast('Skipped to next target', 'bg-yellow-600');
         
         if (sessionData.total >= maxItems) {
+            console.log('🏁 Session complete via skip, ending...');
             await endSession();
         } else {
             await nextTarget();
@@ -844,6 +897,20 @@ Time: ${timeSeconds.toFixed(1)}s`;
         sessionTimer.textContent = '00:00.0';
     }
     
+    // Expand all sections by default
+    setTimeout(() => {
+        const allSections = ['mode-selection', 'connection', 'training', 'live-tracking', 'session-report', 'session-statistics'];
+        allSections.forEach(sectionId => {
+            const content = document.getElementById(`${sectionId}-content`);
+            const icon = document.querySelector(`[data-id="${sectionId}-icon"]`);
+            if (content && content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                if (icon) icon.classList.add('rotate-180');
+                console.log(`Expanded section: ${sectionId}`);
+            }
+        });
+    }, 200);
+
     // Double-check login section visibility after a brief delay
     setTimeout(() => {
         const isLoggedIn = sessionStorage.getItem('username');
