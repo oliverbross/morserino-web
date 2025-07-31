@@ -548,16 +548,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!sessionActive) break;
                     if (char === '\n' || char === '\r') continue;
                     
-                    console.log('Received char:', char, 'Current target:', currentTarget, 'Buffer:', inputBuffer);
-                    inputBuffer += char;
-                    userInput.value = inputBuffer;
-
-                    // Only evaluate when user sends SPACE (word separator)
+                    console.log('Received char:', char, 'ASCII:', char.charCodeAt(0), 'Current target:', currentTarget, 'Buffer:', inputBuffer);
+                    
+                    // Skip spaces - Morserino sends space after each character
                     if (char === ' ') {
-                        const cleanInput = inputBuffer.trim().toUpperCase();
-                        console.log('SPACE received - Evaluating input:', cleanInput, 'vs target:', currentTarget);
+                        console.log('⚠️ Ignoring space character from Morserino');
+                        continue;
+                    }
+                    
+                    // Add character to buffer
+                    inputBuffer += char.toUpperCase();
+                    userInput.value = inputBuffer;
+                    console.log('📝 Added char to buffer:', char.toUpperCase(), 'Buffer now:', inputBuffer);
+
+                    // Evaluate when buffer length matches target length
+                    if (inputBuffer.length === currentTarget.length) {
+                        console.log('🔍 Buffer length matches target - Evaluating:', inputBuffer, 'vs', currentTarget);
                         
-                        if (cleanInput === currentTarget) {
+                        if (inputBuffer === currentTarget) {
                             // Correct answer
                             sessionData.correct++;
                             sessionData.total++;
@@ -568,22 +576,25 @@ document.addEventListener('DOMContentLoaded', () => {
                                 sessionData.numbers += charAnalysis.numbers;
                                 sessionData.signs += charAnalysis.signs;
                                 sessionData.targets.push(currentTarget);
-                                sessionData.responses.push(cleanInput);
+                                sessionData.responses.push(inputBuffer);
                                 updateSessionDisplay();
-                                console.log('Correct! Updated session data:', sessionData);
+                                console.log('✅ Correct! Updated session data:', sessionData);
                             }
                             
-                            showToast(`Correct! "${cleanInput}" (${sessionData.correct}/${sessionData.total})`, 'bg-green-600');
+                            showToast(`✅ Correct! "${inputBuffer}" (${sessionData.correct}/${sessionData.total})`, 'bg-green-600');
                             inputBuffer = '';
                             userInput.value = '';
                             
                             // Check if session should end
                             if (sessionData.total >= maxItems) {
-                                console.log('Session complete, ending...');
+                                console.log('🏁 Session complete, ending...');
                                 await endSession();
                                 return;
                             } else {
-                                await nextTarget();
+                                // Delay before next target to allow user to see result
+                                setTimeout(async () => {
+                                    await nextTarget();
+                                }, 1500);
                             }
                         } else {
                             // Incorrect answer
@@ -596,26 +607,33 @@ document.addEventListener('DOMContentLoaded', () => {
                                 sessionData.numbers += charAnalysis.numbers;
                                 sessionData.signs += charAnalysis.signs;
                                 sessionData.targets.push(currentTarget);
-                                sessionData.responses.push(cleanInput);
+                                sessionData.responses.push(inputBuffer);
                                 updateSessionDisplay();
-                                console.log('Incorrect! Updated session data:', sessionData);
+                                console.log('❌ Incorrect! Updated session data:', sessionData);
                             }
                             
-                            showToast(`Incorrect: "${cleanInput}" ≠ "${currentTarget}" (${sessionData.correct}/${sessionData.total})`, 'bg-red-600');
+                            showToast(`❌ Incorrect: "${inputBuffer}" ≠ "${currentTarget}" (${sessionData.correct}/${sessionData.total})`, 'bg-red-600');
                             inputBuffer = '';
                             userInput.value = '';
                             
                             // Check if session should end
                             if (sessionData.total >= maxItems) {
-                                console.log('Session complete, ending...');
+                                console.log('🏁 Session complete, ending...');
                                 await endSession();
                                 return;
                             } else {
-                                await nextTarget();
+                                // Delay before next target to allow user to see result
+                                setTimeout(async () => {
+                                    await nextTarget();
+                                }, 2000);
                             }
                         }
+                    } else if (inputBuffer.length > currentTarget.length) {
+                        // Buffer is longer than target - this is an error
+                        console.log('⚠️ Buffer longer than target, resetting');
+                        inputBuffer = char.toUpperCase();
+                        userInput.value = inputBuffer;
                     }
-                    // Continue accumulating characters until space is received
                 }
             }
         } catch (error) {
