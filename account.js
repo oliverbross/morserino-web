@@ -51,6 +51,53 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(styleReset);
     console.log('CSS reset applied');
 
+    // User preferences for date/time formatting
+    let userPreferences = {
+        dateFormat: 'DD/MM/YYYY',
+        timeFormat: '24h'
+    };
+
+    // Format timestamp according to user preferences
+    function formatTimestamp(timestamp) {
+        if (!timestamp) return 'No timestamp';
+        
+        try {
+            const date = new Date(timestamp);
+            if (isNaN(date.getTime())) return timestamp; // Return original if invalid
+            
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            
+            let dateStr;
+            if (userPreferences.dateFormat === 'MM/DD/YYYY') {
+                dateStr = `${month}/${day}/${year}`;
+            } else {
+                dateStr = `${day}/${month}/${year}`;
+            }
+            
+            let timeStr;
+            if (userPreferences.timeFormat === '12h') {
+                timeStr = date.toLocaleTimeString('en-US', { 
+                    hour12: true, 
+                    hour: 'numeric', 
+                    minute: '2-digit', 
+                    second: '2-digit' 
+                });
+            } else {
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                const seconds = date.getSeconds().toString().padStart(2, '0');
+                timeStr = `${hours}:${minutes}:${seconds}`;
+            }
+            
+            return `${dateStr} ${timeStr}`;
+        } catch (error) {
+            console.error('Date formatting error:', error);
+            return timestamp; // Return original if formatting fails
+        }
+    }
+
     // Show toast notification
     function showToast(message, bgClass) {
         const toast = document.createElement('div');
@@ -289,14 +336,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (response.ok && data) {
                 recoveryEmail.value = data.email || '';
-                dateFormatSelect.value = data.date_format || data.dateFormat || 'DD/MM/YYYY';
-                timeFormatSelect.value = data.time_format || data.timeFormat || '12h';
+                userPreferences.dateFormat = data.date_format || data.dateFormat || 'DD/MM/YYYY';
+                userPreferences.timeFormat = data.time_format || data.timeFormat || '12h';
+                dateFormatSelect.value = userPreferences.dateFormat;
+                timeFormatSelect.value = userPreferences.timeFormat;
                 dateFormatSelect.dispatchEvent(new Event('change'));
                 timeFormatSelect.dispatchEvent(new Event('change'));
                 console.log('Settings loaded:', {
                     email: recoveryEmail.value,
-                    dateFormat: dateFormatSelect.value,
-                    timeFormat: timeFormatSelect.value
+                    dateFormat: userPreferences.dateFormat,
+                    timeFormat: userPreferences.timeFormat
                 });
                 if (data.section_order && Array.isArray(data.section_order)) {
                     const sections = document.querySelectorAll('#sortable-sections .section');
@@ -364,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const recent = data.slice(0, 5);
                         recent.forEach((session, i) => {
                             const li = document.createElement('li');
-                            li.textContent = `Session ${totalSessions - i}: ${session.correct || 0}/${session.total || 0} (${session.total > 0 ? ((session.correct/session.total)*100).toFixed(2) : '0.00'}%) - ${session.mode || 'Unknown'} - ${session.timestamp || 'No timestamp'}`;
+                            li.textContent = `Session ${totalSessions - i}: ${session.correct || 0}/${session.total || 0} (${session.total > 0 ? ((session.correct/session.total)*100).toFixed(2) : '0.00'}%) - ${session.mode || 'Unknown'} - ${formatTimestamp(session.timestamp)}`;
                             recentSessions.appendChild(li);
                         });
                     }
@@ -561,6 +610,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             if (response.ok && data.message === 'Settings updated successfully') {
+                userPreferences.dateFormat = dateFormat;
+                userPreferences.timeFormat = timeFormat;
                 showToast('Settings saved successfully!', 'bg-green-600');
                 fetchUserSettings(username);
                 accountDebug.classList.add('hidden');

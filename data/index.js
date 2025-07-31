@@ -47,6 +47,71 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    // User preferences for date/time formatting
+    let userPreferences = {
+        dateFormat: 'DD/MM/YYYY',
+        timeFormat: '24h'
+    };
+
+    // Load user preferences
+    async function loadUserPreferences(username) {
+        try {
+            const response = await fetch(`${apiBaseUrl}/settings.php?username=${encodeURIComponent(username)}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            if (response.ok) {
+                const data = await response.json();
+                userPreferences.dateFormat = data.dateFormat || 'DD/MM/YYYY';
+                userPreferences.timeFormat = data.timeFormat || '24h';
+                console.log('User preferences loaded:', userPreferences);
+            }
+        } catch (error) {
+            console.error('Failed to load user preferences:', error);
+        }
+    }
+
+    // Format timestamp according to user preferences
+    function formatTimestamp(timestamp) {
+        if (!timestamp) return 'No timestamp';
+        
+        try {
+            const date = new Date(timestamp);
+            if (isNaN(date.getTime())) return timestamp; // Return original if invalid
+            
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            
+            let dateStr;
+            if (userPreferences.dateFormat === 'MM/DD/YYYY') {
+                dateStr = `${month}/${day}/${year}`;
+            } else {
+                dateStr = `${day}/${month}/${year}`;
+            }
+            
+            let timeStr;
+            if (userPreferences.timeFormat === '12h') {
+                timeStr = date.toLocaleTimeString('en-US', { 
+                    hour12: true, 
+                    hour: 'numeric', 
+                    minute: '2-digit', 
+                    second: '2-digit' 
+                });
+            } else {
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                const seconds = date.getSeconds().toString().padStart(2, '0');
+                timeStr = `${hours}:${minutes}:${seconds}`;
+            }
+            
+            return `${dateStr} ${timeStr}`;
+        } catch (error) {
+            console.error('Date formatting error:', error);
+            return timestamp; // Return original if formatting fails
+        }
+    }
+
     // Show toast notification (centered, larger)
     function showToast(message, bgClass) {
         const toast = document.createElement('div');
@@ -222,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const mode = modeDisplay[stat.mode] || stat.mode;
                         const percentage = stat.total > 0 ? ((stat.correct / stat.total) * 100).toFixed(2) : '0.00';
                         const li = document.createElement('li');
-                        li.textContent = `${mode}: ${stat.correct}/${stat.total} (${percentage}%), ${stat.timestamp}`;
+                        li.textContent = `${mode}: ${stat.correct}/${stat.total} (${percentage}%), ${formatTimestamp(stat.timestamp)}`;
                         statsList.appendChild(li);
                     });
                 }
@@ -277,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 loggedIn.classList.remove('hidden');
                 notLoggedIn.classList.add('hidden');
                 showAllSections();
+                await loadUserPreferences(data.username); // Load user preferences
                 fetchHistoricalStats(data.username); // Load historical stats on login
             } else {
                 console.log('No session');
@@ -346,6 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 loginPassword.value = '';
                 showToast('Login successful!', 'bg-green-600');
                 showAllSections();
+                await loadUserPreferences(username); // Load user preferences
                 fetchHistoricalStats(username); // Load historical stats after login
             } else {
                 showToast(`Login failed: ${data.message || 'Unknown error'}`, 'bg-red-600');
@@ -391,6 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 registerEmail.value = '';
                 showToast('Registration successful!', 'bg-green-600');
                 showAllSections();
+                await loadUserPreferences(username); // Load user preferences
                 fetchHistoricalStats(username); // Load historical stats after registration
             } else {
                 showToast(`Registration failed: ${data.message || 'Unknown error'}`, 'bg-red-600');
