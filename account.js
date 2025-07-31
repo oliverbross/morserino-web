@@ -77,18 +77,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             let timeStr;
-            if (userPreferences.timeFormat === '12h') {
+            console.log('Account.js formatTimestamp - userPreferences.timeFormat:', userPreferences.timeFormat, 'type:', typeof userPreferences.timeFormat);
+            
+            // Check the current select value as fallback
+            const currentTimeFormat = timeFormatSelect ? timeFormatSelect.value : userPreferences.timeFormat;
+            console.log('Account.js formatTimestamp - currentTimeFormat from select:', currentTimeFormat);
+            
+            // More robust comparison for 12-hour format
+            const is12Hour = currentTimeFormat === '12h' || userPreferences.timeFormat === '12h' || 
+                           currentTimeFormat === '12-hour' || userPreferences.timeFormat === '12-hour' || 
+                           currentTimeFormat === '12H' || userPreferences.timeFormat === '12H';
+                           
+            if (is12Hour) {
                 timeStr = date.toLocaleTimeString('en-US', { 
                     hour12: true, 
                     hour: 'numeric', 
                     minute: '2-digit', 
                     second: '2-digit' 
                 });
+                console.log('Account.js formatTimestamp - Using 12h format:', timeStr);
             } else {
                 const hours = date.getHours().toString().padStart(2, '0');
                 const minutes = date.getMinutes().toString().padStart(2, '0');
                 const seconds = date.getSeconds().toString().padStart(2, '0');
                 timeStr = `${hours}:${minutes}:${seconds}`;
+                console.log('Account.js formatTimestamp - Using 24h format:', timeStr);
             }
             
             return `${dateStr} ${timeStr}`;
@@ -345,7 +358,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Settings loaded:', {
                     email: recoveryEmail.value,
                     dateFormat: userPreferences.dateFormat,
-                    timeFormat: userPreferences.timeFormat
+                    timeFormat: userPreferences.timeFormat,
+                    rawData: { date_format: data.date_format, time_format: data.time_format, dateFormat: data.dateFormat, timeFormat: data.timeFormat }
                 });
                 if (data.section_order && Array.isArray(data.section_order)) {
                     const sections = document.querySelectorAll('#sortable-sections .section');
