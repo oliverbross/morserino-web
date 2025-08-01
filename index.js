@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextButton = document.getElementById('nextButton');
     const sessionStats = document.getElementById('sessionStats');
     const statsList = document.getElementById('statsList');
-    const backToTraining = document.getElementById('backToTraining');
+    // backToTraining removed with statistics section
 
     // Enhanced tracking elements (optional)
     const lettersCount = document.getElementById('lettersCount');
@@ -331,83 +331,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // Statistics functions moved to statistics.js
-
-    function populatePerformanceOverview(data) {
-        const overview = document.getElementById('performanceOverview');
-        const recent = data.slice(0, 10); // Last 10 sessions
-        
-        if (recent.length === 0) {
-            showEmptyDashboard();
-            return;
-        }
-
-        // Calculate key metrics
-        const avgAccuracy = recent.reduce((sum, s) => {
-            const accuracy = s.characters_attempted > 0 
-                ? (s.characters_correct / s.characters_attempted) * 100 
-                : (s.total > 0 ? (s.correct / s.total) * 100 : 0);
-            return sum + accuracy;
-        }, 0) / recent.length;
-
-        const avgSpeed = recent.filter(s => s.wpm > 0)
-            .reduce((sum, s, _, arr) => sum + s.wpm / arr.length, 0);
-
-        const totalSessions = data.length;
-        const totalCharacters = recent.reduce((sum, s) => sum + (s.characters_attempted || s.letters + s.numbers + s.signs), 0);
-
-        overview.innerHTML = `
-            <div class="bg-blue-900 p-4 rounded-lg text-center">
-                <div class="text-2xl font-bold text-blue-300">${avgAccuracy.toFixed(1)}%</div>
-                <div class="text-xs text-blue-200">Avg Accuracy</div>
-            </div>
-            <div class="bg-green-900 p-4 rounded-lg text-center">
-                <div class="text-2xl font-bold text-green-300">${avgSpeed.toFixed(1)}</div>
-                <div class="text-xs text-green-200">Avg Speed (WPM)</div>
-            </div>
-            <div class="bg-purple-900 p-4 rounded-lg text-center">
-                <div class="text-2xl font-bold text-purple-300">${totalSessions}</div>
-                <div class="text-xs text-purple-200">Total Sessions</div>
-            </div>
-            <div class="bg-yellow-900 p-4 rounded-lg text-center">
-                <div class="text-2xl font-bold text-yellow-300">${totalCharacters}</div>
-                <div class="text-xs text-yellow-200">Characters Sent</div>
-            </div>
-        `;
+    // Simple placeholder functions for dashboard (detailed stats moved to statistics.js)
+    function destroyExistingCharts() {
+        // No charts on main page anymore - just a placeholder
+        console.log('Charts cleared (placeholder)');
     }
 
-    function populateRecentSessions(sessions) {
-        const container = document.getElementById('recentSessions');
-        const modeDisplay = {
-            realWords: 'Real Words', abbreviations: 'Abbreviations', 
-            callsigns: 'Callsigns', qrCodes: 'QR-codes',
-            topWords: 'Top Words in CW', mixed: 'Mixed'
-        };
+    function showEmptyDashboard() {
+        // No dashboard on main page anymore - just a placeholder  
+        console.log('Empty dashboard (placeholder)');
+    }
 
-        if (sessions.length === 0) {
-            container.innerHTML = '<p class="text-gray-400 text-center py-4">No recent sessions</p>';
-            return;
-        }
+    // Statistics functions removed - detailed statistics now on statistics.html
 
-        container.innerHTML = sessions.map(stat => {
-            const mode = modeDisplay[stat.mode] || stat.mode;
-            const accuracy = stat.characters_attempted > 0 
-                ? ((stat.characters_correct / stat.characters_attempted) * 100).toFixed(1)
-                : (stat.total > 0 ? ((stat.correct / stat.total) * 100).toFixed(1) : '0.0');
-            
-            const accuracyColor = accuracy >= 95 ? 'text-green-400' : 
-                                 accuracy >= 85 ? 'text-yellow-400' : 'text-red-400';
-            
-            const speedDisplay = stat.wpm > 0 ? `${stat.wpm} WPM` : 'N/A';
-            const date = formatTimestamp(new Date(stat.timestamp));
+    // Legacy function for compatibility  
+    async function fetchHistoricalStats(username, forceReload = false) {
+        // Just a placeholder - detailed statistics moved to statistics.js
+        console.log('Historical stats loading handled by statistics page');
+    }
 
-            return `
-                <div class="bg-gray-900 p-4 rounded-lg border-l-4 border-blue-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="font-semibold text-white">${mode}</div>
-                            <div class="text-sm text-gray-300">${stat.correct}/${stat.total} words completed</div>
-                            <div class="text-xs text-gray-400">${date}</div>
+    // Login/Register functionality starts here
+    
+    // Login handlers are defined later (around line 644) - removed duplicates
+
+    // Login handlers are defined later in the file (around line 688)
                         </div>
                         <div class="text-right">
                             <div class="text-lg font-bold ${accuracyColor}">${accuracy}%</div>
@@ -1327,9 +1274,12 @@ Character Breakdown:
         }
     });
 
-    backToTraining.addEventListener('click', async () => {
-        await endSession();
-    });
+    // backToTraining element removed with statistics section
+    if (backToTraining) {
+        backToTraining.addEventListener('click', async () => {
+            await endSession();
+        });
+    }
 
     // Enhanced tracking button
     if (hasEnhancedTracking && startNewSession) {
