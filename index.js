@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Morserino Web loading...');
+    console.log('🔤 FIXED: Case-insensitive Morse code character comparison enabled');
 
     // Basic DOM elements
     const debug = document.getElementById('debug');
@@ -896,7 +897,17 @@ Items: ${maxItems}`;
         }
         
         const receivedChar = input.toUpperCase().trim();
-        console.log(`🔤 Processing character: "${receivedChar}" (expected: "${currentWord[currentCharIndex] || 'END'}")`);
+        // Get expected character (uppercase for Morse code comparison)
+        const expectedChar = currentWord[currentCharIndex]?.toUpperCase();
+        const originalExpectedChar = currentWord[currentCharIndex];
+        
+        console.log(`🔤 Processing character: "${receivedChar}" (expected: "${expectedChar || 'END'}")`);
+        
+        // Show case conversion if needed
+        if (originalExpectedChar && originalExpectedChar !== expectedChar) {
+            console.log(`📝 Case conversion: "${originalExpectedChar}" → "${expectedChar}" (Morse code is case-insensitive)`);
+        }
+        
         console.log(`📊 State: currentWord="${currentWord}", charIndex=${currentCharIndex}, receivedSoFar="${receivedChars}"`);
         
         // Handle character input
@@ -914,9 +925,10 @@ Items: ${maxItems}`;
         displayUserInput();
         console.log('🎨 Updated input display');
         
-        // Check if character is correct
-        if (currentCharIndex < currentWord.length && receivedChar === currentWord[currentCharIndex]) {
+        // Check if character is correct (case-insensitive for Morse code)
+        if (currentCharIndex < currentWord.length && receivedChar === expectedChar) {
             // Correct character
+            console.log(`✅ MATCH! "${receivedChar}" === "${expectedChar}" (case-insensitive comparison)`);
             currentCharIndex++;
             console.log(`✓ Correct character! Progress: ${currentCharIndex}/${currentWord.length}`);
             
@@ -958,8 +970,9 @@ Items: ${maxItems}`;
         } else {
             // Incorrect character - reset and try again
             sessionData.errors++;
-            console.log(`✗ Wrong character: got "${receivedChar}", expected "${currentWord[currentCharIndex] || 'END'}"`);
-            showToast(`✗ Wrong! Expected "${currentWord[currentCharIndex]}", got "${receivedChar}". Try again.`, 'bg-red-600');
+            console.log(`❌ NO MATCH! "${receivedChar}" !== "${expectedChar || 'END'}" (case-insensitive comparison)`);
+            console.log(`✗ Wrong character: got "${receivedChar}", expected "${expectedChar || 'END'}"`);
+            showToast(`✗ Wrong! Expected "${expectedChar || 'END'}", got "${receivedChar}". Try again.`, 'bg-red-600');
             
             if (hasEnhancedTracking) {
                 sessionData.wordAttempts.push({
