@@ -48,9 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if enhanced tracking is available
     const hasEnhancedTracking = lettersCount && numbersCount && signsCount && errorsCount && sessionTimer && sessionReport && startNewSession;
     console.log('Enhanced tracking available:', hasEnhancedTracking);
-    
-    // Global flag to prevent multiple chart creation
-    let chartsCurrentlyCreating = false;
 
     if (!debug) {
         alert('Critical error: Page structure invalid');
@@ -334,41 +331,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function destroyExistingCharts() {
-        // Reset creation flag
-        chartsCurrentlyCreating = false;
+        // Simple clear for HTML charts
+        const accuracyChart = document.getElementById('accuracyChart');
+        const speedChart = document.getElementById('speedChart');
         
-        // Destroy accuracy chart
-        if (window.accuracyChartInstance) {
-            window.accuracyChartInstance.destroy();
-            window.accuracyChartInstance = null;
+        if (accuracyChart) {
+            accuracyChart.innerHTML = '<div class="text-gray-500 text-sm text-center">No data available</div>';
         }
-        // Destroy speed chart
-        if (window.speedChartInstance) {
-            window.speedChartInstance.destroy();
-            window.speedChartInstance = null;
+        if (speedChart) {
+            speedChart.innerHTML = '<div class="text-gray-500 text-sm text-center">No data available</div>';
         }
         
-        // Reset canvas elements to prevent sizing issues
-        const accuracyCanvas = document.getElementById('accuracyChart');
-        const speedCanvas = document.getElementById('speedChart');
-        
-        if (accuracyCanvas) {
-            const parent = accuracyCanvas.parentNode;
-            const newCanvas = document.createElement('canvas');
-            newCanvas.id = 'accuracyChart';
-            newCanvas.className = accuracyCanvas.className;
-            parent.replaceChild(newCanvas, accuracyCanvas);
-        }
-        
-        if (speedCanvas) {
-            const parent = speedCanvas.parentNode;
-            const newCanvas = document.createElement('canvas');
-            newCanvas.id = 'speedChart';
-            newCanvas.className = speedCanvas.className;
-            parent.replaceChild(newCanvas, speedCanvas);
-        }
-        
-        console.log('Existing charts destroyed and canvases reset');
+        console.log('Charts cleared');
     }
 
     function showEmptyDashboard() {
@@ -378,6 +352,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p class="text-sm">Complete some training sessions to see your progress!</p>
             </div>
         `;
+        
+        // Clear charts
+        destroyExistingCharts();
     }
 
     function populatePerformanceOverview(data) {
@@ -472,121 +449,116 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateProgressCharts(data) {
-        // Multiple levels of protection against chart recreation
-        if (chartsCurrentlyCreating) {
-            console.log('Charts currently being created, skipping');
-            return;
-        }
-        
-        if (window.accuracyChartInstance || window.speedChartInstance) {
-            console.log('Charts already exist, skipping creation');
-            return;
-        }
-        
-        chartsCurrentlyCreating = true;
-        console.log('Creating fresh charts...');
-        
-        try {
-            createAccuracyChart(data.slice(0, 10).reverse());
-            createSpeedChart(data.slice(0, 10).reverse());
-        } finally {
-            chartsCurrentlyCreating = false;
-        }
+        console.log('Creating simple bar charts...');
+        createAccuracyChart(data.slice(0, 10).reverse());
+        createSpeedChart(data.slice(0, 10).reverse());
     }
 
     function createAccuracyChart(data) {
-        const ctx = document.getElementById('accuracyChart');
-        if (!ctx) return;
-        
-        // Prevent multiple chart creation
-        if (window.accuracyChartInstance) {
-            console.log('Accuracy chart already exists, skipping');
-            return;
-        }
+        const container = document.getElementById('accuracyChart');
+        if (!container || data.length === 0) return;
 
         const chartData = data.map(stat => {
             return stat.characters_attempted > 0 
-                ? ((stat.characters_correct / stat.characters_attempted) * 100).toFixed(1)
-                : (stat.total > 0 ? ((stat.correct / stat.total) * 100).toFixed(1) : 0);
+                ? ((stat.characters_correct / stat.characters_attempted) * 100)
+                : (stat.total > 0 ? ((stat.correct / stat.total) * 100) : 0);
         });
 
-        // Create fresh chart (old one was destroyed)
-        window.accuracyChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: data.map((_, i) => `Session ${i + 1}`),
-                datasets: [{
-                    label: 'Character Accuracy %',
-                    data: chartData,
-                    borderColor: '#60A5FA',
-                    backgroundColor: 'rgba(96, 165, 250, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { 
-                        beginAtZero: true, 
-                        max: 100,
-                        grid: { color: '#374151' },
-                        ticks: { color: '#9CA3AF' }
-                    },
-                    x: { 
-                        grid: { color: '#374151' },
-                        ticks: { color: '#9CA3AF' }
-                    }
-                }
-            }
+        // Clear container and create simple bar chart
+        container.innerHTML = '';
+        container.className = 'h-48 relative flex items-end justify-center space-x-1 p-2';
+
+        // Add scale lines
+        const scaleContainer = document.createElement('div');
+        scaleContainer.className = 'absolute inset-0 flex flex-col justify-between text-xs text-gray-500 pointer-events-none';
+        [100, 75, 50, 25, 0].forEach(value => {
+            const line = document.createElement('div');
+            line.className = 'border-b border-gray-600 border-dashed opacity-30';
+            line.innerHTML = `<span class="absolute -left-8 -top-2">${value}%</span>`;
+            scaleContainer.appendChild(line);
         });
+        container.appendChild(scaleContainer);
+
+        // Create bars
+        const barsContainer = document.createElement('div');
+        barsContainer.className = 'flex items-end justify-center space-x-1 h-full relative z-10';
+        
+        chartData.forEach((accuracy, index) => {
+            const bar = document.createElement('div');
+            const height = Math.max(4, (accuracy / 100) * 160); // Min 4px height, max 160px
+            
+            // Color based on accuracy
+            let colorClass = '';
+            if (accuracy >= 90) colorClass = 'bg-green-500';
+            else if (accuracy >= 75) colorClass = 'bg-yellow-500';
+            else colorClass = 'bg-red-500';
+            
+            bar.className = `${colorClass} w-6 rounded-t transition-all duration-300 relative group cursor-pointer`;
+            bar.style.height = `${height}px`;
+            
+            // Tooltip
+            const tooltip = document.createElement('div');
+            tooltip.className = 'absolute bottom-full left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap mb-1 z-20';
+            tooltip.textContent = `Session ${index + 1}: ${accuracy.toFixed(1)}%`;
+            bar.appendChild(tooltip);
+            
+            barsContainer.appendChild(bar);
+        });
+        
+        container.appendChild(barsContainer);
     }
 
     function createSpeedChart(data) {
-        const ctx = document.getElementById('speedChart');
-        if (!ctx) return;
-        
-        // Prevent multiple chart creation
-        if (window.speedChartInstance) {
-            console.log('Speed chart already exists, skipping');
-            return;
-        }
+        const container = document.getElementById('speedChart');
+        if (!container || data.length === 0) return;
 
         const speedData = data.map(stat => stat.wpm || 0);
+        const maxSpeed = Math.max(...speedData, 20); // Min scale of 20 WPM
 
-        // Create fresh chart (old one was destroyed)
-        window.speedChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: data.map((_, i) => `Session ${i + 1}`),
-                datasets: [{
-                    label: 'WPM',
-                    data: speedData,
-                    borderColor: '#34D399',
-                    backgroundColor: 'rgba(52, 211, 153, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { 
-                        beginAtZero: true,
-                        grid: { color: '#374151' },
-                        ticks: { color: '#9CA3AF' }
-                    },
-                    x: { 
-                        grid: { color: '#374151' },
-                        ticks: { color: '#9CA3AF' }
-                    }
-                }
-            }
+        // Clear container and create simple bar chart
+        container.innerHTML = '';
+        container.className = 'h-48 relative flex items-end justify-center space-x-1 p-2';
+
+        // Add scale lines
+        const scaleContainer = document.createElement('div');
+        scaleContainer.className = 'absolute inset-0 flex flex-col justify-between text-xs text-gray-500 pointer-events-none';
+        const scaleValues = [maxSpeed, maxSpeed * 0.75, maxSpeed * 0.5, maxSpeed * 0.25, 0];
+        scaleValues.forEach(value => {
+            const line = document.createElement('div');
+            line.className = 'border-b border-gray-600 border-dashed opacity-30';
+            line.innerHTML = `<span class="absolute -left-10 -top-2">${Math.round(value)}</span>`;
+            scaleContainer.appendChild(line);
         });
+        container.appendChild(scaleContainer);
+
+        // Create bars
+        const barsContainer = document.createElement('div');
+        barsContainer.className = 'flex items-end justify-center space-x-1 h-full relative z-10';
+        
+        speedData.forEach((wpm, index) => {
+            const bar = document.createElement('div');
+            const height = Math.max(4, (wpm / maxSpeed) * 160); // Min 4px height, max 160px
+            
+            // Color based on speed
+            let colorClass = '';
+            if (wpm >= 15) colorClass = 'bg-green-500';
+            else if (wpm >= 10) colorClass = 'bg-yellow-500';
+            else if (wpm >= 5) colorClass = 'bg-orange-500';
+            else colorClass = 'bg-red-500';
+            
+            bar.className = `${colorClass} w-6 rounded-t transition-all duration-300 relative group cursor-pointer`;
+            bar.style.height = `${height}px`;
+            
+            // Tooltip
+            const tooltip = document.createElement('div');
+            tooltip.className = 'absolute bottom-full left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap mb-1 z-20';
+            tooltip.textContent = `Session ${index + 1}: ${wpm.toFixed(1)} WPM`;
+            bar.appendChild(tooltip);
+            
+            barsContainer.appendChild(bar);
+        });
+        
+        container.appendChild(barsContainer);
     }
 
     function populateTrainingInsights(data) {
@@ -1301,12 +1273,8 @@ Character Breakdown:
 
             if (response.ok) {
                 showToast('Session stats saved successfully!', 'bg-green-600');
-                // Small delay before refreshing dashboard to prevent rapid successive calls
-                setTimeout(() => {
-                    if (!chartsCurrentlyCreating) {
-                        fetchHistoricalStats(username, true);
-                    }
-                }, 1000);
+                // Small delay before refreshing dashboard
+                setTimeout(() => fetchHistoricalStats(username, true), 500);
             } else {
                 console.error('Stats save failed:', data);
                 showToast(`Failed to save stats: ${data.message}`, 'bg-red-600');
