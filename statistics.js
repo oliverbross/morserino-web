@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('📊 Statistics page loading - Version 3.0 - Mode Names & Date Fixed');
-    console.log('🔄 MAJOR UPDATE: qrCodes → QR Codes, Invalid Date → Proper Dates');
-    console.log('🚨 If you still see old format, please hard refresh (Ctrl+F5)');
+    console.log('📊 Statistics page loading - Version 4.0 - FIXED: Timestamp & Character Accuracy');
+    console.log('🔄 CRITICAL FIXES: Timestamp parsing + Character-based accuracy calculation');
+    console.log('🚨 If you still see 100% accuracy or "N/A" time, please hard refresh (Ctrl+F5)');
     
     // Show a temporary visual indicator that new version loaded
     const tempIndicator = document.createElement('div');
-    tempIndicator.innerHTML = '✅ V3.0 Loaded - Mode Names Fixed';
+    tempIndicator.innerHTML = '✅ V4.0 Loaded - Timestamp & Accuracy Fixed';
     tempIndicator.style.cssText = 'position:fixed;top:10px;left:10px;background:#10b981;color:white;padding:8px;border-radius:4px;z-index:9999;font-size:12px;';
     document.body.appendChild(tempIndicator);
     setTimeout(() => document.body.removeChild(tempIndicator), 3000);
@@ -122,6 +122,38 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('emptyState').classList.remove('hidden');
     }
 
+    // Helper function to calculate CHARACTER-based accuracy (more important for CW than word accuracy)
+    function calculateCharacterAccuracy(session) {
+        const totalCharsAttempted = (session.letters || 0) + (session.numbers || 0) + (session.signs || 0);
+        const charErrors = session.errors || session.character_errors || 0;
+        const correctChars = totalCharsAttempted - charErrors;
+        
+        // Debug logging for first session
+        if (session.mode && (session.letters > 0 || session.numbers > 0 || session.signs > 0)) {
+            console.log(`🔢 ACCURACY CALC DEBUG:`, {
+                totalCharsAttempted,
+                charErrors,
+                correctChars,
+                'session.errors': session.errors,
+                'session.character_errors': session.character_errors,
+                accuracy: totalCharsAttempted > 0 ? ((correctChars / totalCharsAttempted) * 100).toFixed(1) + '%' : 'N/A'
+            });
+        }
+        
+        if (totalCharsAttempted > 0) {
+            // Use character-based accuracy calculation (NEW METHOD)
+            return (correctChars / totalCharsAttempted) * 100;
+        } else if (session.characters_attempted > 0) {
+            // Fallback to old character system if available
+            return (session.characters_correct / session.characters_attempted) * 100;
+        } else if (session.total > 0) {
+            // Last resort: word-based accuracy (less accurate for CW)
+            return (session.correct / session.total) * 100;
+        } else {
+            return 0;
+        }
+    }
+
     // Populate dashboard with data
     function populateDashboard(data) {
         document.getElementById('statisticsDashboard').classList.remove('hidden');
@@ -149,12 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Calculate key metrics
+        // Calculate key metrics using CHARACTER-based accuracy
         const avgAccuracy = recent.reduce((sum, s) => {
-            const accuracy = s.characters_attempted > 0 
-                ? (s.characters_correct / s.characters_attempted) * 100 
-                : (s.total > 0 ? (s.correct / s.total) * 100 : 0);
-            return sum + accuracy;
+            return sum + calculateCharacterAccuracy(s);
         }, 0) / recent.length;
 
         const avgSpeed = recent.filter(s => s.wpm > 0)
@@ -195,9 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container || data.length === 0) return;
 
         const chartData = data.map(stat => {
-            return stat.characters_attempted > 0 
-                ? ((stat.characters_correct / stat.characters_attempted) * 100)
-                : (stat.total > 0 ? ((stat.correct / stat.total) * 100) : 0);
+            return calculateCharacterAccuracy(stat);
         });
 
         // Clear container and create simple bar chart
@@ -316,58 +343,78 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`📊 Processing first session:`, session);
             }
             
-            const accuracy = session.characters_attempted > 0 
-                ? ((session.characters_correct / session.characters_attempted) * 100).toFixed(1)
-                : (session.total > 0 ? ((session.correct / session.total) * 100).toFixed(1) : '0');
+            // Calculate CHARACTER-based accuracy (more important for CW training than word accuracy)
+            const accuracy = calculateCharacterAccuracy(session).toFixed(1);
+            if (index === 0) {
+                console.log(`🎯 RECENT SESSIONS accuracy result: ${accuracy}%`);
+                console.log(`📊 Full session data for debugging:`, session);
+            }
             
-            // Fix date parsing - handle different date formats
+            // Fix date parsing - handle different date formats (check both 'date' and 'timestamp' fields)
             let date = new Date().toLocaleDateString();
+            let time = '';
             try {
-                if (session.date && session.date !== null && session.date !== '') {
-                    if (index === 0) console.log(`🗓️ Raw date:`, session.date, typeof session.date);
+                if (index === 0) {
+                    console.log(`🔍 Session date fields:`, {
+                        'session.date': session.date,
+                        'session.timestamp': session.timestamp
+                    });
+                }
+                
+                const dateSource = session.timestamp || session.date; // Check timestamp first
+                if (dateSource && dateSource !== null && dateSource !== '') {
+                    if (index === 0) console.log(`🗓️ Using dateSource:`, dateSource, typeof dateSource);
                     
                     // Handle various date formats
                     let dateObj;
                     
-                    if (typeof session.date === 'string') {
+                    if (typeof dateSource === 'string') {
                         // Try parsing as string first
-                        dateObj = new Date(session.date);
+                        dateObj = new Date(dateSource);
                         
                         // If that fails, try parsing as MySQL datetime format
-                        if (isNaN(dateObj.getTime()) && session.date.includes('-')) {
+                        if (isNaN(dateObj.getTime()) && dateSource.includes('-')) {
                             // Format: YYYY-MM-DD HH:mm:ss or YYYY-MM-DD
-                            dateObj = new Date(session.date.replace(' ', 'T'));
+                            dateObj = new Date(dateSource.replace(' ', 'T'));
                         }
                         
                         // If still fails, try as timestamp string
                         if (isNaN(dateObj.getTime())) {
-                            const timestamp = parseInt(session.date);
+                            const timestamp = parseInt(dateSource);
                             if (!isNaN(timestamp)) {
                                 dateObj = new Date(timestamp);
                             }
                         }
-                    } else if (typeof session.date === 'number') {
+                    } else if (typeof dateSource === 'number') {
                         // Handle as timestamp
-                        dateObj = new Date(session.date);
+                        dateObj = new Date(dateSource);
                     } else {
                         // Try direct conversion
-                        dateObj = new Date(session.date);
+                        dateObj = new Date(dateSource);
                     }
                     
                     if (dateObj && !isNaN(dateObj.getTime())) {
                         date = dateObj.toLocaleDateString();
-                        if (index === 0) console.log(`✅ Successfully parsed date:`, date);
+                        time = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        if (index === 0) console.log(`✅ Successfully parsed date & time:`, date, time);
                     } else {
-                        if (index === 0) console.log(`❌ Could not parse date:`, session.date);
-                        date = 'Today';
+                        if (index === 0) console.log(`❌ Could not parse date/timestamp:`, dateSource);
+                        date = 'Recent';
+                        time = '';
                     }
                 } else {
-                    if (index === 0) console.log(`⚠️ No date provided`);
-                    date = 'Today';
+                    if (index === 0) console.log(`⚠️ No date or timestamp provided in session data`);
+                    date = 'Recent';
+                    time = '';
                 }
             } catch (e) {
-                if (index === 0) console.log('❌ Date parsing error:', e, 'for date:', session.date);
-                date = 'Today';
+                if (index === 0) console.log('❌ Date parsing error:', e, 'for date/timestamp:', dateSource);
+                date = 'Recent';
+                time = '';
+            }
+            
+            if (index === 0) {
+                console.log(`📅 Final date/time result: date="${date}", time="${time}"`);
             }
             
             // Mode name mapping to friendly names
@@ -386,12 +433,38 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Calculate additional info
             const totalChars = (session.letters || 0) + (session.numbers || 0) + (session.signs || 0);
-            const errors = session.errors || 0;
-            const duration = session.duration ? `${session.duration}s` : 'N/A';
+            const errors = session.errors || session.character_errors || 0;
+            
+            // Duration/time display logic
+            let duration;
+            if (session.duration && session.duration > 0) {
+                duration = `${session.duration}s`;
+            } else if (time) {
+                duration = time;
+            } else {
+                duration = 'Recent';
+            }
+            
+            if (index === 0) {
+                console.log(`⏱️ Duration logic: session.duration="${session.duration}", time="${time}", final="${duration}"`);
+            }
             
             let accuracyColor = 'text-red-400';
             if (parseFloat(accuracy) >= 90) accuracyColor = 'text-green-400';
             else if (parseFloat(accuracy) >= 75) accuracyColor = 'text-yellow-400';
+            
+            if (index === 0) {
+                console.log(`📋 FINAL DISPLAY VALUES:`, {
+                    mode,
+                    date,
+                    duration,
+                    accuracy: accuracy + '%',
+                    wpm,
+                    totalChars,
+                    errors,
+                    accuracyColor
+                });
+            }
             
             return `
                 <div class="bg-gray-900 p-4 rounded-lg">
@@ -416,17 +489,27 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('✅ Recent sessions HTML updated');
         console.log('🎯 Final container HTML length:', container.innerHTML.length);
         
-        // Additional verification - check if the HTML contains the mode names
+        // Verification checks
         if (container.innerHTML.includes('QR Codes')) {
-            console.log('✅ SUCCESS: Found "QR Codes" in HTML - mode names are working!');
-        } else if (container.innerHTML.includes('qrCodes')) {
-            console.log('❌ PROBLEM: Still finding "qrCodes" instead of "QR Codes"');
+            console.log('✅ SUCCESS: Found "QR Codes" in HTML - mode names working!');
         }
         
         if (container.innerHTML.includes('Invalid Date')) {
             console.log('❌ PROBLEM: Still showing "Invalid Date"');
         } else {
             console.log('✅ SUCCESS: No "Invalid Date" found');
+        }
+        
+        if (container.innerHTML.includes('N/A')) {
+            console.log('⚠️ WARNING: Found "N/A" in output - check time/duration parsing');
+        } else {
+            console.log('✅ SUCCESS: No "N/A" found - time parsing working');
+        }
+        
+        if (container.innerHTML.includes('100.0%')) {
+            console.log('⚠️ WARNING: Found "100.0%" accuracy - check character accuracy calculation');
+        } else {
+            console.log('✅ SUCCESS: Character accuracy calculation appears to be working');
         }
     }
 
@@ -440,17 +523,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Calculate insights
+        // Calculate insights using CHARACTER-based accuracy
         const avgAccuracy = recent.reduce((sum, s) => {
-            const accuracy = s.characters_attempted > 0 
-                ? (s.characters_correct / s.characters_attempted) * 100 
-                : (s.total > 0 ? (s.correct / s.total) * 100 : 0);
-            return sum + accuracy;
+            return sum + calculateCharacterAccuracy(s);
         }, 0) / recent.length;
 
         const accuracyTrend = recent.length >= 3 ? 
-            (recent.slice(0, 3).reduce((sum, s) => sum + (s.characters_correct / s.characters_attempted * 100), 0) / 3) -
-            (recent.slice(-3).reduce((sum, s) => sum + (s.characters_correct / s.characters_attempted * 100), 0) / 3) : 0;
+            (recent.slice(0, 3).reduce((sum, s) => sum + calculateCharacterAccuracy(s), 0) / 3) -
+            (recent.slice(-3).reduce((sum, s) => sum + calculateCharacterAccuracy(s), 0) / 3) : 0;
 
         let insights = [];
         
@@ -509,9 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             acc[mode].sessions++;
             
-            const accuracy = session.characters_attempted > 0 
-                ? (session.characters_correct / session.characters_attempted) * 100
-                : (session.total > 0 ? (session.correct / session.total) * 100 : 0);
+            const accuracy = calculateCharacterAccuracy(session);
             acc[mode].totalAccuracy += accuracy;
             acc[mode].totalSpeed += (session.wpm || 0);
             
