@@ -62,6 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let inputBuffer = '';
     let isDashboardLoaded = false;
     let isDashboardLoading = false;
+    let isReading = false;
+    let currentReader = null;
 
     // Session tracking for enhanced mode
     const sessionData = {
@@ -430,11 +432,23 @@ document.addEventListener('DOMContentLoaded', () => {
     connectButton.addEventListener('click', async () => {
         if (isConnected) {
             // Disconnect
+            isConnected = false;
+            isReading = false;
+            
+            if (currentReader) {
+                try {
+                    await currentReader.cancel();
+                    currentReader.releaseLock();
+                } catch (e) {
+                    console.log('Reader cleanup error:', e);
+                }
+                currentReader = null;
+            }
+            
             if (port) {
                 await port.close();
             }
             port = null;
-            isConnected = false;
             connectionStatus.textContent = 'Disconnected';
             connectionStatus.className = 'text-red-400 text-sm';
             connectButton.textContent = '🔌 Connect to Morserino';
@@ -503,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const response = await fetch(`/morserino/data/${file}`);
                         if (response.ok) {
                             const text = await response.text();
-                            const words = text.split('\\n').filter(word => word.trim());
+                            const words = text.split('\n').filter(word => word.trim());
                             allWords.push(...words);
                         }
                     }
@@ -513,18 +527,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (currentMode !== 'mixed') {
+                console.log(`Loading ${filename} for ${currentMode} mode...`);
                 const response = await fetch(`/morserino/data/${filename}`);
                 if (!response.ok) throw new Error(`Failed to load ${filename}`);
                 
                 const text = await response.text();
-                currentItems = text.split('\\n').filter(word => word.trim());
+                console.log(`Raw text length: ${text.length}, first 100 chars:`, text.substring(0, 100));
+                
+                currentItems = text.split('\n').filter(word => word.trim());
+                console.log(`After splitting by newlines: ${currentItems.length} items`);
+                console.log('First 5 items:', currentItems.slice(0, 5));
             }
 
             if (currentItems.length === 0) {
                 throw new Error('No words loaded');
             }
 
-            console.log(`Loaded ${currentItems.length} items for ${currentMode} mode`);
+            console.log(`Successfully loaded ${currentItems.length} items for ${currentMode} mode`);
         } catch (error) {
             showToast(`Failed to load words: ${error.message}`, 'bg-red-600');
             console.error('Load words error:', error);
@@ -568,6 +587,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Select random word
         const randomIndex = Math.floor(Math.random() * currentItems.length);
         const word = currentItems[randomIndex];
+        
+        console.log(`Selected word: "${word}" from ${currentItems.length} items`);
+        
+        if (!word) {
+            console.error('No word selected - items:', currentItems);
+            showToast('Error: No training word available', 'bg-red-600');
+            return;
+        }
+        
         target.textContent = word;
         userInput.value = '';
         inputBuffer = '';
@@ -575,7 +603,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             if (port && isConnected) {
                 const writer = port.writable.getWriter();
-                const command = `m ${word}\\n`;
+                const command = `m ${word}\n`;
                 await writer.write(new TextEncoder().encode(command));
                 writer.releaseLock();
                 console.log(`Sent to Morserino: ${command.trim()}`);
@@ -594,21 +622,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function readMorseInput() {
-        if (!port || !isConnected) return;
-
+        if (!port || !isConnected || isReading) return;
+        
+        isReading = true;
+        
         try {
-            const reader = port.readable.getReader();
+            if (currentReader) {
+                await currentReader.cancel();
+                currentReader = null;
+            }
+            
+            currentReader = port.readable.getReader();
             let buffer = '';
 
             while (isConnected && currentIndex <= maxItems) {
-                const { value, done } = await reader.read();
+                const { value, done } = await currentReader.read();
                 if (done) break;
 
                 const chunk = new TextDecoder().decode(value);
                 buffer += chunk;
 
                 // Process complete lines
-                const lines = buffer.split('\\n');
+                const lines = buffer.split('\n');
                 buffer = lines.pop() || '';
 
                 for (const line of lines) {
@@ -620,11 +655,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            reader.releaseLock();
+            if (currentReader) {
+                currentReader.releaseLock();
+                currentReader = null;
+            }
         } catch (error) {
             console.error('Read error:', error);
-            if (error.name !== 'NetworkError') {
+            if (error.name !== 'NetworkError' && error.name !== 'AbortError') {
                 showToast('Connection lost', 'bg-red-600');
+            }
+        } finally {
+            isReading = false;
+            if (currentReader) {
+                try {
+                    currentReader.releaseLock();
+                } catch (e) {
+                    console.log('Reader already released');
+                }
+                currentReader = null;
             }
         }
     }
@@ -676,6 +724,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function endSession() {
+        // Stop reading input
+        isReading = false;
+        if (currentReader) {
+            try {
+                await currentReader.cancel();
+                currentReader.releaseLock();
+            } catch (e) {
+                console.log('Reader cleanup during session end:', e);
+            }
+            currentReader = null;
+        }
+        
         if (hasEnhancedTracking) {
             stopSessionTimer();
         }

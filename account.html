@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Settings</title>
+    <title>OM0RX Professional CW Trainer - Account Settings</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <!-- Re-enable styles.css to test for conflicts, or keep commented -->
     <!-- <link href="styles.css" rel="stylesheet"> -->
@@ -64,7 +64,21 @@
 </head>
 <body class="bg-gray-800 text-white min-h-screen flex flex-col items-center justify-center p-4">
     <div class="container mx-auto max-w-2xl">
-        <h1 class="text-3xl font-bold mb-6 text-center">Account Settings</h1>
+        <!-- Professional Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center mb-4">
+                <div class="bg-gradient-to-r from-blue-600 to-green-600 text-white px-6 py-3 rounded-lg shadow-lg">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-2xl">📻</div>
+                        <div>
+                            <div class="text-xl font-bold tracking-wide">OM0RX</div>
+                            <div class="text-sm opacity-90">Professional CW Trainer</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-100">Account Settings</h1>
+        </div>
 
         <div id="accountDebug" class="error hidden bg-red-600 p-2 rounded">Style Check: If visible, check console for errors.</div>
 
@@ -128,19 +142,7 @@
                 </div>
             </div>
 
-            <div class="section bg-gray-700 shadow-lg rounded-lg p-4" data-id="statistics">
-                <div class="section-header cursor-pointer">
-                    <h2 class="text-xl font-semibold">Statistics</h2>
-                    <div class="icon-container">
-                        <svg data-id="statistics-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </div>
-                </div>
-                <div id="statistics-content" class="mt-2 space-y-4">
-                    <p id="accountStats" class="text-lg">No stats available</p>
-                    <ul id="recentSessions" class="list-disc list-inside"></ul>
-                    <button id="exportStatsButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">Export Statistics</button>
-                </div>
-            </div>
+
         </div>
 
         <div class="flex space-x-2 mt-6">
