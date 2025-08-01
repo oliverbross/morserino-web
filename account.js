@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Account.js loaded - Version 2.0 - Statistics Removed'); // Force cache refresh
     const apiBaseUrl = '/morserino/api';
     const currentUsername = document.getElementById('currentUsername');
     const accountDebug = document.getElementById('accountDebug');
@@ -741,6 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     backToTrainingFromAccount.addEventListener('click', (e) => {
         e.preventDefault();
+        console.log('Back to Training button clicked - navigating to index.html');  
         window.location.href = '/morserino/index.html';
     });
 

@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const target = document.getElementById('target');
     const userInput = document.getElementById('userInput');
     const nextButton = document.getElementById('nextButton');
+    const inputDisplay = document.getElementById('inputDisplay');
     const sessionStats = document.getElementById('sessionStats');
     const statsList = document.getElementById('statsList');
 
@@ -54,6 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let isDashboardLoading = false;
     let isReading = false;
     let currentReader = null;
+    
+    // Character-by-character tracking
+    let currentWord = '';
+    let currentCharIndex = 0;
+    let receivedChars = '';
 
     // Session tracking for enhanced mode
     const sessionData = {
@@ -67,6 +73,53 @@ document.addEventListener('DOMContentLoaded', () => {
         endTime: null,
         wordAttempts: []
     };
+
+    // Character-by-character display functions
+    function displayWordWithProgress() {
+        if (!currentWord) return;
+        
+        let displayHtml = '';
+        for (let i = 0; i < currentWord.length; i++) {
+            const char = currentWord[i];
+            let colorClass = '';
+            
+            if (i < currentCharIndex) {
+                // Characters already completed correctly
+                colorClass = 'text-green-400';
+            } else if (i === currentCharIndex) {
+                // Current character to input
+                colorClass = 'text-blue-400 bg-blue-800 bg-opacity-50 px-1 rounded';
+            } else {
+                // Future characters
+                colorClass = 'text-gray-400';
+            }
+            
+            displayHtml += `<span class="${colorClass}">${char}</span>`;
+        }
+        
+        target.innerHTML = displayHtml;
+    }
+    
+    function displayUserInput() {
+        if (!inputDisplay) return;
+        
+        let displayHtml = '';
+        for (let i = 0; i < receivedChars.length; i++) {
+            const char = receivedChars[i];
+            const isCorrect = i < currentWord.length && char === currentWord[i];
+            const colorClass = isCorrect ? 'text-green-400' : 'text-red-400';
+            displayHtml += `<span class="${colorClass}">${char}</span>`;
+        }
+        
+        inputDisplay.innerHTML = displayHtml || '<span class="text-gray-500">---</span>';
+    }
+    
+    function resetCharacterTracking() {
+        currentCharIndex = 0;
+        receivedChars = '';
+        displayWordWithProgress();
+        displayUserInput();
+    }
 
     // Collapsible sections functionality
     function toggleSection(sectionId) {
@@ -471,8 +524,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (nextButton) nextButton.classList.remove('hidden');
             if (endSessionButton) endSessionButton.classList.remove('hidden');
             
-            // Clear target
+            // Clear character tracking displays
+            currentWord = '';
+            currentCharIndex = 0;
+            receivedChars = '';
             target.textContent = '';
+            if (inputDisplay) {
+                inputDisplay.innerHTML = '<span class="text-gray-500">Ready...</span>';
+            }
             
             // Reset session data
             if (hasEnhancedTracking) {
@@ -482,6 +541,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             showToast(`Starting ${maxItems} item session`, 'bg-green-600');
+            
+            // Start reading serial data
+            if (port && isConnected && !isReading) {
+                console.log('🔄 Starting serial reading for character-by-character input...');
+                readMorseInput();
+            } else {
+                console.log('⚠️ Cannot start reading: port=', !!port, 'connected=', isConnected, 'alreadyReading=', isReading);
+            }
+            
             await nextTarget();
         } catch (error) {
             showToast(`Failed to start session: ${error.message}`, 'bg-red-600');
@@ -506,7 +574,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        target.textContent = word;
+        // Set up character-by-character tracking
+        currentWord = word;
+        currentCharIndex = 0;
+        receivedChars = '';
+        
+        // Display the word with character-by-character highlighting
+        displayWordWithProgress();
+        displayUserInput();
+        
+        // Clear old displays
         userInput.value = '';
         inputBuffer = '';
         
@@ -530,11 +607,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         currentIndex++;
-        
-        // Start reading Morse input
-        if (isConnected) {
-            await readMorseInput();
-        }
     }
 
     async function readMorseInput() {
@@ -551,7 +623,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentReader = port.readable.getReader();
             let buffer = '';
 
-            while (isConnected && currentIndex <= maxItems) {
+            while (isConnected && isReading) {
                 const { value, done } = await currentReader.read();
                 if (done) break;
 
@@ -565,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 for (const line of lines) {
                     const trimmed = line.trim();
                     if (trimmed) {
-                        console.log('Received from Morserino:', trimmed);
+                        console.log('📡 Received from Morserino:', trimmed, 'Current word:', currentWord, 'Char index:', currentCharIndex);
                         await processMorseInput(trimmed);
                     }
                 }
@@ -594,49 +666,95 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function processMorseInput(input) {
-        const expectedWord = target.textContent;
-        const receivedWord = input.toUpperCase().trim();
-
-        // Update session data
-        sessionData.total++;
+        if (!currentWord) {
+            console.log('No current word set, ignoring input:', input);
+            return;
+        }
+        
+        const receivedChar = input.toUpperCase().trim();
+        console.log(`Processing character: "${receivedChar}" (expected: "${currentWord[currentCharIndex] || 'END'}")`);
+        
+        // Handle character input
+        receivedChars += receivedChar;
         
         if (hasEnhancedTracking) {
             // Count character types
-            for (const char of receivedWord) {
-                if (/[A-Z]/.test(char)) sessionData.letters++;
-                else if (/[0-9]/.test(char)) sessionData.numbers++;
-                else sessionData.signs++;
+            if (/[A-Z]/.test(receivedChar)) sessionData.letters++;
+            else if (/[0-9]/.test(receivedChar)) sessionData.numbers++;
+            else sessionData.signs++;
+        }
+        
+        // Check if character is correct
+        if (currentCharIndex < currentWord.length && receivedChar === currentWord[currentCharIndex]) {
+            // Correct character
+            currentCharIndex++;
+            console.log(`✓ Correct character! Progress: ${currentCharIndex}/${currentWord.length}`);
+            
+            // Update displays
+            displayWordWithProgress();
+            displayUserInput();
+            
+            // Check if word is complete
+            if (currentCharIndex >= currentWord.length) {
+                // Word completed successfully
+                sessionData.correct++;
+                sessionData.total++;
+                showToast('✓ Word Complete!', 'bg-green-600');
+                
+                if (hasEnhancedTracking) {
+                    sessionData.wordAttempts.push({
+                        expected: currentWord,
+                        received: receivedChars,
+                        correct: true,
+                        timestamp: new Date()
+                    });
+                    updateSessionDisplay();
+                }
+                
+                // Wait briefly then continue to next word
+                setTimeout(async () => {
+                    if (currentIndex >= maxItems) {
+                        await endSession();
+                    } else {
+                        await nextTarget();
+                    }
+                }, 1500);
             }
             
-            // Track word attempt
-            sessionData.wordAttempts.push({
-                expected: expectedWord,
-                received: receivedWord,
-                correct: receivedWord === expectedWord,
-                timestamp: new Date()
-            });
-        }
-
-        if (receivedWord === expectedWord) {
-            sessionData.correct++;
-            showToast('✓ Correct!', 'bg-green-600');
         } else {
+            // Incorrect character - reset and try again
             sessionData.errors++;
-            showToast(`✗ Wrong: got "${receivedWord}", expected "${expectedWord}"`, 'bg-red-600');
-        }
-
-        if (hasEnhancedTracking) {
-            updateSessionDisplay();
-        }
-
-        // Wait briefly then continue
-        setTimeout(async () => {
-            if (currentIndex >= maxItems) {
-                await endSession();
-            } else {
-                await nextTarget();
+            console.log(`✗ Wrong character: got "${receivedChar}", expected "${currentWord[currentCharIndex] || 'END'}"`);
+            showToast(`✗ Wrong! Expected "${currentWord[currentCharIndex]}", got "${receivedChar}". Try again.`, 'bg-red-600');
+            
+            if (hasEnhancedTracking) {
+                sessionData.wordAttempts.push({
+                    expected: currentWord,
+                    received: receivedChars,
+                    correct: false,
+                    timestamp: new Date()
+                });
+                updateSessionDisplay();
             }
-        }, 1000);
+            
+            // Reset character tracking for this word
+            resetCharacterTracking();
+            
+            // Resend the word to Morserino
+            setTimeout(async () => {
+                try {
+                    if (port && isConnected) {
+                        const writer = port.writable.getWriter();
+                        const command = `m ${currentWord}\n`;
+                        await writer.write(new TextEncoder().encode(command));
+                        writer.releaseLock();
+                        console.log(`Resent to Morserino: ${command.trim()}`);
+                    }
+                } catch (error) {
+                    console.error('Resend error:', error);
+                }
+            }, 1000);
+        }
     }
 
     async function endSession() {
@@ -671,8 +789,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (nextButton) nextButton.classList.add('hidden');
         if (endSessionButton) endSessionButton.classList.add('hidden');
         
-        // Clear target
+        // Clear character tracking and displays
+        currentWord = '';
+        currentCharIndex = 0;
+        receivedChars = '';
         target.textContent = '';
+        if (inputDisplay) {
+            inputDisplay.innerHTML = '<span class="text-gray-500">---</span>';
+        }
 
         const accuracy = sessionData.total > 0 ? ((sessionData.correct / sessionData.total) * 100).toFixed(1) : '0';
         const report = `Session Complete!\\n\\nResults: ${sessionData.correct}/${sessionData.total} (${accuracy}% accuracy)`;
