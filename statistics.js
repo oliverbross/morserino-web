@@ -84,20 +84,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch historical statistics
     async function fetchHistoricalStats(username, force = false) {
         try {
-            const response = await fetch(`${apiBaseUrl}/get_stats.php`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username }),
+            console.log('Fetching stats for username:', username);
+            const response = await fetch(`${apiBaseUrl}/get_stats.php?username=${encodeURIComponent(username)}&limit=100`, {
+                method: 'GET',
                 credentials: 'include'
             });
 
+            console.log('API response status:', response.status);
             const data = await response.json();
+            console.log('API response data:', data);
             
             if (response.ok && data.length > 0) {
                 console.log('Loaded historical stats:', data.length, 'sessions');
                 populateDashboard(data);
             } else {
-                console.log('No historical stats found');
+                console.log('No historical stats found or API error:', response.status, data);
                 showEmptyState();
             }
         } catch (error) {

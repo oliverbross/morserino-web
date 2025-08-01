@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Check if enhanced tracking elements exist
     const hasEnhancedTracking = !!(lettersCount && sessionTimer && startNewSession);
-    console.log('Enhanced tracking available:', hasEnhancedTracking ? startNewSession : false);
+    console.log('Enhanced tracking available:', hasEnhancedTracking);
 
     // Global variables
     const apiBaseUrl = 'https://om0rx.com/morserino/api';
@@ -137,14 +137,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateSessionDisplay() {
         if (!hasEnhancedTracking) return;
         
-        lettersCount.textContent = sessionData.letters;
-        numbersCount.textContent = sessionData.numbers;
-        signsCount.textContent = sessionData.signs;
-        errorsCount.textContent = sessionData.errors;
+        // Safely update elements only if they exist
+        if (lettersCount) lettersCount.textContent = sessionData.letters;
+        if (numbersCount) numbersCount.textContent = sessionData.numbers;
+        if (signsCount) signsCount.textContent = sessionData.signs;
+        if (errorsCount) errorsCount.textContent = sessionData.errors;
         
         const accuracy = sessionData.total > 0 ? 
             ((sessionData.correct / sessionData.total) * 100).toFixed(1) : '0.0';
-        accuracyPercent.textContent = `${accuracy}%`;
+        if (accuracyPercent) accuracyPercent.textContent = `${accuracy}%`;
         
         // Calculate speeds
         if (sessionData.startTime) {
@@ -152,8 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (elapsed > 0) {
                 const cpm = (sessionData.letters + sessionData.numbers + sessionData.signs) / elapsed;
                 const wpm = cpm / 5; // Standard WPM calculation
-                characterSpeed.textContent = `${cpm.toFixed(1)} CPM`;
-                wordSpeed.textContent = `${wpm.toFixed(1)} WPM`;
+                if (characterSpeed) characterSpeed.textContent = `${cpm.toFixed(1)} CPM`;
+                if (wordSpeed) wordSpeed.textContent = `${wpm.toFixed(1)} WPM`;
             }
         }
     }
@@ -176,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateTimerDisplay() {
-        if (!sessionData.startTime || !hasEnhancedTracking) return;
+        if (!sessionData.startTime || !hasEnhancedTracking || !sessionTimer) return;
         const now = new Date();
         const elapsed = now - sessionData.startTime;
         const minutes = Math.floor(elapsed / 60000);
@@ -809,7 +810,7 @@ Items: ${maxItems}`;
                 sessionReport.textContent = 'No session completed yet';
             }
             resetSessionCounters();
-            sessionTimer.textContent = '00:00.0';
+            if (sessionTimer) sessionTimer.textContent = '00:00.0';
             showToast('Ready for new session!', 'bg-green-600');
         });
     }
@@ -821,7 +822,7 @@ Items: ${maxItems}`;
     if (hasEnhancedTracking) {
         resetSessionCounters();
         updateSessionDisplay();
-        sessionTimer.textContent = '00:00.0';
+        if (sessionTimer) sessionTimer.textContent = '00:00.0';
     }
 
     // Double-check login section visibility after a brief delay
