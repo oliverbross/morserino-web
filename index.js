@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutButton = document.getElementById('logoutButton');
     const accountButton = document.getElementById('accountButton');
     const statisticsButton = document.getElementById('statisticsButton');
+    const kochTrainerButton = document.getElementById('kochTrainerButton');
     // Login elements moved to separate login.html page
     const realWordsButton = document.getElementById('realWordsButton');
     const abbreviationsButton = document.getElementById('abbreviationsButton');
@@ -332,6 +333,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     accountButton.addEventListener('click', () => {
         window.location.href = '/morserino/account.html';
+    });
+
+    kochTrainerButton.addEventListener('click', () => {
+        window.location.href = 'koch-cw-trainer.html';
     });
 
     if (statisticsButton) {

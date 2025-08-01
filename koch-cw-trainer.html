@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OM0RX Professional CW Trainer - Koch Method Training</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        .section-header {
+            position: relative !important;
+            display: flex !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            width: 100% !important;
+            min-height: 40px !important;
+            padding: 8px 40px 8px 8px !important;
+        }
+        .section-header h2 {
+            flex: 1 1 auto !important;
+            margin: 0 !important;
+            font-size: 1.25rem !important;
+        }
+        .icon-container {
+            position: absolute !important;
+            right: 8px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            width: 24px !important;
+            height: 24px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .section-header svg {
+            width: 24px !important;
+            height: 24px !important;
+            stroke: white !important;
+        }
+        /* Custom styles for Koch trainer */
+        .character-display {
+            font-size: 4rem;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-align: center;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #374151;
+            border-radius: 0.5rem;
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        }
+        .session-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 0.75rem;
+            background: #374151;
+            border-radius: 0.5rem;
+        }
+        .slider-container {
+            position: relative;
+            margin: 1rem 0;
+        }
+        .slider-value {
+            position: absolute;
+            top: -2rem;
+            right: 0;
+            background: #059669;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        .character-item {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #4b5563;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .character-item.active {
+            background: #059669;
+            border-color: #10b981;
+        }
+        .character-item.mastered {
+            background: #1d4ed8;
+            border-color: #3b82f6;
+        }
+        .session-control-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        @keyframes pulse-green {
+            0%, 100% { background-color: #059669; }
+            50% { background-color: #10b981; }
+        }
+        .training-active .character-display {
+            animation: pulse-green 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-800 text-white min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="container mx-auto max-w-4xl">
+        <!-- Professional Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center mb-4">
+                <div class="relative bg-gradient-to-r from-blue-600 to-green-600 text-white px-6 py-3 rounded-lg shadow-lg overflow-hidden">
+                    <!-- Background CW Key Image -->
+                    <div class="absolute inset-0 opacity-15">
+                        <img src="cwkey.jpeg" alt="CW Key Background" class="w-full h-full object-cover rounded-lg">
+                    </div>
+                    <div class="relative flex items-center space-x-3 z-10">
+                        <div class="w-10 h-10 rounded-full bg-white/20 p-2">
+                            <img src="cwkey.jpeg" alt="CW Key" class="w-full h-full object-cover rounded-full">
+                        </div>
+                        <div>
+                            <div class="text-xl font-bold tracking-wide text-white drop-shadow">OM0RX</div>
+                            <div class="text-sm opacity-90 text-white drop-shadow">Professional CW Trainer</div>
+                        </div>
+                        <div class="text-2xl animate-pulse">🎧</div>
+                    </div>
+                </div>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-100">Koch Method CW Training</h1>
+            <p class="text-gray-300 mt-2">Progressive character learning system for Morse code mastery</p>
+        </div>
+
+        <div id="kochDebug" class="error hidden bg-red-600 p-2 rounded mb-4">Debug: Check console for errors.</div>
+        
+        <!-- User Status -->
+        <div id="userStatus" class="text-center mb-6 hidden">
+            <p class="text-lg">Logged in as: <span id="currentUsername" class="font-semibold text-green-400"></span></p>
+        </div>
+
+        <div id="sortable-sections" class="space-y-4">
+            
+            <!-- Training Display -->
+            <div class="section bg-gray-700 shadow-lg rounded-lg p-6" data-id="training-display">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">Training Display</h2>
+                    <div class="icon-container">
+                        <svg data-id="training-display-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="training-display-content" class="mt-4">
+                    <!-- Character Display -->
+                    <div class="character-display mb-4" id="characterDisplay">
+                        <span id="currentCharacter">Ready</span>
+                    </div>
+                    
+                    <!-- Session Stats -->
+                    <div class="session-stats">
+                        <div class="stat-item">
+                            <div class="text-2xl font-bold text-green-400" id="sessionTimer">00:00</div>
+                            <div class="text-sm text-gray-300">Session Time</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="text-2xl font-bold text-blue-400" id="charactersLearned">1</div>
+                            <div class="text-sm text-gray-300">Characters Learned</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="text-2xl font-bold text-yellow-400" id="sessionAccuracy">0%</div>
+                            <div class="text-sm text-gray-300">Accuracy</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="text-2xl font-bold text-purple-400" id="currentStreak">0</div>
+                            <div class="text-sm text-gray-300">Current Streak</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Session Control -->
+            <div class="section bg-gray-700 shadow-lg rounded-lg p-4" data-id="session-control">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">Session Control</h2>
+                    <div class="icon-container">
+                        <svg data-id="session-control-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="session-control-content" class="mt-4 hidden">
+                    <div class="session-control-buttons">
+                        <button id="startTrainingButton" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
+                            ▶️ Start Training
+                        </button>
+                        <button id="pauseTrainingButton" class="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 hidden">
+                            ⏸️ Pause
+                        </button>
+                        <button id="stopTrainingButton" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 hidden">
+                            ⏹️ Stop Training
+                        </button>
+                    </div>
+                    
+                    <!-- Session Length -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">Session Length (minutes)</label>
+                        <div class="slider-container">
+                            <span class="slider-value" id="sessionLengthValue">10</span>
+                            <input type="range" id="sessionLengthSlider" min="5" max="60" value="10" step="5" 
+                                   class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>5 min</span>
+                            <span>30 min</span>
+                            <span>60 min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Koch Character Selection -->
+            <div class="section bg-gray-700 shadow-lg rounded-lg p-4" data-id="character-selection">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">Character Selection & Progress</h2>
+                    <div class="icon-container">
+                        <svg data-id="character-selection-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="character-selection-content" class="mt-4 hidden">
+                    <!-- Character Count Slider -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">Number of Characters to Practice</label>
+                        <div class="slider-container">
+                            <span class="slider-value" id="characterCountValue">2</span>
+                            <input type="range" id="characterCountSlider" min="1" max="43" value="2" 
+                                   class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>1 (K only)</span>
+                            <span>22 (Half)</span>
+                            <span>43 (All)</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Character Grid -->
+                    <div class="character-grid" id="characterGrid">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="mt-4 text-sm text-gray-300">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-green-600 rounded mr-2"></div>
+                                <span>Active (practicing)</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-blue-600 rounded mr-2"></div>
+                                <span>Mastered (90%+ accuracy)</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-gray-600 rounded mr-2"></div>
+                                <span>Not yet learned</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Speed & Timing Settings -->
+            <div class="section bg-gray-700 shadow-lg rounded-lg p-4" data-id="speed-settings">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">Speed & Timing Settings</h2>
+                    <div class="icon-container">
+                        <svg data-id="speed-settings-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="speed-settings-content" class="mt-4 hidden">
+                    <!-- Character Speed -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">Character Speed (WPM)</label>
+                        <div class="slider-container">
+                            <span class="slider-value" id="charSpeedValue">20</span>
+                            <input type="range" id="charSpeedSlider" min="15" max="80" value="20" step="5" 
+                                   class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>15 WPM</span>
+                            <span>45 WPM</span>
+                            <span>80 WPM</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Effective Speed (Farnsworth) -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">Effective Speed (WPM) - Farnsworth Timing</label>
+                        <select id="effectiveSpeedSelect" class="w-full p-2 bg-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="4">4 WPM</option>
+                            <option value="8">8 WPM</option>
+                            <option value="13">13 WPM</option>
+                            <option value="17" selected>17 WPM</option>
+                            <option value="21">21 WPM</option>
+                            <option value="26">26 WPM</option>
+                            <option value="30">30 WPM</option>
+                            <option value="35">35 WPM</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Character Display Delay -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">Character Display Delay (seconds)</label>
+                        <div class="slider-container">
+                            <span class="slider-value" id="displayDelayValue">2.0</span>
+                            <input type="range" id="displayDelaySlider" min="0" max="10" value="2" step="0.5" 
+                                   class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>0s (immediate)</span>
+                            <span>5s</span>
+                            <span>10s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Settings -->
+            <div class="section bg-gray-700 shadow-lg rounded-lg p-4" data-id="audio-settings">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">Audio Settings</h2>
+                    <div class="icon-container">
+                        <svg data-id="audio-settings-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="audio-settings-content" class="mt-4 hidden">
+                    <!-- Pitch -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">Pitch (Hz)</label>
+                        <div class="slider-container">
+                            <span class="slider-value" id="pitchValue">600</span>
+                            <input type="range" id="pitchSlider" min="300" max="1000" value="600" step="50" 
+                                   class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>300 Hz</span>
+                            <span>650 Hz</span>
+                            <span>1000 Hz</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Volume -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">Volume</label>
+                        <div class="slider-container">
+                            <span class="slider-value" id="volumeValue">70%</span>
+                            <input type="range" id="volumeSlider" min="10" max="100" value="70" step="5" 
+                                   class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>10%</span>
+                            <span>50%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Settings -->
+            <div class="section bg-gray-700 shadow-lg rounded-lg p-4" data-id="advanced-settings">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">Advanced Settings</h2>
+                    <div class="icon-container">
+                        <svg data-id="advanced-settings-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="advanced-settings-content" class="mt-4 hidden">
+                    <!-- Signal Simulation -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-300 mb-2">Signal Strength</label>
+                            <select id="signalStrengthSelect" class="w-full p-2 bg-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="S9" selected>S9 (Strong)</option>
+                                <option value="S8">S8</option>
+                                <option value="S7">S7</option>
+                                <option value="S6">S6</option>
+                                <option value="S5">S5</option>
+                                <option value="S4">S4</option>
+                                <option value="S3">S3</option>
+                                <option value="S2">S2</option>
+                                <option value="S1">S1 (Weak)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-300 mb-2">Noise Level</label>
+                            <select id="noiseLevelSelect" class="w-full p-2 bg-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="off" selected>Off</option>
+                                <option value="S3">S3</option>
+                                <option value="S5">S5</option>
+                                <option value="S7">S7</option>
+                                <option value="S9">S9</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Realism Effects -->
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="qsbToggle" class="mr-2 w-4 h-4 text-green-600 bg-gray-600 border-gray-500 rounded focus:ring-green-500">
+                            <span class="text-sm">QSB (Fading)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="chirpToggle" class="mr-2 w-4 h-4 text-green-600 bg-gray-600 border-gray-500 rounded focus:ring-green-500">
+                            <span class="text-sm">Chirp</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="straightKeyToggle" class="mr-2 w-4 h-4 text-green-600 bg-gray-600 border-gray-500 rounded focus:ring-green-500">
+                            <span class="text-sm">Straight Key</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="qrmToggle" class="mr-2 w-4 h-4 text-green-600 bg-gray-600 border-gray-500 rounded focus:ring-green-500">
+                            <span class="text-sm">QRM (Interference)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex flex-wrap justify-center gap-2 mt-6">
+            <button id="backToTrainingFromKoch" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">🏠 Back to Training</button>
+            <button id="viewStatisticsFromKoch" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">📊 Statistics</button>
+            <button id="resetProgressButton" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">🔄 Reset Progress</button>
+        </div>
+    </div>
+
+    <script src="koch-cw-trainer.js?v=1.0"></script>
+</body>
+</html>
