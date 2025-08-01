@@ -475,7 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Create fresh chart (old one was destroyed)
         window.accuracyChartInstance = new Chart(ctx, {
-                type: 'line',
+            type: 'line',
                 data: {
                     labels: data.map((_, i) => `Session ${i + 1}`),
                     datasets: [{
@@ -527,35 +527,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Create fresh chart (old one was destroyed)
         window.speedChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.map((_, i) => `Session ${i + 1}`),
-                    datasets: [{
-                        label: 'WPM',
-                        data: speedData,
-                        borderColor: '#34D399',
-                        backgroundColor: 'rgba(52, 211, 153, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { 
-                            beginAtZero: true,
-                            grid: { color: '#374151' },
-                            ticks: { color: '#374151' }
-                        },
-                        x: { 
-                            grid: { color: '#374151' },
-                            ticks: { color: '#9CA3AF' }
-                        }
+            type: 'line',
+            data: {
+                labels: data.map((_, i) => `Session ${i + 1}`),
+                datasets: [{
+                    label: 'WPM',
+                    data: speedData,
+                    borderColor: '#34D399',
+                    backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#374151' },
+                        ticks: { color: '#9CA3AF' }
+                    },
+                    x: { 
+                        grid: { color: '#374151' },
+                        ticks: { color: '#9CA3AF' }
                     }
                 }
-            });
+            }
+        });
     }
 
     function populateTrainingInsights(data) {
