@@ -418,25 +418,126 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Toast notification function
+    // Toast notification function (centered)
     function showToast(message, bgColor) {
         const toast = document.createElement('div');
-        toast.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-2 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
+        toast.className = `fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 opacity-0 transition-opacity duration-300`;
         toast.textContent = message;
         document.body.appendChild(toast);
 
-        // Slide in
+        // Fade in
         setTimeout(() => {
-            toast.classList.remove('translate-x-full');
+            toast.classList.remove('opacity-0');
         }, 10);
 
-        // Slide out and remove
+        // Fade out and remove
         setTimeout(() => {
-            toast.classList.add('translate-x-full');
+            toast.classList.add('opacity-0');
             setTimeout(() => {
-                document.body.removeChild(toast);
+                if (document.body.contains(toast)) {
+                    document.body.removeChild(toast);
+                }
             }, 300);
         }, 3000);
+    }
+
+    // Comprehensive Session Complete Modal
+    function showSessionCompleteModal() {
+        // Calculate statistics
+        const duration = sessionData.endTime && sessionData.startTime ? 
+            ((sessionData.endTime - sessionData.startTime) / 1000).toFixed(1) : '0';
+        
+        const durationMinutes = sessionData.startTime && sessionData.endTime ? 
+            (sessionData.endTime - sessionData.startTime) / 60000 : 0;
+            
+        const cpm = durationMinutes > 0 ? 
+            ((sessionData.letters + sessionData.numbers + sessionData.signs) / durationMinutes).toFixed(1) : '0';
+        
+        const wpm = (parseFloat(cpm) / 5).toFixed(1);
+        
+        const charAccuracy = sessionData.letters + sessionData.numbers + sessionData.signs > 0 ? 
+            (((sessionData.letters + sessionData.numbers + sessionData.signs - sessionData.errors) / (sessionData.letters + sessionData.numbers + sessionData.signs)) * 100).toFixed(1) : '0';
+        
+        // Get friendly mode name
+        const modeNames = {
+            realWords: 'Real Words',
+            abbreviations: 'Abbreviations',
+            callsigns: 'Callsigns',
+            qrCodes: 'QR Codes',
+            topWords: 'Top Words in CW',
+            mixed: 'Mixed Mode'
+        };
+        const friendlyModeName = modeNames[currentMode] || currentMode;
+        
+        // Create modal
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center';
+        
+        const modal = document.createElement('div');
+        modal.className = 'bg-gray-800 text-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4 border border-gray-600';
+        
+        modal.innerHTML = `
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-green-400 mb-2">🎉 Session Complete!</h2>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div><strong>Mode:</strong> ${friendlyModeName}</div>
+                    <div><strong>Words Completed:</strong> ${sessionData.correct}</div>
+                    <div><strong>Character Accuracy:</strong> ${charAccuracy}%</div>
+                    <div><strong>Character Errors:</strong> ${sessionData.errors}</div>
+                    <div><strong>Time:</strong> ${duration}s</div>
+                    <div><strong>Speed (CPM):</strong> ${cpm}</div>
+                    <div><strong>Speed (WPM):</strong> ${wpm}</div>
+                    <div><strong>Total Items:</strong> ${sessionData.total}</div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-600 text-sm">
+                    <div class="space-y-2">
+                        <h4 class="font-semibold text-blue-400">Letters & Signs</h4>
+                        <div>Letters: ${sessionData.letters}</div>
+                        <div>Signs: ${sessionData.signs}</div>
+                    </div>
+                    <div class="space-y-2">
+                        <h4 class="font-semibold text-yellow-400">Numbers & Errors</h4>
+                        <div>Numbers: ${sessionData.numbers}</div>
+                        <div>Char Errors: ${sessionData.errors}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-center mt-6">
+                <button id="closeModalBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200">
+                    Close
+                </button>
+            </div>
+        `;
+        
+        modalOverlay.appendChild(modal);
+        document.body.appendChild(modalOverlay);
+        
+        // Add close functionality
+        const closeBtn = modal.querySelector('#closeModalBtn');
+        const closeModal = () => {
+            modalOverlay.classList.add('opacity-0');
+            setTimeout(() => {
+                if (document.body.contains(modalOverlay)) {
+                    document.body.removeChild(modalOverlay);
+                }
+            }, 300);
+        };
+        
+        closeBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeModal();
+        });
+        
+        // Fade in
+        modalOverlay.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+        setTimeout(() => {
+            modalOverlay.classList.remove('opacity-0');
+        }, 10);
     }
 
     // Data loading functions
@@ -579,10 +680,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // Set up character-by-character tracking
-        currentWord = word;
+        // Set up character-by-character tracking (trim any spaces)
+        currentWord = word.trim();
         currentCharIndex = 0;
         receivedChars = '';
+        
+        console.log(`🎯 Starting new word: "${currentWord}" (length: ${currentWord.length})`);
         
         // Display the word with character-by-character highlighting
         displayWordWithProgress();
@@ -738,8 +841,11 @@ document.addEventListener('DOMContentLoaded', () => {
             displayUserInput();
             
             // Check if word is complete
+            console.log(`🔍 Word completion check: charIndex=${currentCharIndex}, wordLength=${currentWord.length}, complete=${currentCharIndex >= currentWord.length}`);
+            
             if (currentCharIndex >= currentWord.length) {
                 // Word completed successfully
+                console.log('🎉 WORD COMPLETED! Moving to next word...');
                 sessionData.correct++;
                 sessionData.total++;
                 showToast('✓ Word Complete!', 'bg-green-600');
@@ -755,10 +861,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 // Wait briefly then continue to next word
+                console.log(`📊 Checking session progress: currentIndex=${currentIndex}, maxItems=${maxItems}`);
                 setTimeout(async () => {
                     if (currentIndex >= maxItems) {
+                        console.log('🏁 Session complete, ending...');
                         await endSession();
                     } else {
+                        console.log('➡️ Moving to next word...');
                         await nextTarget();
                     }
                 }, 1500);
@@ -845,34 +954,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const report = `Session Complete!\\n\\nResults: ${sessionData.correct}/${sessionData.total} (${accuracy}% accuracy)`;
         
         if (hasEnhancedTracking) {
-            const sessionReport = document.getElementById('sessionReport');
-            if (sessionReport) {
-                const duration = sessionData.endTime && sessionData.startTime ? 
-                    ((sessionData.endTime - sessionData.startTime) / 1000).toFixed(1) : '0';
-                
-                const cpm = sessionData.startTime && sessionData.endTime ? 
-                    ((sessionData.letters + sessionData.numbers + sessionData.signs) / ((sessionData.endTime - sessionData.startTime) / 60000)).toFixed(1) : '0';
-                
-                const wpm = (parseFloat(cpm) / 5).toFixed(1);
-
-                sessionReport.textContent = `📊 Session Complete!
-
-✅ Accuracy: ${accuracy}% (${sessionData.correct}/${sessionData.total})
-⏱️ Duration: ${duration}s
-🔤 Characters: ${sessionData.letters + sessionData.numbers + sessionData.signs}
-❌ Errors: ${sessionData.errors}
-📈 Speed: ${cpm} CPM (${wpm} WPM)
-
-Mode: ${currentMode}
-Items: ${maxItems}`;
-
-                if (startNewSession) {
-                    startNewSession.classList.remove('hidden');
-                }
-            }
+            showSessionCompleteModal();
+        } else {
+            showToast(report.replace('\\n\\n', ' - '), 'bg-blue-600');
         }
-
-        showToast(report.replace('\\n\\n', ' - '), 'bg-blue-600');
 
         // Save stats
         await trySaveStats();
