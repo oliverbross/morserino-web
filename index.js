@@ -652,33 +652,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     console.log('📡 Raw chunk received:', JSON.stringify(chunk), 'Buffer now:', JSON.stringify(buffer));
 
-                    // Process complete lines and individual characters
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop() || '';
-
-                    for (const line of lines) {
-                        const trimmed = line.trim();
-                        if (trimmed) {
-                            console.log('📡 Processing line:', JSON.stringify(trimmed));
+                    // Process characters as they come in (Morserino sends individual chars with spaces)
+                    // Look for individual letters (not spaces) in the buffer
+                    const chars = buffer.split('');
+                    let processedUpTo = 0;
+                    
+                    for (let i = 0; i < chars.length; i++) {
+                        const char = chars[i];
+                        
+                        // Process actual letters/numbers, skip spaces
+                        if (char && char.trim() && char !== ' ') {
+                            console.log('🔤 Found character to process:', JSON.stringify(char));
                             console.log('📊 Current state: word=', currentWord, 'charIndex=', currentCharIndex);
                             
-                            // Handle both single characters and complete words from Morserino
-                            if (trimmed.length === 1) {
-                                // Single character - process directly  
-                                console.log('🔤 Single character input:', JSON.stringify(trimmed));
-                                await processMorseInput(trimmed);
-                            } else {
-                                // Multiple characters - process each one
-                                console.log('🔤 Multi-character input, processing each:', JSON.stringify(trimmed));
-                                for (const char of trimmed) {
-                                    if (char && char.trim()) {
-                                        console.log('🔤 Processing individual char:', JSON.stringify(char));
-                                        await processMorseInput(char);
-                                    }
-                                }
-                            }
+                            await processMorseInput(char);
+                            processedUpTo = i + 1;
                         }
                     }
+                    
+                    // Keep only unprocessed part of buffer
+                    buffer = buffer.substring(processedUpTo);
                 } catch (readError) {
                     console.error('Read loop error:', readError);
                     break;
