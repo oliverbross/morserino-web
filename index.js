@@ -9,17 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutButton = document.getElementById('logoutButton');
     const accountButton = document.getElementById('accountButton');
     const statisticsButton = document.getElementById('statisticsButton');
-    const showLoginButton = document.getElementById('showLoginButton');
-    const showRegisterButton = document.getElementById('showRegisterButton');
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const loginUsername = document.getElementById('loginUsername');
-    const loginPassword = document.getElementById('loginPassword');
-    const loginButton = document.getElementById('loginButton');
-    const registerUsername = document.getElementById('registerUsername');
-    const registerPassword = document.getElementById('registerPassword');
-    const registerEmail = document.getElementById('registerEmail');
-    const registerButton = document.getElementById('registerButton');
+    // Login elements moved to separate login.html page
     const realWordsButton = document.getElementById('realWordsButton');
     const abbreviationsButton = document.getElementById('abbreviationsButton');
     const callsignsButton = document.getElementById('callsignsButton');
@@ -202,20 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('username', data.username);
                 loggedIn.classList.remove('hidden');
                 notLoggedIn.classList.add('hidden');
-                // Hide entire login/register section when logged in
-                const loginSection = document.querySelector('[data-id="login-register"]');
-                if (loginSection) {
-                    loginSection.style.display = 'none';
-                }
                 await fetchHistoricalStats(data.username);
             } else {
                 notLoggedIn.classList.remove('hidden');
                 loggedIn.classList.add('hidden');
-                // Show login/register section when not logged in
-                const loginContent = document.getElementById('login-register-content');
-                if (loginContent && loginContent.classList.contains('hidden')) {
-                    toggleSection('login-register');
-                }
             }
         } catch (error) {
             console.log('Session check failed:', error.message);
@@ -260,97 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Historical stats loading handled by statistics page');
     }
 
-    // Login/Register functionality
-    showLoginButton.addEventListener('click', () => {
-        loginForm.classList.remove('hidden');
-        registerForm.classList.add('hidden');
-        showLoginButton.classList.add('bg-blue-600');
-        showRegisterButton.classList.remove('bg-blue-600');
-    });
-
-    showRegisterButton.addEventListener('click', () => {
-        registerForm.classList.remove('hidden');
-        loginForm.classList.add('hidden');
-        showRegisterButton.classList.add('bg-blue-600');
-        showLoginButton.classList.remove('bg-blue-600');
-    });
-
-    loginButton.addEventListener('click', async () => {
-        const username = loginUsername.value.trim();
-        const password = loginPassword.value;
-
-        if (!username || !password) {
-            showToast('Please fill in all fields', 'bg-red-600');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${apiBaseUrl}/login.php`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-                credentials: 'include'
-            });
-            const data = await response.json();
-
-            if (response.ok && data.message === 'Login successful') {
-                currentUsername.textContent = username;
-                sessionStorage.setItem('username', username);
-                loggedIn.classList.remove('hidden');
-                notLoggedIn.classList.add('hidden');
-                // Hide entire login/register section after successful login
-                const loginSection = document.querySelector('[data-id="login-register"]');
-                if (loginSection) {
-                    loginSection.style.display = 'none';
-                }
-                showToast('Login successful!', 'bg-green-600');
-                await fetchHistoricalStats(username);
-            } else {
-                showToast(`Login failed: ${data.message || 'Unknown error'}`, 'bg-red-600');
-            }
-        } catch (error) {
-            showToast(`Login failed: ${error.message}`, 'bg-red-600');
-        }
-    });
-
-    registerButton.addEventListener('click', async () => {
-        const username = registerUsername.value.trim();
-        const password = registerPassword.value;
-        const email = registerEmail.value.trim();
-
-        if (!username || !password || !email) {
-            showToast('Please fill in all fields', 'bg-red-600');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${apiBaseUrl}/register.php`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password, email }),
-                credentials: 'include'
-            });
-            const data = await response.json();
-
-            if (response.ok && data.message === 'Registration successful') {
-                currentUsername.textContent = username;
-                sessionStorage.setItem('username', username);
-                loggedIn.classList.remove('hidden');
-                notLoggedIn.classList.add('hidden');
-                // Hide entire login/register section after successful registration
-                const loginSection = document.querySelector('[data-id="login-register"]');
-                if (loginSection) {
-                    loginSection.style.display = 'none';
-                }
-                showToast('Registration successful!', 'bg-green-600');
-                await fetchHistoricalStats(username);
-            } else {
-                showToast(`Registration failed: ${data.message || 'Unknown error'}`, 'bg-red-600');
-            }
-        } catch (error) {
-            showToast(`Registration failed: ${error.message}`, 'bg-red-600');
-        }
-    });
+    // Login/Register functionality moved to separate login.html page
 
     logoutButton.addEventListener('click', async () => {
         try {
@@ -364,15 +254,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.removeItem('username');
                 loggedIn.classList.add('hidden');
                 notLoggedIn.classList.remove('hidden');
-                // Show login/register section after logout
-                const loginContent = document.getElementById('login-register-content');
-                if (loginContent && loginContent.classList.contains('hidden')) {
-                    toggleSection('login-register');
-                }
                 // Reset dashboard flags on logout  
                 isDashboardLoaded = false;
                 isDashboardLoading = false;
-                showToast('Logged out successfully!', 'bg-green-600');
+                showToast('Logged out successfully! Redirecting to login...', 'bg-green-600');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
             }
         } catch (error) {
             showToast(`Logout failed: ${error.message}`, 'bg-red-600');
@@ -563,6 +451,28 @@ document.addEventListener('DOMContentLoaded', () => {
             await loadWords();
             maxItems = parseInt(numItems.value) || 10;
             currentIndex = 0;
+            isSessionActive = true;
+            
+            // Update session UI
+            startButton.style.display = 'none';
+            startButton.textContent = 'Session Active';
+            startButton.className = 'w-full bg-orange-500 text-white p-2 rounded-lg';
+            
+            // Show session progress
+            const sessionProgress = document.getElementById('sessionProgress');
+            const nextButton = document.getElementById('nextButton');
+            const endSessionButton = document.getElementById('endSessionButton');
+            
+            if (sessionProgress) {
+                sessionProgress.classList.remove('hidden');
+                document.getElementById('currentProgress').textContent = '1';
+                document.getElementById('totalProgress').textContent = maxItems.toString();
+            }
+            if (nextButton) nextButton.classList.remove('hidden');
+            if (endSessionButton) endSessionButton.classList.remove('hidden');
+            
+            // Clear target
+            target.textContent = '';
             
             // Reset session data
             if (hasEnhancedTracking) {
@@ -599,6 +509,12 @@ document.addEventListener('DOMContentLoaded', () => {
         target.textContent = word;
         userInput.value = '';
         inputBuffer = '';
+        
+        // Update progress
+        const currentProgressElement = document.getElementById('currentProgress');
+        if (currentProgressElement) {
+            currentProgressElement.textContent = (currentIndex + 1).toString();
+        }
 
         try {
             if (port && isConnected) {
@@ -739,6 +655,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (hasEnhancedTracking) {
             stopSessionTimer();
         }
+        
+        // Reset session UI
+        isSessionActive = false;
+        startButton.style.display = 'block';
+        startButton.textContent = 'Start Session';
+        startButton.className = 'w-full bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition';
+        
+        // Hide session elements
+        const sessionProgress = document.getElementById('sessionProgress');
+        const nextButton = document.getElementById('nextButton');
+        const endSessionButton = document.getElementById('endSessionButton');
+        
+        if (sessionProgress) sessionProgress.classList.add('hidden');
+        if (nextButton) nextButton.classList.add('hidden');
+        if (endSessionButton) endSessionButton.classList.add('hidden');
+        
+        // Clear target
+        target.textContent = '';
 
         const accuracy = sessionData.total > 0 ? ((sessionData.correct / sessionData.total) * 100).toFixed(1) : '0';
         const report = `Session Complete!\\n\\nResults: ${sessionData.correct}/${sessionData.total} (${accuracy}% accuracy)`;
@@ -860,6 +794,16 @@ Items: ${maxItems}`;
             await nextTarget();
         }
     });
+
+    // End session button handler
+    const endSessionButton = document.getElementById('endSessionButton');
+    if (endSessionButton) {
+        endSessionButton.addEventListener('click', async () => {
+            if (confirm('Are you sure you want to end the current session?')) {
+                await endSession();
+            }
+        });
+    }
 
     // Enhanced tracking button
     if (hasEnhancedTracking && startNewSession) {

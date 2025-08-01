@@ -10,9 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateFormatSelect = document.getElementById('dateFormatSelect');
     const timeFormatSelect = document.getElementById('timeFormatSelect');
     const saveSettingsButton = document.getElementById('saveSettingsButton');
-    const accountStats = document.getElementById('accountStats');
-    const recentSessions = document.getElementById('recentSessions');
-    const exportStatsButton = document.getElementById('exportStatsButton');
+    // Statistics elements removed - now on dedicated statistics page
     const deleteAccountButton = document.getElementById('deleteAccountButton');
     const accountLogoutButton = document.getElementById('accountLogoutButton');
     const backToTrainingFromAccount = document.getElementById('backToTrainingFromAccount');
@@ -22,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const requiredElements = {
         currentUsername, accountDebug, newPassword, confirmPassword, changePasswordButton,
         recoveryEmail, saveEmailButton, dateFormatSelect, timeFormatSelect, saveSettingsButton,
-        accountStats, exportStatsButton, deleteAccountButton, accountLogoutButton, backToTrainingFromAccount, sortableSections
+        deleteAccountButton, accountLogoutButton, backToTrainingFromAccount, sortableSections
     };
     for (const [key, element] of Object.entries(requiredElements)) {
         if (!element) {
@@ -291,21 +289,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentUsername.textContent = data.username;
                 sessionStorage.setItem('username', data.username);
                 showAllSections();
-                await Promise.all([
-                    fetchStats(data.username).catch(err => {
-                        console.error('fetchStats failed:', err.message);
-                        accountStats.textContent = 'No stats available';
-                        accountDebug.textContent = `Stats error: ${err.message}`;
-                        accountDebug.classList.remove('hidden');
-                        showAllSections();
-                    }),
-                    fetchUserSettings(data.username).catch(err => {
-                        console.error('fetchUserSettings failed:', err.message);
-                        accountDebug.textContent = `Settings error: ${err.message}`;
-                        accountDebug.classList.remove('hidden');
-                        showAllSections();
-                    })
-                ]);
+                // Load user settings only (statistics moved to dedicated page)
+                await fetchUserSettings(data.username).catch(err => {
+                    console.error('fetchUserSettings failed:', err.message);
+                    accountDebug.textContent = `Settings error: ${err.message}`;
+                    accountDebug.classList.remove('hidden');
+                    showAllSections();
+                });
                 return true;
             } else {
                 console.error('Session check failed:', data.message || 'Unknown error', 'Response:', text);
@@ -394,66 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function fetchStats(username) {
-        console.log('Fetching stats for:', username, 'Cookies:', document.cookie);
-        try {
-            const response = await fetch(`${apiBaseUrl}/get_stats.php?username=${encodeURIComponent(username)}&limit=100`, {
-                method: 'GET',
-                credentials: 'include',
-                headers: { 'Accept': 'application/json' }
-            });
-            const text = await response.text();
-            console.log('Stats response:', response.status, 'Headers:', Object.fromEntries(response.headers), 'Body:', text);
-            let data;
-            try {
-                data = JSON.parse(text.trim());
-            } catch (e) {
-                console.error('Failed to parse stats response:', e.message, 'Response:', text);
-                showToast('Failed to fetch stats: Invalid server response', 'bg-red-600');
-                accountStats.textContent = 'No stats available';
-                accountDebug.textContent = `Error: Invalid stats response - ${e.message}`;
-                accountDebug.classList.remove('hidden');
-                showAllSections();
-                return;
-            }
-            if (response.ok && Array.isArray(data)) {
-                if (data.length > 0) {
-                    const totalSessions = data.length;
-                    const totalCorrect = data.reduce((sum, s) => sum + (s.correct || 0), 0);
-                    const totalItems = data.reduce((sum, s) => sum + (s.total || 0), 0);
-                    accountStats.textContent = `Total Sessions: ${totalSessions}, Correct: ${totalCorrect}/${totalItems} (${totalItems > 0 ? ((totalCorrect/totalItems)*100).toFixed(2) : '0.00'}%)`;
-                    if (recentSessions) {
-                        recentSessions.innerHTML = '';
-                        const recent = data.slice(0, 5);
-                        recent.forEach((session, i) => {
-                            const li = document.createElement('li');
-                            li.textContent = `Session ${totalSessions - i}: ${session.correct || 0}/${session.total || 0} (${session.total > 0 ? ((session.correct/session.total)*100).toFixed(2) : '0.00'}%) - ${session.mode || 'Unknown'} - ${formatTimestamp(session.timestamp)}`;
-                            recentSessions.appendChild(li);
-                        });
-                    }
-                    accountDebug.classList.add('hidden');
-                } else {
-                    accountStats.textContent = 'No stats available';
-                    accountDebug.textContent = 'No stats found for this user';
-                    accountDebug.classList.remove('hidden');
-                }
-            } else {
-                console.error('Failed to fetch stats:', data.message || 'No stats returned', 'Response:', text);
-                showToast(`Failed to fetch stats: ${data.message || 'Unknown error'}`, 'bg-red-600');
-                accountStats.textContent = 'No stats available';
-                accountDebug.textContent = `Error: ${data.message || 'No stats returned'}`;
-                accountDebug.classList.remove('hidden');
-            }
-            showAllSections();
-        } catch (error) {
-            console.error('Stats fetch error:', error.message);
-            showToast(`Failed to fetch stats: ${error.message}`, 'bg-red-600');
-            accountStats.textContent = 'No stats available';
-            accountDebug.textContent = `Error: Network error - ${error.message}`;
-            accountDebug.classList.remove('hidden');
-            showAllSections();
-        }
-    }
+    // Statistics functionality moved to dedicated statistics.html page
 
     changePasswordButton.addEventListener('click', async (e) => {
         e.preventDefault();

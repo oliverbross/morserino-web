@@ -12,12 +12,18 @@
         <!-- Professional Header -->
         <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center mb-4">
-                <div class="bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-4 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300">
-                    <div class="flex items-center space-x-4">
-                        <div class="text-3xl animate-pulse">📻</div>
+                <div class="relative bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-4 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden">
+                    <!-- Background CW Key Image -->
+                    <div class="absolute inset-0 opacity-20">
+                        <img src="cwkey.jpeg" alt="CW Key Background" class="w-full h-full object-cover rounded-lg">
+                    </div>
+                    <div class="relative flex items-center space-x-4 z-10">
+                        <div class="w-12 h-12 rounded-full bg-white/20 p-2">
+                            <img src="cwkey.jpeg" alt="CW Key" class="w-full h-full object-cover rounded-full">
+                        </div>
                         <div>
-                            <div class="text-2xl font-bold tracking-wider">OM0RX</div>
-                            <div class="text-sm opacity-90 tracking-wide">Professional CW Trainer</div>
+                            <div class="text-2xl font-bold tracking-wider text-white drop-shadow-lg">OM0RX</div>
+                            <div class="text-sm opacity-90 tracking-wide text-white drop-shadow">Professional CW Trainer</div>
                         </div>
                         <div class="text-3xl animate-pulse">⚡</div>
                     </div>
@@ -26,7 +32,12 @@
         </div>
         <div id="debug" class="hidden bg-red-600 text-white p-4 rounded-lg mb-4"></div>
         <div id="notLoggedIn" class="hidden">
-            <p class="text-lg mb-4 text-center">Please log in or register to start training.</p>
+            <div class="text-center p-8">
+                <p class="text-lg mb-4">Please log in to start training.</p>
+                <button onclick="window.location.href='login.html'" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                    Go to Login
+                </button>
+            </div>
         </div>
         <div id="loggedIn" class="hidden">
             <p class="text-lg mb-4 text-center">Logged in as: <span id="currentUsername" class="font-semibold"></span></p>
@@ -37,30 +48,7 @@
             </div>
         </div>
         <div id="sortable-sections" class="space-y-4">
-            <!-- Login or Register -->
-            <div class="section bg-gray-800 p-4 rounded-lg" data-id="login-register">
-                <div class="section-header cursor-pointer flex justify-between items-center">
-                    <h2 class="text-xl font-semibold">Login or Register</h2>
-                    <svg class="w-6 h-6 transform transition-transform" data-id="login-register-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
-                <div id="login-register-content" class="mt-4 hidden">
-                    <div class="flex space-x-4 mb-4">
-                        <button id="showLoginButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition">Login</button>
-                        <button id="showRegisterButton" class="w-full bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition">Register</button>
-                    </div>
-                    <form id="loginForm" class="space-y-4">
-                        <input type="text" id="loginUsername" placeholder="Username" class="w-full p-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <input type="password" id="loginPassword" placeholder="Password" class="w-full p-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <button id="loginButton" type="button" class="w-full bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition">Login</button>
-                    </form>
-                    <form id="registerForm" class="space-y-4 hidden">
-                        <input type="text" id="registerUsername" placeholder="Username" class="w-full p-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <input type="password" id="registerPassword" placeholder="Password" class="w-full p-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <input type="email" id="registerEmail" placeholder="Recovery Email" class="w-full p-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <button id="registerButton" type="button" class="w-full bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition">Register</button>
-                    </form>
-                </div>
-            </div>
+
             <!-- Mode Selection -->
             <div class="section bg-gray-800 p-4 rounded-lg" data-id="mode-selection">
                 <div class="section-header cursor-pointer flex justify-between items-center">
@@ -98,9 +86,28 @@
                 </div>
                 <div id="training-content" class="mt-4 hidden">
                     <button id="startButton" class="w-full bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition">Start Session</button>
-                    <p id="target" class="text-2xl font-mono mt-4"></p>
-                    <input id="userInput" class="w-full p-2 bg-gray-700 text-white rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 hidden" readonly>
-                    <button id="nextButton" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded-lg transition mt-2 hidden">Skip to Next</button>
+                    
+                    <!-- Current Training Word Display -->
+                    <div class="mt-4 p-4 bg-gray-900 rounded-lg border-2 border-blue-500">
+                        <div class="text-center">
+                            <div class="text-sm text-gray-400 mb-2">Current Word:</div>
+                            <p id="target" class="text-3xl font-mono font-bold text-blue-400"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Session Progress -->
+                    <div id="sessionProgress" class="mt-4 text-center text-gray-400 hidden">
+                        <p>Progress: <span id="currentProgress">0</span> / <span id="totalProgress">0</span></p>
+                    </div>
+                    
+                    <!-- User Input (hidden initially) -->
+                    <input id="userInput" class="w-full p-2 bg-gray-700 text-white rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 mt-4 hidden" readonly>
+                    
+                    <!-- Control Buttons -->
+                    <div class="mt-4 space-y-2">
+                        <button id="nextButton" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded-lg transition hidden">Skip to Next</button>
+                        <button id="endSessionButton" class="w-full bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition hidden">End Session</button>
+                    </div>
                 </div>
             </div>
             <!-- Live Session Tracking -->

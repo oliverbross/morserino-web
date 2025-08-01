@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OM0RX Professional CW Trainer - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .login-card {
+            backdrop-filter: blur(10px);
+            background: rgba(31, 41, 55, 0.8);
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            color: white;
+        }
+        .tab-inactive {
+            background: rgba(107, 114, 128, 0.5);
+            color: #d1d5db;
+        }
+        .background-pattern {
+            background-image: radial-gradient(circle at 25% 25%, #3b82f6 0%, transparent 50%), 
+                              radial-gradient(circle at 75% 75%, #10b981 0%, transparent 50%);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center background-pattern">
+    <!-- Background CW Key Image -->
+    <div class="fixed inset-0 opacity-5 z-0">
+        <img src="cwkey.jpeg" alt="CW Key Background" class="w-full h-full object-cover">
+    </div>
+    
+    <div class="container max-w-md mx-auto p-6 relative z-10">
+        <!-- Professional Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center mb-6">
+                <div class="relative bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-4 rounded-lg shadow-xl overflow-hidden">
+                    <!-- Background CW Key Image -->
+                    <div class="absolute inset-0 opacity-20">
+                        <img src="cwkey.jpeg" alt="CW Key Background" class="w-full h-full object-cover rounded-lg">
+                    </div>
+                    <div class="relative flex items-center space-x-4 z-10">
+                        <div class="w-12 h-12 rounded-full bg-white/20 p-2">
+                            <img src="cwkey.jpeg" alt="CW Key" class="w-full h-full object-cover rounded-full">
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold tracking-wider text-white drop-shadow-lg">OM0RX</div>
+                            <div class="text-sm opacity-90 tracking-wide text-white drop-shadow">Professional CW Trainer</div>
+                        </div>
+                        <div class="text-3xl animate-pulse">⚡</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login/Register Card -->
+        <div class="login-card rounded-2xl shadow-2xl p-8 border border-gray-600">
+            <!-- Tab Navigation -->
+            <div class="flex rounded-lg overflow-hidden mb-6">
+                <button id="loginTab" class="flex-1 py-3 px-4 text-center font-semibold transition-all duration-300 tab-active">
+                    Sign In
+                </button>
+                <button id="registerTab" class="flex-1 py-3 px-4 text-center font-semibold transition-all duration-300 tab-inactive">
+                    Create Account
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginSection" class="space-y-6">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-white">Welcome Back</h2>
+                    <p class="text-gray-300 mt-2">Sign in to continue your CW training</p>
+                </div>
+
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label for="loginUsername" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                        <input type="text" id="loginUsername" required 
+                               class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Enter your username">
+                    </div>
+                    <div>
+                        <label for="loginPassword" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                        <input type="password" id="loginPassword" required 
+                               class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Enter your password">
+                    </div>
+                    <button type="submit" id="loginButton" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105">
+                        Sign In
+                    </button>
+                </form>
+            </div>
+
+            <!-- Register Form -->
+            <div id="registerSection" class="space-y-6 hidden">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-white">Join OM0RX</h2>
+                    <p class="text-gray-300 mt-2">Create your account to start training</p>
+                </div>
+
+                <form id="registerForm" class="space-y-4">
+                    <div>
+                        <label for="registerUsername" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                        <input type="text" id="registerUsername" required 
+                               class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               placeholder="Choose a username">
+                    </div>
+                    <div>
+                        <label for="registerEmail" class="block text-sm font-medium text-gray-300 mb-2">Recovery Email</label>
+                        <input type="email" id="registerEmail" required 
+                               class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               placeholder="your.email@example.com">
+                    </div>
+                    <div>
+                        <label for="registerPassword" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                        <input type="password" id="registerPassword" required 
+                               class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               placeholder="Create a secure password">
+                    </div>
+                    <button type="submit" id="registerButton" 
+                            class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105">
+                        Create Account
+                    </button>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-8 text-center">
+                <p class="text-gray-400 text-sm">
+                    By signing in, you agree to use this professional CW training platform responsibly.
+                </p>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessage" class="mt-6 text-center hidden">
+            <div class="bg-gray-800 border rounded-lg p-4">
+                <p id="statusText" class="text-white"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiBaseUrl = 'https://om0rx.com/morserino/api';
+        
+        // Tab switching
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        const loginSection = document.getElementById('loginSection');
+        const registerSection = document.getElementById('registerSection');
+        
+        loginTab.addEventListener('click', () => {
+            loginTab.classList.remove('tab-inactive');
+            loginTab.classList.add('tab-active');
+            registerTab.classList.remove('tab-active');
+            registerTab.classList.add('tab-inactive');
+            loginSection.classList.remove('hidden');
+            registerSection.classList.add('hidden');
+        });
+        
+        registerTab.addEventListener('click', () => {
+            registerTab.classList.remove('tab-inactive');
+            registerTab.classList.add('tab-active');
+            loginTab.classList.remove('tab-active');
+            loginTab.classList.add('tab-inactive');
+            registerSection.classList.remove('hidden');
+            loginSection.classList.add('hidden');
+        });
+
+        // Toast notification function
+        function showToast(message, isSuccess = false) {
+            const statusMessage = document.getElementById('statusMessage');
+            const statusText = document.getElementById('statusText');
+            
+            statusText.textContent = message;
+            statusMessage.classList.remove('hidden');
+            
+            // Style based on success/error
+            const container = statusMessage.querySelector('div');
+            container.className = `border rounded-lg p-4 ${isSuccess ? 'bg-green-800 border-green-600' : 'bg-red-800 border-red-600'}`;
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                statusMessage.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!username || !password) {
+                showToast('Please fill in all fields');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${apiBaseUrl}/login.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.message === 'Login successful') {
+                    sessionStorage.setItem('username', username);
+                    showToast('Login successful! Redirecting...', true);
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                } else {
+                    showToast(`Login failed: ${data.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                showToast(`Login failed: ${error.message}`);
+            }
+        });
+
+        // Register form handler
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('registerUsername').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            
+            if (!username || !email || !password) {
+                showToast('Please fill in all fields');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${apiBaseUrl}/register.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, email }),
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.message === 'Registration successful') {
+                    sessionStorage.setItem('username', username);
+                    showToast('Registration successful! Redirecting...', true);
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                } else {
+                    showToast(`Registration failed: ${data.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                showToast(`Registration failed: ${error.message}`);
+            }
+        });
+
+        // Check if already logged in
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch(`${apiBaseUrl}/session.php`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.username) {
+                    // Already logged in, redirect to main page
+                    window.location.href = 'index.html';
+                }
+            } catch (error) {
+                // Not logged in, stay on login page
+                console.log('Not logged in, showing login form');
+            }
+        });
+    </script>
+</body>
+</html>
