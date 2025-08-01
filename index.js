@@ -48,6 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if enhanced tracking is available
     const hasEnhancedTracking = lettersCount && numbersCount && signsCount && errorsCount && sessionTimer && sessionReport && startNewSession;
     console.log('Enhanced tracking available:', hasEnhancedTracking);
+    
+    // Global flag to prevent multiple chart creation
+    let chartsCurrentlyCreating = false;
 
     if (!debug) {
         alert('Critical error: Page structure invalid');
@@ -331,6 +334,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function destroyExistingCharts() {
+        // Reset creation flag
+        chartsCurrentlyCreating = false;
+        
         // Destroy accuracy chart
         if (window.accuracyChartInstance) {
             window.accuracyChartInstance.destroy();
@@ -347,18 +353,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const speedCanvas = document.getElementById('speedChart');
         
         if (accuracyCanvas) {
-            accuracyCanvas.style.width = '';
-            accuracyCanvas.style.height = '';
-            accuracyCanvas.width = accuracyCanvas.width; // Force canvas reset
+            const parent = accuracyCanvas.parentNode;
+            const newCanvas = document.createElement('canvas');
+            newCanvas.id = 'accuracyChart';
+            newCanvas.className = accuracyCanvas.className;
+            parent.replaceChild(newCanvas, accuracyCanvas);
         }
         
         if (speedCanvas) {
-            speedCanvas.style.width = '';
-            speedCanvas.style.height = '';
-            speedCanvas.width = speedCanvas.width; // Force canvas reset
+            const parent = speedCanvas.parentNode;
+            const newCanvas = document.createElement('canvas');
+            newCanvas.id = 'speedChart';
+            newCanvas.className = speedCanvas.className;
+            parent.replaceChild(newCanvas, speedCanvas);
         }
         
-        console.log('Existing charts destroyed');
+        console.log('Existing charts destroyed and canvases reset');
     }
 
     function showEmptyDashboard() {
@@ -462,15 +472,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateProgressCharts(data) {
-        // Prevent multiple chart creation
+        // Multiple levels of protection against chart recreation
+        if (chartsCurrentlyCreating) {
+            console.log('Charts currently being created, skipping');
+            return;
+        }
+        
         if (window.accuracyChartInstance || window.speedChartInstance) {
             console.log('Charts already exist, skipping creation');
             return;
         }
         
+        chartsCurrentlyCreating = true;
         console.log('Creating fresh charts...');
-        createAccuracyChart(data.slice(0, 10).reverse());
-        createSpeedChart(data.slice(0, 10).reverse());
+        
+        try {
+            createAccuracyChart(data.slice(0, 10).reverse());
+            createSpeedChart(data.slice(0, 10).reverse());
+        } finally {
+            chartsCurrentlyCreating = false;
+        }
     }
 
     function createAccuracyChart(data) {
@@ -1098,7 +1119,11 @@ document.addEventListener('DOMContentLoaded', () => {
             ? `${modeDisplay} Session: ${sessionData.total} words completed. Character accuracy: ${charAccuracy}% (${sessionData.charactersCorrect}/${sessionData.charactersAttempted}). Character errors: ${sessionData.characterErrors || sessionData.errors}`
             : 'Session ended with no data';
             
-        sessionStats.textContent = sessionSummary;
+        if (sessionStats) {
+            sessionStats.textContent = sessionSummary;
+        } else {
+            console.warn('sessionStats element not found in DOM');
+        }
         
         // Show detailed session report
         if (hasEnhancedTracking && sessionData.total > 0) {
@@ -1277,7 +1302,11 @@ Character Breakdown:
             if (response.ok) {
                 showToast('Session stats saved successfully!', 'bg-green-600');
                 // Small delay before refreshing dashboard to prevent rapid successive calls
-                setTimeout(() => fetchHistoricalStats(username, true), 500);
+                setTimeout(() => {
+                    if (!chartsCurrentlyCreating) {
+                        fetchHistoricalStats(username, true);
+                    }
+                }, 1000);
             } else {
                 console.error('Stats save failed:', data);
                 showToast(`Failed to save stats: ${data.message}`, 'bg-red-600');
