@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Account.js loaded - Version 2.0 - Statistics Removed'); // Force cache refresh
+    console.log('Account.js loaded - Version 4.0 - Statistics Removed, Export Fixed'); // Force cache refresh
     const apiBaseUrl = '/morserino/api';
     const currentUsername = document.getElementById('currentUsername');
     const accountDebug = document.getElementById('accountDebug');
@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     console.log('All required DOM elements found');
+    console.log('Back button element:', backToTrainingFromAccount);
 
     // Reset CSS to ensure visibility
     const styleReset = document.createElement('style');
@@ -577,72 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    exportStatsButton.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const username = sessionStorage.getItem('username');
-        if (!username) {
-            showToast('Session expired. Please log in again.', 'bg-red-600');
-            accountDebug.textContent = 'Error: No user logged in';
-            accountDebug.classList.remove('hidden');
-            setTimeout(() => window.location.href = '/morserino/index.html', 3000);
-            return;
-        }
-        try {
-            console.log('Sending export stats request for:', username, 'Cookies:', document.cookie);
-            const response = await fetch(`${apiBaseUrl}/get_stats.php?username=${encodeURIComponent(username)}&limit=100`, {
-                method: 'GET',
-                credentials: 'include',
-                headers: { 'Accept': 'application/json' }
-            });
-            const text = await response.text();
-            console.log('Export stats response:', response.status, 'Headers:', Object.fromEntries(response.headers), 'Body:', text);
-            let data;
-            try {
-                data = JSON.parse(text.trim());
-            } catch (e) {
-                console.error('Failed to parse export stats response:', e.message, 'Response:', text);
-                showToast('Failed to export stats: Invalid server response', 'bg-red-600');
-                accountDebug.textContent = `Error: Invalid server response - ${e.message}`;
-                accountDebug.classList.remove('hidden');
-                showAllSections();
-                return;
-            }
-            if (response.ok && Array.isArray(data)) {
-                if (data.length === 0) {
-                    showToast('No stats available to export', 'bg-yellow-600');
-                    accountDebug.textContent = 'No stats found for this user';
-                    accountDebug.classList.remove('hidden');
-                    showAllSections();
-                    return;
-                }
-                const csv = ['Session,Correct,Total,Mode,Timestamp'];
-                data.forEach((s, i) => {
-                    csv.push(`${i+1},${s.correct || 0},${s.total || 0},${s.mode || ''},${s.timestamp || ''}`);
-                });
-                const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `morserino_stats_${username}.csv`;
-                a.click();
-                URL.revokeObjectURL(url);
-                showToast('Statistics exported successfully!', 'bg-green-600');
-                accountDebug.classList.add('hidden');
-            } else {
-                console.error('Failed to export stats:', data.message || 'No stats returned', 'Response:', text);
-                showToast(`Failed to export stats: ${data.message || 'Unknown error'}`, 'bg-red-600');
-                accountDebug.textContent = `Error: ${data.message || 'No stats returned'}`;
-                accountDebug.classList.remove('hidden');
-                showAllSections();
-            }
-        } catch (error) {
-            console.error('Export stats error:', error.message);
-            showToast(`Failed to export stats: ${error.message}`, 'bg-red-600');
-            accountDebug.textContent = `Error: Network error - ${error.message}`;
-            accountDebug.classList.remove('hidden');
-            showAllSections();
-        }
-    });
+    // Statistics export functionality removed - now on dedicated statistics page
 
     deleteAccountButton.addEventListener('click', async (e) => {
         e.preventDefault();
@@ -740,11 +676,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    backToTrainingFromAccount.addEventListener('click', (e) => {
-        e.preventDefault();
-        console.log('Back to Training button clicked - navigating to index.html');  
-        window.location.href = '/morserino/index.html';
-    });
+    if (backToTrainingFromAccount) {
+        console.log('Adding click listener to back button...');
+        backToTrainingFromAccount.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Back to Training button clicked - navigating to index.html');  
+            window.location.href = '/morserino/index.html';
+        });
+        console.log('Back button click listener added successfully');
+    } else {
+        console.error('Back button not found in DOM!');
+    }
 
     // Initialize session check
     showAllSections();

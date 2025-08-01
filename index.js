@@ -543,11 +543,16 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast(`Starting ${maxItems} item session`, 'bg-green-600');
             
             // Start reading serial data
+            console.log('🔍 Connection check: port=', !!port, 'isConnected=', isConnected, 'isReading=', isReading);
             if (port && isConnected && !isReading) {
                 console.log('🔄 Starting serial reading for character-by-character input...');
+                console.log('🔗 Port state:', port);
                 readMorseInput();
             } else {
                 console.log('⚠️ Cannot start reading: port=', !!port, 'connected=', isConnected, 'alreadyReading=', isReading);
+                if (!port) console.log('❌ No port available');
+                if (!isConnected) console.log('❌ Not connected'); 
+                if (isReading) console.log('❌ Already reading');
             }
             
             await nextTarget();
@@ -610,36 +615,73 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function readMorseInput() {
-        if (!port || !isConnected || isReading) return;
+        if (!port || !isConnected || isReading) {
+            console.log('❌ Cannot start reading:', {port: !!port, connected: isConnected, alreadyReading: isReading});
+            return;
+        }
         
+        console.log('🚀 Starting Morse input reading...');
         isReading = true;
         
         try {
             if (currentReader) {
+                console.log('🔄 Cancelling existing reader...');
                 await currentReader.cancel();
                 currentReader = null;
             }
             
+            console.log('📖 Getting new reader...');
             currentReader = port.readable.getReader();
             let buffer = '';
 
-            while (isConnected && isReading) {
-                const { value, done } = await currentReader.read();
-                if (done) break;
-
-                const chunk = new TextDecoder().decode(value);
-                buffer += chunk;
-
-                // Process complete lines
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
-
-                for (const line of lines) {
-                    const trimmed = line.trim();
-                    if (trimmed) {
-                        console.log('📡 Received from Morserino:', trimmed, 'Current word:', currentWord, 'Char index:', currentCharIndex);
-                        await processMorseInput(trimmed);
+            console.log('🔄 Starting read loop...');
+            let readCount = 0;
+            
+            while (isConnected && isReading && readCount < 10000) { // Prevent infinite loop
+                try {
+                    const { value, done } = await currentReader.read();
+                    readCount++;
+                    
+                    if (done) {
+                        console.log('📡 Read done, breaking...');
+                        break;
                     }
+
+                    const chunk = new TextDecoder().decode(value);
+                    buffer += chunk;
+                    
+                    console.log('📡 Raw chunk received:', JSON.stringify(chunk), 'Buffer now:', JSON.stringify(buffer));
+
+                    // Process complete lines and individual characters
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        const trimmed = line.trim();
+                        if (trimmed) {
+                            console.log('📡 Processing line:', JSON.stringify(trimmed));
+                            console.log('📊 Current state: word=', currentWord, 'charIndex=', currentCharIndex);
+                            
+                            // Handle both single characters and complete words from Morserino
+                            if (trimmed.length === 1) {
+                                // Single character - process directly  
+                                console.log('🔤 Single character input:', JSON.stringify(trimmed));
+                                await processMorseInput(trimmed);
+                            } else {
+                                // Multiple characters - process each one
+                                console.log('🔤 Multi-character input, processing each:', JSON.stringify(trimmed));
+                                for (const char of trimmed) {
+                                    if (char && char.trim()) {
+                                        console.log('🔤 Processing individual char:', JSON.stringify(char));
+                                        await processMorseInput(char);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (readError) {
+                    console.error('Read loop error:', readError);
+                    break;
                 }
             }
 
@@ -666,16 +708,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function processMorseInput(input) {
+        console.log('🎯 processMorseInput called with:', JSON.stringify(input));
+        
         if (!currentWord) {
-            console.log('No current word set, ignoring input:', input);
+            console.log('❌ No current word set, ignoring input:', JSON.stringify(input));
             return;
         }
         
         const receivedChar = input.toUpperCase().trim();
-        console.log(`Processing character: "${receivedChar}" (expected: "${currentWord[currentCharIndex] || 'END'}")`);
+        console.log(`🔤 Processing character: "${receivedChar}" (expected: "${currentWord[currentCharIndex] || 'END'}")`);
+        console.log(`📊 State: currentWord="${currentWord}", charIndex=${currentCharIndex}, receivedSoFar="${receivedChars}"`);
         
         // Handle character input
         receivedChars += receivedChar;
+        console.log(`📝 Updated receivedChars to: "${receivedChars}"`);
         
         if (hasEnhancedTracking) {
             // Count character types
@@ -683,6 +729,10 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (/[0-9]/.test(receivedChar)) sessionData.numbers++;
             else sessionData.signs++;
         }
+        
+        // Update the input display immediately
+        displayUserInput();
+        console.log('🎨 Updated input display');
         
         // Check if character is correct
         if (currentCharIndex < currentWord.length && receivedChar === currentWord[currentCharIndex]) {
