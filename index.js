@@ -341,6 +341,23 @@ document.addEventListener('DOMContentLoaded', () => {
             window.speedChartInstance.destroy();
             window.speedChartInstance = null;
         }
+        
+        // Reset canvas elements to prevent sizing issues
+        const accuracyCanvas = document.getElementById('accuracyChart');
+        const speedCanvas = document.getElementById('speedChart');
+        
+        if (accuracyCanvas) {
+            accuracyCanvas.style.width = '';
+            accuracyCanvas.style.height = '';
+            accuracyCanvas.width = accuracyCanvas.width; // Force canvas reset
+        }
+        
+        if (speedCanvas) {
+            speedCanvas.style.width = '';
+            speedCanvas.style.height = '';
+            speedCanvas.width = speedCanvas.width; // Force canvas reset
+        }
+        
         console.log('Existing charts destroyed');
     }
 
@@ -445,7 +462,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateProgressCharts(data) {
-        // Always create fresh charts (old ones were destroyed)
+        // Prevent multiple chart creation
+        if (window.accuracyChartInstance || window.speedChartInstance) {
+            console.log('Charts already exist, skipping creation');
+            return;
+        }
+        
         console.log('Creating fresh charts...');
         createAccuracyChart(data.slice(0, 10).reverse());
         createSpeedChart(data.slice(0, 10).reverse());
@@ -454,18 +476,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function createAccuracyChart(data) {
         const ctx = document.getElementById('accuracyChart');
         if (!ctx) return;
-
-        // Get the canvas context and clear it completely
-        const canvas = ctx.getContext('2d');
         
-        // Destroy existing chart instance if it exists
+        // Prevent multiple chart creation
         if (window.accuracyChartInstance) {
-            window.accuracyChartInstance.destroy();
-            window.accuracyChartInstance = null;
+            console.log('Accuracy chart already exists, skipping');
+            return;
         }
-
-        // Clear the canvas completely
-        canvas.clearRect(0, 0, ctx.width, ctx.height);
 
         const chartData = data.map(stat => {
             return stat.characters_attempted > 0 
@@ -510,18 +526,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function createSpeedChart(data) {
         const ctx = document.getElementById('speedChart');
         if (!ctx) return;
-
-        // Get the canvas context and clear it completely
-        const canvas = ctx.getContext('2d');
         
-        // Destroy existing chart instance if it exists
+        // Prevent multiple chart creation
         if (window.speedChartInstance) {
-            window.speedChartInstance.destroy();
-            window.speedChartInstance = null;
+            console.log('Speed chart already exists, skipping');
+            return;
         }
-
-        // Clear the canvas completely
-        canvas.clearRect(0, 0, ctx.width, ctx.height);
 
         const speedData = data.map(stat => stat.wpm || 0);
 
@@ -1266,7 +1276,8 @@ Character Breakdown:
 
             if (response.ok) {
                 showToast('Session stats saved successfully!', 'bg-green-600');
-                await fetchHistoricalStats(username, true); // Force reload after session save
+                // Small delay before refreshing dashboard to prevent rapid successive calls
+                setTimeout(() => fetchHistoricalStats(username, true), 500);
             } else {
                 console.error('Stats save failed:', data);
                 showToast(`Failed to save stats: ${data.message}`, 'bg-red-600');
