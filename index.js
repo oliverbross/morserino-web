@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentUsername = document.getElementById('currentUsername');
     const logoutButton = document.getElementById('logoutButton');
     const accountButton = document.getElementById('accountButton');
+    const statisticsButton = document.getElementById('statisticsButton');
     const showLoginButton = document.getElementById('showLoginButton');
     const showRegisterButton = document.getElementById('showRegisterButton');
     const loginForm = document.getElementById('loginForm');
@@ -125,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Expand all sections by default
     setTimeout(() => {
-        const allSections = ['login-register', 'mode-selection', 'connection', 'training', 'live-tracking', 'session-report', 'session-statistics'];
+        const allSections = ['login-register', 'mode-selection', 'connection', 'training', 'live-tracking', 'session-report'];
         allSections.forEach(sectionId => {
             const content = document.getElementById(`${sectionId}-content`);
             const icon = document.querySelector(`[data-id="${sectionId}-icon"]`);
@@ -330,32 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    function destroyExistingCharts() {
-        // Simple clear for HTML charts
-        const accuracyChart = document.getElementById('accuracyChart');
-        const speedChart = document.getElementById('speedChart');
-        
-        if (accuracyChart) {
-            accuracyChart.innerHTML = '<div class="text-gray-500 text-sm text-center">No data available</div>';
-        }
-        if (speedChart) {
-            speedChart.innerHTML = '<div class="text-gray-500 text-sm text-center">No data available</div>';
-        }
-        
-        console.log('Charts cleared');
-    }
-
-    function showEmptyDashboard() {
-        document.getElementById('performanceOverview').innerHTML = `
-            <div class="col-span-full text-center py-8 text-gray-400">
-                <p class="text-lg">📊 No training data yet</p>
-                <p class="text-sm">Complete some training sessions to see your progress!</p>
-            </div>
-        `;
-        
-        // Clear charts
-        destroyExistingCharts();
-    }
+    // Statistics functions moved to statistics.js
 
     function populatePerformanceOverview(data) {
         const overview = document.getElementById('performanceOverview');
@@ -809,13 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (loginContent && loginContent.classList.contains('hidden')) {
                     toggleSection('login-register');
                 }
-                // Clear dashboard on logout
-                document.getElementById('performanceOverview').innerHTML = '';
-                document.getElementById('recentSessions').innerHTML = '';
-                document.getElementById('trainingInsights').innerHTML = '';
-                document.getElementById('modePerformance').innerHTML = '';
-                // Destroy charts and reset flags
-                destroyExistingCharts();
+                // Reset dashboard flags on logout  
                 isDashboardLoaded = false;
                 isDashboardLoading = false;
                 showToast('Logged out successfully!', 'bg-green-600');
@@ -828,6 +798,12 @@ document.addEventListener('DOMContentLoaded', () => {
     accountButton.addEventListener('click', () => {
         window.location.href = '/morserino/account.html';
     });
+
+    if (statisticsButton) {
+        statisticsButton.addEventListener('click', () => {
+            window.location.href = 'statistics.html';
+        });
+    }
 
     // Mode selection with better colors and feedback
     [realWordsButton, abbreviationsButton, callsignsButton, qrCodesButton, topWordsButton, mixedButton].forEach(button => {

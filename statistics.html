@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics - Morserino Web</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container max-w-6xl mx-auto p-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">📊 Training Statistics</h1>
+            <div class="flex space-x-4">
+                <button id="clearStatsButton" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
+                    🗑️ Clear Statistics
+                </button>
+                <button id="backToMainButton" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                    ← Back to Training
+                </button>
+                <button id="accountButton" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">Account</button>
+                <button id="logoutButton" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition">Logout</button>
+            </div>
+        </div>
+
+        <!-- User Info -->
+        <div id="userInfo" class="bg-gray-800 p-4 rounded-lg mb-6 text-center">
+            <p class="text-lg">Statistics for: <span id="currentUsername" class="font-semibold text-blue-400"></span></p>
+        </div>
+
+        <!-- Statistics Dashboard -->
+        <div id="statisticsDashboard" class="space-y-6">
+            <!-- Performance Overview -->
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h2 class="text-2xl font-semibold mb-4 text-blue-400">📊 Performance Overview</h2>
+                <div id="performanceOverview" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <!-- Dynamic performance cards will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Progress Charts -->
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h2 class="text-2xl font-semibold mb-4 text-purple-400">📈 Progress Trends</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-gray-900 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold mb-3 text-gray-300">Character Accuracy Trend</h3>
+                        <div id="accuracyChart" class="h-48 flex items-end justify-center space-x-1 p-2">
+                            <div class="text-gray-500 text-sm text-center">No data available</div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-900 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold mb-3 text-gray-300">Speed Progress (WPM)</h3>
+                        <div id="speedChart" class="h-48 flex items-end justify-center space-x-1 p-2">
+                            <div class="text-gray-500 text-sm text-center">No data available</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Sessions -->
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h2 class="text-2xl font-semibold mb-4 text-green-400">📈 Recent Sessions</h2>
+                <div id="recentSessions" class="space-y-3">
+                    <!-- Recent session cards will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Training Insights -->
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h2 class="text-2xl font-semibold mb-4 text-yellow-400">💡 Training Insights</h2>
+                <div id="trainingInsights" class="bg-gray-900 p-4 rounded-lg">
+                    <!-- Training recommendations will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Mode Performance Breakdown -->
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h2 class="text-2xl font-semibold mb-4 text-cyan-400">🎯 Training Mode Performance</h2>
+                <div id="modePerformance" class="space-y-3">
+                    <!-- Mode performance bars will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-12">
+            <div class="text-6xl mb-4">📊</div>
+            <h2 class="text-2xl font-semibold mb-2">No Statistics Yet</h2>
+            <p class="text-gray-400 mb-6">Complete some training sessions to see your progress here!</p>
+            <button id="startTrainingButton" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                Start Training
+            </button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal for Clear Statistics -->
+    <div id="clearConfirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 class="text-xl font-semibold mb-4 text-red-400">⚠️ Clear All Statistics?</h3>
+            <p class="text-gray-300 mb-6">This will permanently delete all your training statistics and progress. This action cannot be undone.</p>
+            <div class="flex space-x-4">
+                <button id="confirmClearButton" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition">
+                    Yes, Clear All
+                </button>
+                <button id="cancelClearButton" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded-lg transition">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-semibold hidden z-50"></div>
+
+    <script src="statistics.js"></script>
+</body>
+</html>

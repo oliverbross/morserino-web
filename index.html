@@ -17,6 +17,7 @@
         <div id="loggedIn" class="hidden">
             <p class="text-lg mb-4 text-center">Logged in as: <span id="currentUsername" class="font-semibold"></span></p>
             <div class="flex space-x-4 justify-center mb-4">
+                <button id="statisticsButton" class="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg transition">📊 Statistics</button>
                 <button id="logoutButton" class="bg-yellow-600 hover:bg-yellow-700 text-white p-2 rounded-lg transition">Logout</button>
                 <button id="accountButton" class="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg transition">Account</button>
             </div>
@@ -144,70 +145,11 @@
                     <button id="startNewSession" class="w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition mt-4 hidden">Start New Session</button>
                 </div>
             </div>
-            <!-- Session Statistics -->
-            <div class="section bg-gray-800 p-4 rounded-lg" data-id="session-statistics">
-                <div class="section-header cursor-pointer flex justify-between items-center">
-                    <h2 class="text-xl font-semibold">Session Statistics</h2>
-                    <svg class="w-6 h-6 transform transition-transform" data-id="session-statistics-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
-                <div id="session-statistics-content" class="mt-4 hidden">
-                    <!-- Performance Overview -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold mb-3 text-blue-400">📊 Performance Overview</h3>
-                        <div id="performanceOverview" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                            <!-- Dynamic performance cards will be inserted here -->
-                        </div>
-                    </div>
 
-                    <!-- Recent Sessions -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold mb-3 text-green-400">📈 Recent Sessions</h3>
-                        <div id="recentSessions" class="space-y-3">
-                            <!-- Recent session cards will be inserted here -->
-                        </div>
-                    </div>
 
-                    <!-- Progress Charts -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold mb-3 text-purple-400">📈 Progress Trends</h3>
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            <div class="bg-gray-900 p-4 rounded-lg">
-                                <h4 class="text-sm font-semibold mb-2 text-gray-300">Character Accuracy Trend</h4>
-                                <div id="accuracyChart" class="h-48 flex items-end justify-center space-x-1 p-2">
-                                    <div class="text-gray-500 text-sm text-center">No data available</div>
-                                </div>
-                            </div>
-                            <div class="bg-gray-900 p-4 rounded-lg">
-                                <h4 class="text-sm font-semibold mb-2 text-gray-300">Speed Progress (WPM)</h4>
-                                <div id="speedChart" class="h-48 flex items-end justify-center space-x-1 p-2">
-                                    <div class="text-gray-500 text-sm text-center">No data available</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Training Insights -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold mb-3 text-yellow-400">💡 Training Insights</h3>
-                        <div id="trainingInsights" class="bg-gray-900 p-4 rounded-lg">
-                            <!-- Training recommendations will be inserted here -->
-                        </div>
-                    </div>
-
-                    <!-- Mode Performance Breakdown -->
-                    <div class="mb-4">
-                        <h3 class="text-lg font-semibold mb-3 text-cyan-400">🎯 Training Mode Performance</h3>
-                        <div id="modePerformance" class="space-y-2">
-                            <!-- Mode performance bars will be inserted here -->
-                        </div>
-                    </div>
-
-                    <button id="backToTraining" class="w-full bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg transition mt-4">Back to Training</button>
-                </div>
-            </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script src="Sortable.min.js"></script>
     <script src="index.js"></script>
 </body>

@@ -22,6 +22,51 @@ if (!isset($_SESSION['username'])) {
     exit;
 }
 
+// Handle DELETE request to clear all statistics
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!$input) {
+        http_response_code(400);
+        echo json_encode(['message' => 'Invalid JSON input']);
+        exit;
+    }
+    
+    $username = $input['username'] ?? '';
+    
+    // Validate that the username matches the logged-in user
+    if ($username !== $_SESSION['username']) {
+        http_response_code(403);
+        echo json_encode(['message' => 'Unauthorized: Can only clear your own statistics']);
+        exit;
+    }
+    
+    // Delete all statistics for this user
+    $stmt = $conn->prepare('DELETE FROM stats WHERE username = ?');
+    if (!$stmt) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error: ' . $conn->error]);
+        exit;
+    }
+    
+    $stmt->bind_param('s', $username);
+    
+    if ($stmt->execute()) {
+        $deletedRows = $stmt->affected_rows;
+        http_response_code(200);
+        echo json_encode([
+            'message' => 'All statistics cleared successfully',
+            'deletedSessions' => $deletedRows
+        ]);
+    } else {
+        http_response_code(500);
+        echo json_encode(['message' => 'Failed to clear statistics: ' . $stmt->error]);
+    }
+    
+    $stmt->close();
+    $conn->close();
+    exit;
+}
+
 // Get POST data
 $input = json_decode(file_get_contents('php://input'), true);
 if (!$input) {
