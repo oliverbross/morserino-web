@@ -482,16 +482,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h2 class="text-2xl font-bold text-green-400 mb-2">🎉 Session Complete!</h2>
             </div>
             
-            <div class="space-y-3 text-sm">
-                <div><strong>Mode:</strong> ${friendlyModeName}</div>
-                <div><strong>Words Completed:</strong> ${sessionData.correct}</div>
-                <div><strong>Character Accuracy:</strong> ${charAccuracy}%</div>
-                <div><strong>Character Errors:</strong> ${sessionData.errors}</div>
-                <div><strong>Time:</strong> ${duration}s</div>
-                <div><strong>Speed (CPM):</strong> ${cpm}</div>
-                <div><strong>Speed (WPM):</strong> ${wpm}</div>
+            <div class="px-8">
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="font-semibold">Mode:</span>
+                        <span>${friendlyModeName}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold">Words Completed:</span>
+                        <span>${sessionData.correct}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold">Character Accuracy:</span>
+                        <span>${charAccuracy}%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold">Character Errors:</span>
+                        <span>${sessionData.errors}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold">Time:</span>
+                        <span>${duration}s</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold">Speed (CPM):</span>
+                        <span>${cpm}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold">Speed (WPM):</span>
+                        <span>${wpm}</span>
+                    </div>
+                </div>
                 
-                <hr class="border-gray-600 my-4">
+                <hr class="border-gray-600 my-6">
                 
                 <div class="grid grid-cols-2 gap-4">
                     <!-- First Column -->

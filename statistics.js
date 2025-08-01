@@ -1,5 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Statistics page loading...');
+    console.log('📊 Statistics page loading - Version 3.0 - Mode Names & Date Fixed');
+    console.log('🔄 MAJOR UPDATE: qrCodes → QR Codes, Invalid Date → Proper Dates');
+    console.log('🚨 If you still see old format, please hard refresh (Ctrl+F5)');
+    
+    // Show a temporary visual indicator that new version loaded
+    const tempIndicator = document.createElement('div');
+    tempIndicator.innerHTML = '✅ V3.0 Loaded - Mode Names Fixed';
+    tempIndicator.style.cssText = 'position:fixed;top:10px;left:10px;background:#10b981;color:white;padding:8px;border-radius:4px;z-index:9999;font-size:12px;';
+    document.body.appendChild(tempIndicator);
+    setTimeout(() => document.body.removeChild(tempIndicator), 3000);
 
     // Check if user is logged in
     const username = sessionStorage.getItem('username');
@@ -290,36 +299,75 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Recent sessions
     function populateRecentSessions(data) {
+        console.log('🔄 PopulateRecentSessions called with:', data);
         const container = document.getElementById('recentSessions');
         const recent = data.slice(0, 8);
+        
+        console.log('📋 Recent sessions to display:', recent);
         
         if (recent.length === 0) {
             container.innerHTML = '<div class="text-center py-4 text-gray-400">No recent sessions</div>';
             return;
         }
 
-        container.innerHTML = recent.map(session => {
+        container.innerHTML = recent.map((session, index) => {
+            // Only log first session for debugging
+            if (index === 0) {
+                console.log(`📊 Processing first session:`, session);
+            }
+            
             const accuracy = session.characters_attempted > 0 
                 ? ((session.characters_correct / session.characters_attempted) * 100).toFixed(1)
                 : (session.total > 0 ? ((session.correct / session.total) * 100).toFixed(1) : '0');
             
             // Fix date parsing - handle different date formats
-            let date = 'Unknown Date';
+            let date = new Date().toLocaleDateString();
             try {
-                if (session.date) {
-                    const dateObj = new Date(session.date);
-                    if (!isNaN(dateObj.getTime())) {
-                        date = dateObj.toLocaleDateString();
-                    } else {
-                        // Try parsing timestamp if it's a number
-                        const timestamp = parseInt(session.date);
-                        if (!isNaN(timestamp)) {
-                            date = new Date(timestamp).toLocaleDateString();
+                if (session.date && session.date !== null && session.date !== '') {
+                    if (index === 0) console.log(`🗓️ Raw date:`, session.date, typeof session.date);
+                    
+                    // Handle various date formats
+                    let dateObj;
+                    
+                    if (typeof session.date === 'string') {
+                        // Try parsing as string first
+                        dateObj = new Date(session.date);
+                        
+                        // If that fails, try parsing as MySQL datetime format
+                        if (isNaN(dateObj.getTime()) && session.date.includes('-')) {
+                            // Format: YYYY-MM-DD HH:mm:ss or YYYY-MM-DD
+                            dateObj = new Date(session.date.replace(' ', 'T'));
                         }
+                        
+                        // If still fails, try as timestamp string
+                        if (isNaN(dateObj.getTime())) {
+                            const timestamp = parseInt(session.date);
+                            if (!isNaN(timestamp)) {
+                                dateObj = new Date(timestamp);
+                            }
+                        }
+                    } else if (typeof session.date === 'number') {
+                        // Handle as timestamp
+                        dateObj = new Date(session.date);
+                    } else {
+                        // Try direct conversion
+                        dateObj = new Date(session.date);
                     }
+                    
+                    if (dateObj && !isNaN(dateObj.getTime())) {
+                        date = dateObj.toLocaleDateString();
+                        if (index === 0) console.log(`✅ Successfully parsed date:`, date);
+                    } else {
+                        if (index === 0) console.log(`❌ Could not parse date:`, session.date);
+                        date = 'Today';
+                    }
+                } else {
+                    if (index === 0) console.log(`⚠️ No date provided`);
+                    date = 'Today';
                 }
             } catch (e) {
-                console.log('Date parsing error:', e, 'for date:', session.date);
+                if (index === 0) console.log('❌ Date parsing error:', e, 'for date:', session.date);
+                date = 'Today';
             }
             
             // Mode name mapping to friendly names
@@ -332,6 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 mixed: 'Mixed Mode'
             };
             const mode = modeNames[session.mode] || session.mode || 'Unknown';
+            if (index === 0) console.log(`🎯 Mode transformation: "${session.mode}" → "${mode}"`);
             
             const wpm = session.wpm ? `${session.wpm.toFixed(1)} WPM` : 'N/A';
             
@@ -363,6 +412,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         }).join('');
+        
+        console.log('✅ Recent sessions HTML updated');
+        console.log('🎯 Final container HTML length:', container.innerHTML.length);
+        
+        // Additional verification - check if the HTML contains the mode names
+        if (container.innerHTML.includes('QR Codes')) {
+            console.log('✅ SUCCESS: Found "QR Codes" in HTML - mode names are working!');
+        } else if (container.innerHTML.includes('qrCodes')) {
+            console.log('❌ PROBLEM: Still finding "qrCodes" instead of "QR Codes"');
+        }
+        
+        if (container.innerHTML.includes('Invalid Date')) {
+            console.log('❌ PROBLEM: Still showing "Invalid Date"');
+        } else {
+            console.log('✅ SUCCESS: No "Invalid Date" found');
+        }
     }
 
     // Training insights
