@@ -19,3 +19,49 @@
     border-radius: 0.5rem;
     margin-bottom: 1rem;
 }
+
+/* Modern Slider Styling */
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    background: linear-gradient(90deg, #4f46e5 0%, #06b6d4 50%, #10b981 100%);
+    border-radius: 5px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.slider:hover {
+    opacity: 1;
+    box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #ffffff;
+    border: 3px solid #4f46e5;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    border-color: #06b6d4;
+    box-shadow: 0 0 15px rgba(79, 70, 229, 0.7);
+}
+
+.slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #ffffff;
+    border: 3px solid #4f46e5;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}

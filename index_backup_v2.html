@@ -43,8 +43,8 @@
             <p class="text-lg mb-4 text-center">Logged in as: <span id="currentUsername" class="font-semibold"></span></p>
             <div class="flex space-x-4 justify-center mb-4">
                 <button id="statisticsButton" class="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg transition">📊 Statistics</button>
-                <button id="accountButton" class="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg transition">👤 Account</button>
-                <button id="logoutButton" class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition">🚪 Logout</button>
+                <button id="logoutButton" class="bg-yellow-600 hover:bg-yellow-700 text-white p-2 rounded-lg transition">Logout</button>
+                <button id="accountButton" class="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg transition">Account</button>
             </div>
         </div>
         <div id="sortable-sections" class="space-y-4">
@@ -64,22 +64,7 @@
                         <button id="topWordsButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition text-sm">Top Words in CW</button>
                         <button id="mixedButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition text-sm">Mixed</button>
                     </div>
-                    <!-- Number of Items Slider -->
-                    <div class="bg-gray-700 p-4 rounded-lg">
-                        <div class="flex justify-between items-center mb-2">
-                            <label for="numItemsSlider" class="text-sm font-semibold text-gray-300">Number of Items:</label>
-                            <span id="numItemsValue" class="text-lg font-bold text-blue-400">5</span>
-                        </div>
-                        <input type="range" id="numItemsSlider" min="1" max="200" value="5" 
-                               class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider">
-                        <div class="flex justify-between text-xs text-gray-500 mt-1">
-                            <span>1</span>
-                            <span>50</span>
-                            <span>100</span>
-                            <span>150</span>
-                            <span>200</span>
-                        </div>
-                    </div>
+                    <input type="number" id="numItems" placeholder="Number of Items" min="1" class="w-full p-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
             </div>
             <!-- Connection -->

@@ -17,9 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const qrCodesButton = document.getElementById('qrCodesButton');
     const topWordsButton = document.getElementById('topWordsButton');
     const mixedButton = document.getElementById('mixedButton');
-    // Slider elements for number of items
-    const numItemsSlider = document.getElementById('numItemsSlider');
-    const numItemsValue = document.getElementById('numItemsValue');
+    const numItems = document.getElementById('numItems');
     const connectButton = document.getElementById('connectButton');
     const connectionStatus = document.getElementById('connectionStatus');
     const startButton = document.getElementById('startButton');
@@ -227,12 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateTimerDisplay() {
         if (!sessionData.startTime || !hasEnhancedTracking || !sessionTimer) return;
-        
-        // Restore white color when timer is actually running
-        if (sessionTimer.className.includes('text-yellow-400')) {
-            sessionTimer.className = 'text-4xl font-mono font-bold text-white';
-        }
-        
         const now = new Date();
         const elapsed = now - sessionData.startTime;
         const minutes = Math.floor(elapsed / 60000);
@@ -428,10 +420,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Toast notification function (positioned high to avoid training text interference)
+    // Toast notification function (centered)
     function showToast(message, bgColor) {
         const toast = document.createElement('div');
-        toast.className = `fixed top-16 left-1/2 transform -translate-x-1/2 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 opacity-0 transition-all duration-300 max-w-md text-center`;
+        toast.className = `fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 opacity-0 transition-opacity duration-300`;
         toast.textContent = message;
         document.body.appendChild(toast);
 
@@ -616,7 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         const friendlyModeName = modeNames[currentMode] || currentMode;
         
-        const sessionReportText = `📊 Session Complete!
+        sessionReport.textContent = `📊 Session Complete!
 
 ✅ Accuracy: ${charAccuracy}% (${sessionData.correct}/${sessionData.total})
 ⏱️ Duration: ${duration}s
@@ -627,60 +619,8 @@ document.addEventListener('DOMContentLoaded', () => {
 Mode: ${friendlyModeName}
 Items: ${maxItems}`;
 
-        sessionReport.textContent = sessionReportText;
-
-        // Save this session as the last completed session
-        const lastSessionData = {
-            text: sessionReportText,
-            timestamp: new Date().toISOString(),
-            mode: friendlyModeName,
-            accuracy: charAccuracy,
-            duration: duration,
-            characters: sessionData.letters + sessionData.numbers + sessionData.signs,
-            errors: sessionData.errors,
-            cpm: cpm,
-            wpm: wpm,
-            correct: sessionData.correct,
-            total: sessionData.total,
-            maxItems: maxItems
-        };
-        
-        localStorage.setItem('lastCompletedSession', JSON.stringify(lastSessionData));
-        console.log('💾 Last session saved to localStorage');
-
         if (startNewSession) {
             startNewSession.classList.remove('hidden');
-        }
-    }
-
-    // Load and display last completed session
-    function loadLastCompletedSession() {
-        try {
-            const lastSessionJson = localStorage.getItem('lastCompletedSession');
-            if (lastSessionJson) {
-                const lastSession = JSON.parse(lastSessionJson);
-                const sessionReport = document.getElementById('sessionReport');
-                
-                if (sessionReport) {
-                    sessionReport.textContent = lastSession.text;
-                    console.log('📊 Last completed session loaded and displayed');
-                    
-                    // Update session stats display too
-                    const sessionStats = document.getElementById('sessionStats');
-                    if (sessionStats) {
-                        const timeAgo = new Date(lastSession.timestamp).toLocaleString();
-                        sessionStats.innerHTML = `
-                            <div class="text-blue-300 font-semibold">Last Completed Session</div>
-                            <div class="text-sm text-gray-400">Completed: ${timeAgo}</div>
-                            <div class="text-sm text-green-400">${lastSession.mode} • ${lastSession.accuracy}% accuracy</div>
-                        `;
-                    }
-                }
-            } else {
-                console.log('📊 No previous session found');
-            }
-        } catch (error) {
-            console.error('❌ Error loading last session:', error);
         }
     }
 
@@ -747,7 +687,7 @@ Items: ${maxItems}`;
 
         try {
             await loadWords();
-            maxItems = parseInt(numItemsSlider.value) || 10;
+            maxItems = parseInt(numItems.value) || 10;
             currentIndex = 0;
             isSessionActive = true;
             
@@ -779,19 +719,11 @@ Items: ${maxItems}`;
                 inputDisplay.innerHTML = '<span class="text-gray-500">Ready...</span>';
             }
             
-            // Show timer in waiting state
-            if (sessionTimer) {
-                sessionTimer.textContent = 'Waiting...';
-                sessionTimer.className = 'text-4xl font-mono font-bold text-yellow-400';
-            }
-            
             // Reset session data
             if (hasEnhancedTracking) {
                 resetSessionCounters();
                 updateSessionDisplay();
-                // Don't start timer yet - wait for first character input
-                sessionData.startTime = null; // Ensure timer starts fresh
-                console.log('⏱️ Session initialized - timer will start on first character input');
+                startSessionTimer();
             }
 
             showToast(`Starting ${maxItems} item session`, 'bg-green-600');
@@ -981,14 +913,6 @@ Items: ${maxItems}`;
         // Handle character input
         receivedChars += receivedChar;
         console.log(`📝 Updated receivedChars to: "${receivedChars}"`);
-        
-        // Start session timer on FIRST character input (more accurate timing)
-        if (hasEnhancedTracking && !sessionData.startTime && isSessionActive) {
-            console.log('⏱️ STARTING SESSION TIMER - First character received!');
-            sessionData.startTime = new Date();
-            timerInterval = setInterval(updateTimerDisplay, 100);
-            showToast('⏱️ Session timer started!', 'bg-blue-600');
-        }
         
         if (hasEnhancedTracking) {
             // Count character types
@@ -1244,31 +1168,9 @@ Items: ${maxItems}`;
             showToast('Ready for new session!', 'bg-green-600');
         });
     }
-    
-    // Slider event listener for number of items
-    if (numItemsSlider && numItemsValue) {
-        numItemsSlider.addEventListener('input', (e) => {
-            const value = e.target.value;
-            numItemsValue.textContent = value;
-            
-            // Add visual feedback based on value
-            if (value >= 150) {
-                numItemsValue.className = 'text-lg font-bold text-red-400';
-            } else if (value >= 100) {
-                numItemsValue.className = 'text-lg font-bold text-yellow-400';
-            } else if (value >= 50) {
-                numItemsValue.className = 'text-lg font-bold text-green-400';
-            } else {
-                numItemsValue.className = 'text-lg font-bold text-blue-400';
-            }
-        });
-    }
 
     // Initialize
     checkSession();
-    
-    // Load last completed session on startup
-    loadLastCompletedSession();
     
     // Initialize enhanced tracking display if available
     if (hasEnhancedTracking) {
