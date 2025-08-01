@@ -303,23 +303,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? ((session.characters_correct / session.characters_attempted) * 100).toFixed(1)
                 : (session.total > 0 ? ((session.correct / session.total) * 100).toFixed(1) : '0');
             
-            const date = new Date(session.date).toLocaleDateString();
-            const mode = session.mode || 'Unknown';
+            // Fix date parsing - handle different date formats
+            let date = 'Unknown Date';
+            try {
+                if (session.date) {
+                    const dateObj = new Date(session.date);
+                    if (!isNaN(dateObj.getTime())) {
+                        date = dateObj.toLocaleDateString();
+                    } else {
+                        // Try parsing timestamp if it's a number
+                        const timestamp = parseInt(session.date);
+                        if (!isNaN(timestamp)) {
+                            date = new Date(timestamp).toLocaleDateString();
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('Date parsing error:', e, 'for date:', session.date);
+            }
+            
+            // Mode name mapping to friendly names
+            const modeNames = {
+                realWords: 'Real Words',
+                abbreviations: 'Abbreviations',
+                callsigns: 'Callsigns', 
+                qrCodes: 'QR Codes',
+                topWords: 'Top Words in CW',
+                mixed: 'Mixed Mode'
+            };
+            const mode = modeNames[session.mode] || session.mode || 'Unknown';
+            
             const wpm = session.wpm ? `${session.wpm.toFixed(1)} WPM` : 'N/A';
+            
+            // Calculate additional info
+            const totalChars = (session.letters || 0) + (session.numbers || 0) + (session.signs || 0);
+            const errors = session.errors || 0;
+            const duration = session.duration ? `${session.duration}s` : 'N/A';
             
             let accuracyColor = 'text-red-400';
             if (parseFloat(accuracy) >= 90) accuracyColor = 'text-green-400';
             else if (parseFloat(accuracy) >= 75) accuracyColor = 'text-yellow-400';
             
             return `
-                <div class="bg-gray-900 p-4 rounded-lg flex justify-between items-center">
-                    <div>
-                        <div class="font-semibold">${mode}</div>
-                        <div class="text-sm text-gray-400">${date}</div>
+                <div class="bg-gray-900 p-4 rounded-lg">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="font-semibold text-blue-400">${mode}</div>
+                            <div class="text-sm text-gray-400">${date} • ${duration}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold ${accuracyColor}">${accuracy}%</div>
+                            <div class="text-sm text-gray-400">${wpm}</div>
+                        </div>
                     </div>
-                    <div class="text-right">
-                        <div class="font-semibold ${accuracyColor}">${accuracy}%</div>
-                        <div class="text-sm text-gray-400">${wpm}</div>
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>📝 ${totalChars} chars</span>
+                        <span>❌ ${errors} errors</span>
                     </div>
                 </div>
             `;
@@ -371,9 +410,20 @@ document.addEventListener('DOMContentLoaded', () => {
             return acc;
         }, {});
         
-        const preferredMode = Object.keys(mostCommonMode).reduce((a, b) => 
+        const preferredModeKey = Object.keys(mostCommonMode).reduce((a, b) => 
             mostCommonMode[a] > mostCommonMode[b] ? a : b
         );
+        
+        // Mode name mapping to friendly names
+        const modeNames = {
+            realWords: 'Real Words',
+            abbreviations: 'Abbreviations',
+            callsigns: 'Callsigns', 
+            qrCodes: 'QR Codes',
+            topWords: 'Top Words in CW',
+            mixed: 'Mixed Mode'
+        };
+        const preferredMode = modeNames[preferredModeKey] || preferredModeKey || 'Unknown';
         
         insights.push(`🎯 You practice ${preferredMode} mode most often.`);
 
@@ -412,6 +462,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const avgAccuracy = (stats.totalAccuracy / stats.sessions).toFixed(1);
             const avgSpeed = (stats.totalSpeed / stats.sessions).toFixed(1);
             
+            // Mode name mapping to friendly names
+            const modeNames = {
+                realWords: 'Real Words',
+                abbreviations: 'Abbreviations',
+                callsigns: 'Callsigns', 
+                qrCodes: 'QR Codes',
+                topWords: 'Top Words in CW',
+                mixed: 'Mixed Mode'
+            };
+            const friendlyMode = modeNames[mode] || mode || 'Unknown';
+            
             let accuracyColor = 'bg-red-500';
             if (avgAccuracy >= 90) accuracyColor = 'bg-green-500';
             else if (avgAccuracy >= 75) accuracyColor = 'bg-yellow-500';
@@ -419,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return `
                 <div class="bg-gray-900 p-4 rounded-lg">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="font-semibold">${mode}</span>
+                        <span class="font-semibold text-blue-400">${friendlyMode}</span>
                         <span class="text-sm text-gray-400">${stats.sessions} sessions</span>
                     </div>
                     <div class="mb-2">

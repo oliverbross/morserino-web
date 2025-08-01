@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('userInput');
     const nextButton = document.getElementById('nextButton');
     const inputDisplay = document.getElementById('inputDisplay');
+    const trainingDisplay = document.getElementById('trainingDisplay');
     const sessionStats = document.getElementById('sessionStats');
     const statsList = document.getElementById('statsList');
 
@@ -481,28 +482,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h2 class="text-2xl font-bold text-green-400 mb-2">🎉 Session Complete!</h2>
             </div>
             
-            <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div><strong>Mode:</strong> ${friendlyModeName}</div>
-                    <div><strong>Words Completed:</strong> ${sessionData.correct}</div>
-                    <div><strong>Character Accuracy:</strong> ${charAccuracy}%</div>
-                    <div><strong>Character Errors:</strong> ${sessionData.errors}</div>
-                    <div><strong>Time:</strong> ${duration}s</div>
-                    <div><strong>Speed (CPM):</strong> ${cpm}</div>
-                    <div><strong>Speed (WPM):</strong> ${wpm}</div>
-                    <div><strong>Total Items:</strong> ${sessionData.total}</div>
-                </div>
+            <div class="space-y-3 text-sm">
+                <div><strong>Mode:</strong> ${friendlyModeName}</div>
+                <div><strong>Words Completed:</strong> ${sessionData.correct}</div>
+                <div><strong>Character Accuracy:</strong> ${charAccuracy}%</div>
+                <div><strong>Character Errors:</strong> ${sessionData.errors}</div>
+                <div><strong>Time:</strong> ${duration}s</div>
+                <div><strong>Speed (CPM):</strong> ${cpm}</div>
+                <div><strong>Speed (WPM):</strong> ${wpm}</div>
                 
-                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-600 text-sm">
-                    <div class="space-y-2">
-                        <h4 class="font-semibold text-blue-400">Letters & Signs</h4>
-                        <div>Letters: ${sessionData.letters}</div>
-                        <div>Signs: ${sessionData.signs}</div>
+                <hr class="border-gray-600 my-4">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- First Column -->
+                    <div class="text-center space-y-3">
+                        <div class="p-3 bg-blue-900 bg-opacity-50 rounded-lg">
+                            <div class="text-2xl font-bold text-blue-400">${sessionData.letters}</div>
+                            <div class="text-blue-400 text-xs">Letters</div>
+                        </div>
+                        <div class="p-3 bg-purple-900 bg-opacity-50 rounded-lg">
+                            <div class="text-2xl font-bold text-purple-400">${sessionData.signs}</div>
+                            <div class="text-purple-400 text-xs">Signs</div>
+                        </div>
                     </div>
-                    <div class="space-y-2">
-                        <h4 class="font-semibold text-yellow-400">Numbers & Errors</h4>
-                        <div>Numbers: ${sessionData.numbers}</div>
-                        <div>Char Errors: ${sessionData.errors}</div>
+                    
+                    <!-- Second Column -->
+                    <div class="text-center space-y-3">
+                        <div class="p-3 bg-yellow-900 bg-opacity-50 rounded-lg">
+                            <div class="text-2xl font-bold text-yellow-400">${sessionData.numbers}</div>
+                            <div class="text-yellow-400 text-xs">Numbers</div>
+                        </div>
+                        <div class="p-3 bg-red-900 bg-opacity-50 rounded-lg">
+                            <div class="text-2xl font-bold text-red-400">${sessionData.errors}</div>
+                            <div class="text-red-400 text-xs">Char Errors</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -538,6 +551,53 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             modalOverlay.classList.remove('opacity-0');
         }, 10);
+    }
+
+    // Update Session Report Box
+    function updateSessionReportBox() {
+        const sessionReport = document.getElementById('sessionReport');
+        const startNewSession = document.getElementById('startNewSession');
+        
+        if (!sessionReport) return;
+        
+        const duration = sessionData.endTime && sessionData.startTime ? 
+            ((sessionData.endTime - sessionData.startTime) / 1000).toFixed(1) : '0';
+        
+        const durationMinutes = sessionData.startTime && sessionData.endTime ? 
+            (sessionData.endTime - sessionData.startTime) / 60000 : 0;
+            
+        const cpm = durationMinutes > 0 ? 
+            ((sessionData.letters + sessionData.numbers + sessionData.signs) / durationMinutes).toFixed(1) : '0';
+        
+        const wpm = (parseFloat(cpm) / 5).toFixed(1);
+        
+        const charAccuracy = sessionData.letters + sessionData.numbers + sessionData.signs > 0 ? 
+            (((sessionData.letters + sessionData.numbers + sessionData.signs - sessionData.errors) / (sessionData.letters + sessionData.numbers + sessionData.signs)) * 100).toFixed(1) : '0';
+        
+        const modeNames = {
+            realWords: 'Real Words',
+            abbreviations: 'Abbreviations', 
+            callsigns: 'Callsigns',
+            qrCodes: 'QR Codes',
+            topWords: 'Top Words in CW',
+            mixed: 'Mixed Mode'
+        };
+        const friendlyModeName = modeNames[currentMode] || currentMode;
+        
+        sessionReport.textContent = `📊 Session Complete!
+
+✅ Accuracy: ${charAccuracy}% (${sessionData.correct}/${sessionData.total})
+⏱️ Duration: ${duration}s
+🔤 Characters: ${sessionData.letters + sessionData.numbers + sessionData.signs}
+❌ Errors: ${sessionData.errors}
+📈 Speed: ${cpm} CPM (${wpm} WPM)
+
+Mode: ${friendlyModeName}
+Items: ${maxItems}`;
+
+        if (startNewSession) {
+            startNewSession.classList.remove('hidden');
+        }
     }
 
     // Data loading functions
@@ -624,6 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (nextButton) nextButton.classList.remove('hidden');
             if (endSessionButton) endSessionButton.classList.remove('hidden');
+            if (trainingDisplay) trainingDisplay.classList.remove('hidden');
             
             // Clear character tracking displays
             currentWord = '';
@@ -860,17 +921,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateSessionDisplay();
                 }
                 
-                // Wait briefly then continue to next word
+                // Continue immediately to next word (no delay for CW speed training)
                 console.log(`📊 Checking session progress: currentIndex=${currentIndex}, maxItems=${maxItems}`);
-                setTimeout(async () => {
-                    if (currentIndex >= maxItems) {
-                        console.log('🏁 Session complete, ending...');
-                        await endSession();
-                    } else {
-                        console.log('➡️ Moving to next word...');
-                        await nextTarget();
-                    }
-                }, 1500);
+                if (currentIndex >= maxItems) {
+                    console.log('🏁 Session complete, ending...');
+                    setTimeout(async () => await endSession(), 500); // Brief delay only for session end
+                } else {
+                    console.log('➡️ Moving to next word immediately...');
+                    setTimeout(async () => await nextTarget(), 100); // Minimal delay for display update
+                }
             }
             
         } else {
@@ -940,6 +999,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sessionProgress) sessionProgress.classList.add('hidden');
         if (nextButton) nextButton.classList.add('hidden');
         if (endSessionButton) endSessionButton.classList.add('hidden');
+        if (trainingDisplay) trainingDisplay.classList.add('hidden');
         
         // Clear character tracking and displays
         currentWord = '';
@@ -955,6 +1015,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (hasEnhancedTracking) {
             showSessionCompleteModal();
+            // Update session report box
+            updateSessionReportBox();
         } else {
             showToast(report.replace('\\n\\n', ' - '), 'bg-blue-600');
         }
