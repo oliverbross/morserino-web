@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Morserino Web loading...');
+    console.log('🚀 Morserino Web DOMContentLoaded fired!');
 
     // Basic DOM elements
     const debug = document.getElementById('debug');
@@ -98,25 +98,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Section toggle function
     function toggleSection(id) {
+        console.log('toggleSection called with id:', id);
         const content = document.getElementById(`${id}-content`);
         const icon = document.querySelector(`[data-id="${id}-icon"]`);
         
+        console.log('Found content:', content);
+        console.log('Found icon:', icon);
+        
         if (content && icon) {
             if (content.classList.contains('hidden')) {
+                console.log('Expanding section:', id);
                 content.classList.remove('hidden');
                 icon.classList.add('rotate-180');
             } else {
+                console.log('Collapsing section:', id);
                 content.classList.add('hidden');
                 icon.classList.remove('rotate-180');
             }
+        } else {
+            console.log('Missing elements for section:', id);
         }
     }
 
     // Add section header listeners and expand all sections by default
-    document.querySelectorAll('.section-header').forEach(header => {
+    console.log('Setting up section header listeners...');
+    const sectionHeaders = document.querySelectorAll('.section-header');
+    console.log('Found section headers:', sectionHeaders.length);
+    
+    sectionHeaders.forEach(header => {
         header.addEventListener('click', (e) => {
+            console.log('Section header clicked!', header);
             e.stopPropagation();
             const section = header.closest('.section');
+            console.log('Found section:', section?.dataset?.id);
             if (section && section.dataset.id) {
                 toggleSection(section.dataset.id);
             }
@@ -476,35 +490,35 @@ document.addEventListener('DOMContentLoaded', () => {
         // Create fresh chart (old one was destroyed)
         window.accuracyChartInstance = new Chart(ctx, {
             type: 'line',
-                data: {
-                    labels: data.map((_, i) => `Session ${i + 1}`),
-                    datasets: [{
-                        label: 'Character Accuracy %',
-                        data: chartData,
-                        borderColor: '#60A5FA',
-                        backgroundColor: 'rgba(96, 165, 250, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            max: 100,
-                            grid: { color: '#374151' },
-                            ticks: { color: '#9CA3AF' }
-                        },
-                        x: { 
-                            grid: { color: '#374151' },
-                            ticks: { color: '#9CA3AF' }
-                        }
+            data: {
+                labels: data.map((_, i) => `Session ${i + 1}`),
+                datasets: [{
+                    label: 'Character Accuracy %',
+                    data: chartData,
+                    borderColor: '#60A5FA',
+                    backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        max: 100,
+                        grid: { color: '#374151' },
+                        ticks: { color: '#9CA3AF' }
+                    },
+                    x: { 
+                        grid: { color: '#374151' },
+                        ticks: { color: '#9CA3AF' }
                     }
                 }
-            });
+            }
+        });
     }
 
     function createSpeedChart(data) {
