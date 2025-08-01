@@ -253,17 +253,14 @@ class KochTrainer {
     async checkUserAuthentication() {
         try {
             const response = await fetch('/morserino/api/session.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                method: 'GET',
                 credentials: 'include'
             });
             
             if (response.ok) {
                 const data = await response.json();
-                if (data.success && data.user) {
-                    this.elements.currentUsername.textContent = data.user.username;
+                if (data.username) {
+                    this.elements.currentUsername.textContent = data.username;
                     this.elements.userStatus.classList.remove('hidden');
                     await this.loadUserProgress();
                 } else {
