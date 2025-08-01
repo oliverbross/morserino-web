@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Morserino Web DOMContentLoaded fired!');
+    console.log('Morserino Web loading...');
 
     // Basic DOM elements
     const debug = document.getElementById('debug');
@@ -98,39 +98,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Section toggle function
     function toggleSection(id) {
-        console.log('toggleSection called with id:', id);
         const content = document.getElementById(`${id}-content`);
         const icon = document.querySelector(`[data-id="${id}-icon"]`);
         
-        console.log('Found content:', content);
-        console.log('Found icon:', icon);
-        
         if (content && icon) {
             if (content.classList.contains('hidden')) {
-                console.log('Expanding section:', id);
                 content.classList.remove('hidden');
                 icon.classList.add('rotate-180');
             } else {
-                console.log('Collapsing section:', id);
                 content.classList.add('hidden');
                 icon.classList.remove('rotate-180');
             }
-        } else {
-            console.log('Missing elements for section:', id);
         }
     }
 
     // Add section header listeners and expand all sections by default
-    console.log('Setting up section header listeners...');
-    const sectionHeaders = document.querySelectorAll('.section-header');
-    console.log('Found section headers:', sectionHeaders.length);
-    
-    sectionHeaders.forEach(header => {
+    document.querySelectorAll('.section-header').forEach(header => {
         header.addEventListener('click', (e) => {
-            console.log('Section header clicked!', header);
             e.stopPropagation();
             const section = header.closest('.section');
-            console.log('Found section:', section?.dataset?.id);
             if (section && section.dataset.id) {
                 toggleSection(section.dataset.id);
             }
@@ -146,7 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (content && content.classList.contains('hidden')) {
                 content.classList.remove('hidden');
                 if (icon) icon.classList.add('rotate-180');
-                console.log(`Expanded section: ${sectionId}`);
             }
         });
     }, 100);
@@ -159,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 animation: 150,
                 handle: '.section'
             });
+        }
     }
 
     // User preferences
