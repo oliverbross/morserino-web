@@ -4,34 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - CW Pro Trainer</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="tailwind.min.css" rel="stylesheet">
     <style>
-        .login-card {
-            backdrop-filter: blur(10px);
-            background: rgba(31, 41, 55, 0.8);
+        .background-pattern {
+            background-color: #111827;
+            background-image: 
+                radial-gradient(circle at 25px 25px, rgba(59, 130, 246, 0.1) 1px, transparent 0),
+                radial-gradient(circle at 75px 75px, rgba(34, 197, 94, 0.1) 1px, transparent 0);
+            background-size: 100px 100px;
         }
+
+        .login-card {
+            background: rgba(31, 41, 55, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+        }
+
         .tab-active {
-            background: linear-gradient(135deg, #3b82f6, #10b981);
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             color: white;
         }
+
         .tab-inactive {
-            background: rgba(107, 114, 128, 0.5);
+            background: rgba(75, 85, 99, 0.5);
             color: #d1d5db;
         }
-        .background-pattern {
-            background-image: radial-gradient(circle at 25% 25%, #3b82f6 0%, transparent 50%), 
-                              radial-gradient(circle at 75% 75%, #10b981 0%, transparent 50%);
+
+        .tab-inactive:hover {
+            background: rgba(75, 85, 99, 0.7);
+            color: white;
         }
+
         .morse-logo {
             font-family: 'Courier New', monospace;
-            font-size: 16px;
-            letter-spacing: 2px;
+            font-size: 14px;
+            line-height: 1.2;
             color: #60a5fa;
-            padding: 8px 12px;
-            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-            border-radius: 8px;
-            border: 1px solid #4b5563;
-            display: inline-block;
         }
 
         .word-separator {
@@ -61,139 +69,156 @@
         </div>
     </header>
 
-    <!-- Background CW Key Image -->
-    <div class="fixed inset-0 opacity-5 z-0">
-        <img src="cwkey.jpeg" alt="CW Key Background" class="w-full h-full object-cover">
-    </div>
-    
-    <div class="flex-grow flex items-center justify-center background-pattern px-4">
-        <!-- Login/Register Card -->
-        <div class="w-full max-w-md mx-auto login-card rounded-2xl shadow-2xl p-8 border border-gray-600">
-            <!-- Tab Navigation -->
-            <div class="flex rounded-lg overflow-hidden mb-6">
-                <button id="loginTab" class="flex-1 py-3 px-4 text-center font-semibold transition-all duration-300 tab-active">
+    <!-- Main Content Area -->
+    <main class="flex-1 flex items-center justify-center background-pattern py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <!-- Welcome Section -->
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-blue-600 rounded-full flex items-center justify-center mb-6">
+                    <span class="text-2xl font-bold text-white">⚡</span>
+                </div>
+                <h2 class="text-3xl font-extrabold text-white mb-2">Welcome to CW Pro Trainer</h2>
+                <p class="text-gray-400">Access your professional Morse code training platform</p>
+            </div>
+
+            <!-- Login/Register Toggle -->
+            <div class="bg-gray-800 rounded-lg p-1 flex">
+                <button id="loginTab" class="flex-1 py-2 px-4 text-sm font-medium text-white bg-blue-600 rounded-md transition-all duration-200">
                     Sign In
                 </button>
-                <button id="registerTab" class="flex-1 py-3 px-4 text-center font-semibold transition-all duration-300 tab-inactive">
-                    Create Account
+                <button id="registerTab" class="flex-1 py-2 px-4 text-sm font-medium text-gray-300 hover:text-white transition-all duration-200">
+                    Register
                 </button>
             </div>
 
             <!-- Login Form -->
-            <div id="loginSection" class="space-y-6">
-                <div class="text-center mb-6">
-                    <h2 class="text-2xl font-bold text-white">Welcome Back</h2>
-                    <p class="text-gray-300 mt-2">Sign in to continue your CW training</p>
-                </div>
-
-                <form id="loginForm" class="space-y-4">
+            <div id="loginSection" class="login-card rounded-xl shadow-2xl p-8">
+                <form id="loginForm" class="space-y-6">
                     <div>
                         <label for="loginUsername" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
-                        <input type="text" id="loginUsername" required 
-                               class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        <input id="loginUsername" type="text" required 
+                               class="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                placeholder="Enter your username">
                     </div>
                     <div>
                         <label for="loginPassword" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                        <input type="password" id="loginPassword" required 
-                               class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        <input id="loginPassword" type="password" required 
+                               class="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                placeholder="Enter your password">
                     </div>
-                    <button type="submit" id="loginButton" 
-                            class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105">
+                    <button type="submit" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800">
                         Sign In
                     </button>
                 </form>
             </div>
 
             <!-- Register Form -->
-            <div id="registerSection" class="space-y-6 hidden">
-                <div class="text-center mb-6">
-                    <h2 class="text-2xl font-bold text-white">Join OM0RX</h2>
-                    <p class="text-gray-300 mt-2">Create your account to start training</p>
-                </div>
-
-                <form id="registerForm" class="space-y-4">
+            <div id="registerSection" class="login-card rounded-xl shadow-2xl p-8 hidden">
+                <form id="registerForm" class="space-y-6">
                     <div>
                         <label for="registerUsername" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
-                        <input type="text" id="registerUsername" required 
-                               class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        <input id="registerUsername" type="text" required 
+                               class="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
                                placeholder="Choose a username">
                     </div>
                     <div>
-                        <label for="registerEmail" class="block text-sm font-medium text-gray-300 mb-2">Recovery Email</label>
-                        <input type="email" id="registerEmail" required 
-                               class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                               placeholder="your.email@example.com">
+                        <label for="registerEmail" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                        <input id="registerEmail" type="email" required 
+                               class="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                               placeholder="your@email.com">
                     </div>
                     <div>
                         <label for="registerPassword" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                        <input type="password" id="registerPassword" required 
-                               class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        <input id="registerPassword" type="password" required 
+                               class="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
                                placeholder="Create a secure password">
                     </div>
-                    <button type="submit" id="registerButton" 
-                            class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105">
+                    <button type="submit" 
+                            class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-800">
                         Create Account
                     </button>
                 </form>
             </div>
 
-            <!-- Footer -->
-            <div class="mt-8 text-center">
-                <p class="text-gray-400 text-sm">
-                    By signing in, you agree to use this professional CW training platform responsibly.
+            <!-- Status Messages -->
+            <div id="statusMessage" class="hidden">
+                <div id="statusCard" class="rounded-lg p-4 text-center">
+                    <p id="statusText" class="text-white font-medium"></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Professional Footer -->
+    <footer class="bg-gray-800 border-t border-gray-700 w-full">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <div class="text-center space-y-4">
+                <p class="text-gray-300 text-sm leading-relaxed">
+                    This website is dedicated to helping amateur radio operators improve their Morse code skills.
+                </p>
+                <p class="text-gray-400 text-xs">
+                    <strong>Acknowledgements:</strong> Vincenzo IW7DMH, Ludwig Koch, and Alex Shovkoplyas VE3NEA. I did take a lot of ideas from them.
+                </p>
+                <p class="text-gray-400 text-xs">
+                    This website is provided 'as is' for educational purposes. The owner disclaims any liability for damages resulting from its use.
+                </p>
+                <p class="text-gray-400 text-xs">
+                    For more information, contact <strong>OM0RX</strong> - <a href="mailto:oliver@om0rx.com" class="text-blue-400 hover:text-blue-300">oliver@om0rx.com</a>
+                </p>
+                <p class="text-gray-500 text-xs border-t border-gray-700 pt-4">
+                    Copyright © 2025 OM0RX. All rights reserved.
                 </p>
             </div>
         </div>
-
-        <!-- Status Messages -->
-        <div id="statusMessage" class="mt-6 text-center hidden">
-            <div class="bg-gray-800 border rounded-lg p-4">
-                <p id="statusText" class="text-white"></p>
-            </div>
-        </div>
+    </footer>
 
     <script>
         const apiBaseUrl = 'https://om0rx.com/morserino/api';
         
-        // Tab switching
+        // Tab switching functionality
         const loginTab = document.getElementById('loginTab');
         const registerTab = document.getElementById('registerTab');
         const loginSection = document.getElementById('loginSection');
         const registerSection = document.getElementById('registerSection');
         
-        loginTab.addEventListener('click', () => {
-            loginTab.classList.remove('tab-inactive');
-            loginTab.classList.add('tab-active');
-            registerTab.classList.remove('tab-active');
-            registerTab.classList.add('tab-inactive');
+        function switchToLogin() {
+            loginTab.classList.add('bg-blue-600', 'text-white');
+            loginTab.classList.remove('text-gray-300');
+            registerTab.classList.remove('bg-blue-600', 'text-white');
+            registerTab.classList.add('text-gray-300');
             loginSection.classList.remove('hidden');
             registerSection.classList.add('hidden');
-        });
+        }
         
-        registerTab.addEventListener('click', () => {
-            registerTab.classList.remove('tab-inactive');
-            registerTab.classList.add('tab-active');
-            loginTab.classList.remove('tab-active');
-            loginTab.classList.add('tab-inactive');
+        function switchToRegister() {
+            registerTab.classList.add('bg-blue-600', 'text-white');
+            registerTab.classList.remove('text-gray-300');
+            loginTab.classList.remove('bg-blue-600', 'text-white');
+            loginTab.classList.add('text-gray-300');
             registerSection.classList.remove('hidden');
             loginSection.classList.add('hidden');
-        });
+        }
+        
+        loginTab.addEventListener('click', switchToLogin);
+        registerTab.addEventListener('click', switchToRegister);
 
         // Toast notification function
         function showToast(message, isSuccess = false) {
             const statusMessage = document.getElementById('statusMessage');
+            const statusCard = document.getElementById('statusCard');
             const statusText = document.getElementById('statusText');
             
             statusText.textContent = message;
+            
+            if (isSuccess) {
+                statusCard.className = 'bg-green-600 border border-green-500 rounded-lg p-4 text-center';
+            } else {
+                statusCard.className = 'bg-red-600 border border-red-500 rounded-lg p-4 text-center';
+            }
+            
             statusMessage.classList.remove('hidden');
             
-            // Style based on success/error
-            const container = statusMessage.querySelector('div');
-            container.className = `border rounded-lg p-4 ${isSuccess ? 'bg-green-800 border-green-600' : 'bg-red-800 border-red-600'}`;
-            
-            // Auto-hide after 5 seconds
             setTimeout(() => {
                 statusMessage.classList.add('hidden');
             }, 5000);
@@ -252,14 +277,13 @@
                 const response = await fetch(`${apiBaseUrl}/register.php`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, email }),
+                    body: JSON.stringify({ username, email, password }),
                     credentials: 'include'
                 });
                 
                 const data = await response.json();
                 
                 if (response.ok && data.message === 'Registration successful') {
-                    sessionStorage.setItem('username', username);
                     showToast('Registration successful! Redirecting...', true);
                     setTimeout(() => {
                         window.location.href = 'index.html';
@@ -272,7 +296,7 @@
             }
         });
 
-        // Check if already logged in
+        // Check if already logged in (silent check)
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const response = await fetch(`${apiBaseUrl}/session.php`, {
@@ -288,35 +312,10 @@
                         return;
                     }
                 }
-                
-                // Not logged in (expected), stay on login page
             } catch (error) {
                 // Not logged in or error (expected for 401), stay on login page
             }
         });
     </script>
-
-    <!-- Professional Footer -->
-    <footer class="bg-gray-800 border-t border-gray-700 mt-auto w-full">
-        <div class="px-6 py-8">
-            <div class="text-center space-y-4">
-                <p class="text-gray-300 text-sm leading-relaxed">
-                    This website is dedicated to helping amateur radio operators improve their Morse code skills.
-                </p>
-                <p class="text-gray-400 text-xs">
-                    <strong>Acknowledgements:</strong> Vincenzo IW7DMH, Ludwig Koch, and Alex Shovkoplyas VE3NEA. I did take a lot of ideas from them.
-                </p>
-                <p class="text-gray-400 text-xs">
-                    This website is provided 'as is' for educational purposes. The owner disclaims any liability for damages resulting from its use.
-                </p>
-                <p class="text-gray-400 text-xs">
-                    For more information, contact <strong>OM0RX</strong> - <a href="mailto:oliver@om0rx.com" class="text-blue-400 hover:text-blue-300">oliver@om0rx.com</a>
-                </p>
-                <p class="text-gray-500 text-xs border-t border-gray-700 pt-4">
-                    Copyright © 2025 OM0RX. All rights reserved.
-                </p>
-            </div>
-        </div>
-    </footer>
 </body>
 </html>
