@@ -268,6 +268,78 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Fetch and display quick statistics for the index page
+    async function fetchHistoricalStats(username) {
+        try {
+            console.log('Fetching quick stats for username:', username);
+            const response = await fetch(`${apiBaseUrl}/get_stats.php?username=${encodeURIComponent(username)}&limit=100`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Loaded historical stats:', data.length, 'sessions');
+                if (data.length > 0) {
+                    populateQuickStats(data);
+                } else {
+                    console.log('No historical stats found');
+                    // Keep default values (0)
+                }
+            } else {
+                console.log('Stats API error:', response.status);
+                // Keep default values (0)
+            }
+        } catch (error) {
+            console.error('Error fetching historical stats:', error);
+            // Keep default values (0)
+        }
+    }
+
+    // Helper function to calculate CHARACTER-based accuracy (same as statistics.js)
+    function calculateCharacterAccuracy(session) {
+        const totalCharsAttempted = (session.letters || 0) + (session.numbers || 0) + (session.signs || 0);
+        const charErrors = session.errors || session.character_errors || 0;
+        const correctChars = totalCharsAttempted - charErrors;
+        
+        if (totalCharsAttempted > 0) {
+            return (correctChars / totalCharsAttempted) * 100;
+        } else {
+            return 0;
+        }
+    }
+
+    // Populate quick stats for the index page
+    function populateQuickStats(data) {
+        const totalSessionsElement = document.getElementById('totalSessions');
+        const averageAccuracyElement = document.getElementById('averageAccuracy');
+        const hoursPracticedElement = document.getElementById('hoursPracticed');
+
+        if (!totalSessionsElement || !averageAccuracyElement || !hoursPracticedElement) {
+            console.log('Quick stats elements not found');
+            return;
+        }
+
+        // Calculate total sessions
+        const totalSessions = data.length;
+
+        // Calculate average accuracy from recent sessions (last 20)
+        const recent = data.slice(0, 20);
+        const avgAccuracy = recent.length > 0 ? 
+            recent.reduce((sum, s) => sum + calculateCharacterAccuracy(s), 0) / recent.length : 0;
+
+        // Estimate hours practiced (assume average 5 minutes per session)
+        const estimatedMinutes = totalSessions * 5;
+        const hoursPracticed = estimatedMinutes / 60;
+
+        // Update the DOM elements
+        totalSessionsElement.textContent = totalSessions.toString();
+        averageAccuracyElement.textContent = `${avgAccuracy.toFixed(1)}%`;
+        hoursPracticedElement.textContent = hoursPracticed.toFixed(1);
+
+        console.log('Quick stats updated:', { totalSessions, avgAccuracy: avgAccuracy.toFixed(1), hoursPracticed: hoursPracticed.toFixed(1) });
+    }
+
     // Placeholder functions for compatibility (detailed statistics moved to statistics.js)
     function destroyExistingCharts() {
         console.log('Charts cleared (placeholder)');
