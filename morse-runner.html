@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OM0RX Professional CW Trainer - Morse Runner Contest Simulator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        .section-header {
+            position: relative !important;
+            display: flex !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            width: 100% !important;
+            min-height: 40px !important;
+            padding: 8px 40px 8px 8px !important;
+        }
+        .section-header h2 {
+            flex: 1 1 auto !important;
+            margin: 0 !important;
+            font-size: 1.25rem !important;
+        }
+        .icon-container {
+            position: absolute !important;
+            right: 8px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            width: 24px !important;
+            height: 24px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .section-header svg {
+            width: 24px !important;
+            height: 24px !important;
+            stroke: white !important;
+        }
+        
+        /* Contest Log Styling */
+        .contest-log {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .contest-log th {
+            background: #374151;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .contest-log tr.logged-qso {
+            background: #065f46;
+        }
+        .contest-log tr.duplicate {
+            background: #7f1d1d;
+        }
+        .contest-log tr.multiplier {
+            background: #1e40af;
+        }
+        
+        /* Input Field Styling */
+        .callsign-input {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        /* Function Key Styling */
+        .function-key {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            min-height: 60px;
+        }
+        
+        /* Score Display */
+        .score-display {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        /* Station Status Indicators */
+        .station-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .station-cq { background: #10b981; }
+        .station-sp { background: #f59e0b; }
+        .station-pile { background: #ef4444; }
+        
+        /* Animation for new QSOs */
+        @keyframes newQSO {
+            0% { background: #3b82f6; }
+            100% { background: transparent; }
+        }
+        .new-qso {
+            animation: newQSO 2s ease-out;
+        }
+        
+        /* Contest Timer */
+        .contest-timer {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container max-w-7xl mx-auto p-4">
+        
+        <!-- Professional Header -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center mb-4">
+                <div class="relative bg-gradient-to-r from-orange-600 to-red-600 text-white px-6 py-3 rounded-lg shadow-lg overflow-hidden">
+                    <!-- Background CW Key Image -->
+                    <div class="absolute inset-0 opacity-15">
+                        <img src="cwkey.jpeg" alt="CW Key Background" class="w-full h-full object-cover rounded-lg">
+                    </div>
+                    <div class="relative flex items-center space-x-3 z-10">
+                        <div class="w-10 h-10 rounded-full bg-white/20 p-2">
+                            <img src="cwkey.jpeg" alt="CW Key" class="w-full h-full object-cover rounded-full">
+                        </div>
+                        <div>
+                            <div class="text-xl font-bold tracking-wide text-white drop-shadow">OM0RX</div>
+                            <div class="text-sm opacity-90 text-white drop-shadow">Professional CW Trainer</div>
+                        </div>
+                        <div class="text-2xl animate-pulse">🏁</div>
+                    </div>
+                </div>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-100">Morse Runner Contest Simulator</h1>
+            <p class="text-gray-300 mt-2">Experience the intensity of CW contests with realistic conditions</p>
+        </div>
+
+        <div id="morseRunnerDebug" class="error hidden bg-red-600 p-2 rounded mb-4">Debug: Check console for errors.</div>
+        
+        <!-- User Status -->
+        <div id="userStatus" class="text-center mb-6 hidden">
+            <p class="text-lg">Contest operator: <span id="currentUsername" class="font-semibold text-orange-400"></span></p>
+        </div>
+
+        <div id="sortable-contest-sections" class="space-y-4">
+            
+            <!-- Contest Control Panel -->
+            <div class="section bg-gray-800 shadow-lg rounded-lg p-6" data-id="contest-control">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">🏁 Contest Control</h2>
+                    <div class="icon-container">
+                        <svg data-id="contest-control-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="contest-control-content" class="mt-4">
+                    <!-- Contest Timer and Status -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-gray-700 p-4 rounded-lg text-center">
+                            <div class="contest-timer text-green-400" id="contestTimer">00:00:00</div>
+                            <div class="text-sm text-gray-300">Contest Time</div>
+                        </div>
+                        <div class="bg-gray-700 p-4 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-blue-400" id="currentRate">0</div>
+                            <div class="text-sm text-gray-300">QSOs/Hour</div>
+                        </div>
+                        <div class="bg-gray-700 p-4 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-purple-400" id="bandActivity">Medium</div>
+                            <div class="text-sm text-gray-300">Band Activity</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contest Controls -->
+                    <div class="flex flex-wrap justify-center gap-2">
+                        <button id="startContestButton" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">▶️ Start Contest</button>
+                        <button id="pauseContestButton" class="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 hidden">⏸️ Pause</button>
+                        <button id="stopContestButton" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 hidden">⏹️ Stop</button>
+                        <button id="contestSettingsButton" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">⚙️ Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QSO Input Panel -->
+            <div class="section bg-gray-800 shadow-lg rounded-lg p-6" data-id="qso-input">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">📻 QSO Input</h2>
+                    <div class="icon-container">
+                        <svg data-id="qso-input-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="qso-input-content" class="mt-4">
+                    <!-- Callsign Input -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Callsign</label>
+                            <input type="text" id="callsignInput" class="callsign-input w-full p-3 bg-gray-700 rounded-lg text-white border-2 border-gray-600 focus:border-orange-500 focus:outline-none" placeholder="Enter callsign..." maxlength="12">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Exchange</label>
+                            <input type="text" id="exchangeInput" class="callsign-input w-full p-3 bg-gray-700 rounded-lg text-white border-2 border-gray-600 focus:border-orange-500 focus:outline-none" placeholder="599 zone/serial" maxlength="10">
+                        </div>
+                    </div>
+                    
+                    <!-- QSO Actions -->
+                    <div class="flex flex-wrap justify-center gap-2 mb-4">
+                        <button id="logQSOButton" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200">✅ Log QSO</button>
+                        <button id="clearInputButton" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">🗑️ Clear</button>
+                        <label class="flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 cursor-pointer">
+                            <input type="checkbox" id="qsoConfirmed" class="mr-2 w-4 h-4">
+                            📋 QSL
+                        </label>
+                    </div>
+                    
+                    <!-- Live Station Info -->
+                    <div id="currentStationInfo" class="bg-gray-700 p-3 rounded-lg text-center hidden">
+                        <div class="text-lg font-bold text-orange-400" id="currentStationCall">---</div>
+                        <div class="text-sm text-gray-300">
+                            <span id="currentStationSignal">S9</span> • 
+                            <span id="currentStationMode">CQ</span> • 
+                            <span id="currentStationSpeed">25 WPM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contest Log -->
+            <div class="section bg-gray-800 shadow-lg rounded-lg p-6" data-id="contest-log">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">📊 Contest Log</h2>
+                    <div class="icon-container">
+                        <svg data-id="contest-log-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="contest-log-content" class="mt-4">
+                    <!-- Log Statistics -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="bg-blue-600 p-3 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-white" id="totalQSOs">0</div>
+                            <div class="text-xs text-blue-100">Total QSOs</div>
+                        </div>
+                        <div class="bg-green-600 p-3 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-white" id="verifiedQSOs">0</div>
+                            <div class="text-xs text-green-100">Verified</div>
+                        </div>
+                        <div class="bg-purple-600 p-3 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-white" id="multipliers">0</div>
+                            <div class="text-xs text-purple-100">Multipliers</div>
+                        </div>
+                        <div class="bg-yellow-600 p-3 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-white" id="totalScore">0</div>
+                            <div class="text-xs text-yellow-100">Total Score</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contest Log Table -->
+                    <div class="overflow-x-auto max-h-64 overflow-y-auto">
+                        <table class="contest-log w-full text-sm">
+                            <thead>
+                                <tr class="text-left border-b border-gray-600">
+                                    <th class="px-2 py-2">Time</th>
+                                    <th class="px-2 py-2">Callsign</th>
+                                    <th class="px-2 py-2">Freq</th>
+                                    <th class="px-2 py-2">RST S</th>
+                                    <th class="px-2 py-2">RST R</th>
+                                    <th class="px-2 py-2">Exchange</th>
+                                    <th class="px-2 py-2">Mult</th>
+                                    <th class="px-2 py-2">Pts</th>
+                                    <th class="px-2 py-2">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contestLogTable">
+                                <!-- Contest log entries will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Function Keys -->
+            <div class="section bg-gray-800 shadow-lg rounded-lg p-6" data-id="function-keys">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">🎹 Function Keys</h2>
+                    <div class="icon-container">
+                        <svg data-id="function-keys-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="function-keys-content" class="mt-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <button class="function-key bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition duration-200 text-center" data-key="F1">
+                            <div class="font-bold">F1</div>
+                            <div class="text-xs">CQ</div>
+                        </button>
+                        <button class="function-key bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition duration-200 text-center" data-key="F2">
+                            <div class="font-bold">F2</div>
+                            <div class="text-xs">Exchange</div>
+                        </button>
+                        <button class="function-key bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition duration-200 text-center" data-key="F3">
+                            <div class="font-bold">F3</div>
+                            <div class="text-xs">TU QRZ</div>
+                        </button>
+                        <button class="function-key bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition duration-200 text-center" data-key="F4">
+                            <div class="font-bold">F4</div>
+                            <div class="text-xs">My Call</div>
+                        </button>
+                        <button class="function-key bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition duration-200 text-center" data-key="F5">
+                            <div class="font-bold">F5</div>
+                            <div class="text-xs">QRL?</div>
+                        </button>
+                        <button class="function-key bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition duration-200 text-center" data-key="F6">
+                            <div class="font-bold">F6</div>
+                            <div class="text-xs">QRZ?</div>
+                        </button>
+                        <button class="function-key bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition duration-200 text-center" data-key="F7">
+                            <div class="font-bold">F7</div>
+                            <div class="text-xs">AGN?</div>
+                        </button>
+                        <button class="function-key bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition duration-200 text-center" data-key="F8">
+                            <div class="font-bold">F8</div>
+                            <div class="text-xs">QRT</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contest Settings -->
+            <div class="section bg-gray-800 shadow-lg rounded-lg p-6" data-id="contest-settings">
+                <div class="section-header cursor-pointer">
+                    <h2 class="text-xl font-semibold">⚙️ Contest Settings</h2>
+                    <div class="icon-container">
+                        <svg data-id="contest-settings-icon" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div id="contest-settings-content" class="mt-4 hidden">
+                    <!-- Contest Type -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Contest Type</label>
+                        <select id="contestTypeSelect" class="w-full p-3 bg-gray-700 rounded-lg text-white border border-gray-600">
+                            <option value="cqww">CQ World Wide CW</option>
+                            <option value="arrldx">ARRL DX CW</option>
+                            <option value="cqwpx">CQ WPX CW</option>
+                            <option value="custom">Custom Contest</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Duration Settings -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Contest Duration</label>
+                            <select id="contestDurationSelect" class="w-full p-3 bg-gray-700 rounded-lg text-white border border-gray-600">
+                                <option value="5">5 minutes</option>
+                                <option value="10">10 minutes</option>
+                                <option value="15">15 minutes</option>
+                                <option value="30">30 minutes</option>
+                                <option value="60">1 hour</option>
+                                <option value="120">2 hours</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">CW Speed Range</label>
+                            <select id="speedRangeSelect" class="w-full p-3 bg-gray-700 rounded-lg text-white border border-gray-600">
+                                <option value="15-25">15-25 WPM</option>
+                                <option value="20-30">20-30 WPM</option>
+                                <option value="25-35">25-35 WPM</option>
+                                <option value="30-40">30-40 WPM</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Band Conditions -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-300 mb-3">Band Conditions</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="qrnToggle" class="mr-2 w-4 h-4 text-orange-600 bg-gray-600 border-gray-500 rounded focus:ring-orange-500">
+                                <span class="text-sm">QRN (Noise)</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="qrmToggle" class="mr-2 w-4 h-4 text-orange-600 bg-gray-600 border-gray-500 rounded focus:ring-orange-500">
+                                <span class="text-sm">QRM (Interference)</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="flutterToggle" class="mr-2 w-4 h-4 text-orange-600 bg-gray-600 border-gray-500 rounded focus:ring-orange-500">
+                                <span class="text-sm">Flutter</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="qsbToggle" class="mr-2 w-4 h-4 text-orange-600 bg-gray-600 border-gray-500 rounded focus:ring-orange-500">
+                                <span class="text-sm">QSB (Fading)</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="lidsToggle" class="mr-2 w-4 h-4 text-orange-600 bg-gray-600 border-gray-500 rounded focus:ring-orange-500">
+                                <span class="text-sm">LID's</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="pileupToggle" class="mr-2 w-4 h-4 text-orange-600 bg-gray-600 border-gray-500 rounded focus:ring-orange-500">
+                                <span class="text-sm">Pile-ups</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- My Station Settings -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">My Callsign</label>
+                        <input type="text" id="myCallsignInput" class="callsign-input w-full p-3 bg-gray-700 rounded-lg text-white border border-gray-600" placeholder="Enter your callsign" maxlength="10" value="OM0RX">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex flex-wrap justify-center gap-2 mt-6">
+            <button id="backToTrainingFromRunner" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">🏠 Back to Training</button>
+            <button id="kochFromRunner" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">🎧 KOCH Trainer</button>
+            <button id="accountFromRunner" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">👤 Account</button>
+            <button id="helpFromRunner" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">❓ Help</button>
+            <button id="statisticsFromRunner" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">📊 Statistics</button>
+        </div>
+    </div>
+
+    <script src="morse-runner-audio.js"></script>
+    <script src="morse-runner.js?v=1.0"></script>
+</body>
+</html>

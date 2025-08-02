@@ -346,6 +346,13 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'koch-cw-trainer.html';
     });
 
+    const morseRunnerButton = document.getElementById('morseRunnerButton');
+    if (morseRunnerButton) {
+        morseRunnerButton.addEventListener('click', () => {
+            window.location.href = 'morse-runner.html';
+        });
+    }
+
     if (statisticsButton) {
         statisticsButton.addEventListener('click', () => {
             window.location.href = 'statistics.html';
