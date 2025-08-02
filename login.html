@@ -266,15 +266,21 @@
                     method: 'GET',
                     credentials: 'include'
                 });
-                const data = await response.json();
                 
-                if (response.ok && data.username) {
-                    // Already logged in, redirect to main page
-                    window.location.href = 'index.html';
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.username) {
+                        // Already logged in, redirect to main page
+                        window.location.href = 'index.html';
+                        return;
+                    }
                 }
-            } catch (error) {
+                
                 // Not logged in, stay on login page
                 console.log('Not logged in, showing login form');
+            } catch (error) {
+                // Not logged in or error, stay on login page
+                console.log('Session check failed, showing login form:', error);
             }
         });
     </script>

@@ -217,21 +217,27 @@
                 credentials: 'include'
             });
             
-            const data = await response.json();
-            
-            if (data.loggedIn) {
-                document.getElementById('loggedIn').classList.remove('hidden');
-                document.getElementById('notLoggedIn').classList.add('hidden');
-                document.getElementById('mainNav').classList.remove('hidden');
-                document.getElementById('mainNav').classList.add('flex');
-                document.getElementById('currentUsername').textContent = data.username;
-            } else {
-                document.getElementById('loggedIn').classList.add('hidden');
-                document.getElementById('notLoggedIn').classList.remove('hidden');
-                document.getElementById('mainNav').classList.add('hidden');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.username) {
+                    // User is logged in
+                    document.getElementById('loggedIn').classList.remove('hidden');
+                    document.getElementById('notLoggedIn').classList.add('hidden');
+                    document.getElementById('mainNav').classList.remove('hidden');
+                    document.getElementById('mainNav').classList.add('flex');
+                    document.getElementById('currentUsername').textContent = data.username;
+                    return;
+                }
             }
+            
+            // User is not logged in (either 401 response or no username)
+            document.getElementById('loggedIn').classList.add('hidden');
+            document.getElementById('notLoggedIn').classList.remove('hidden');
+            document.getElementById('mainNav').classList.add('hidden');
+            
         } catch (error) {
             console.error('Session check failed:', error);
+            // Show login interface on any error
             document.getElementById('loggedIn').classList.add('hidden');
             document.getElementById('notLoggedIn').classList.remove('hidden');
             document.getElementById('mainNav').classList.add('hidden');
