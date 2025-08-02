@@ -49,6 +49,15 @@
             border: none;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         }
+
+        /* Section toggle animations */
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+        
+        .section-header svg {
+            transition: transform 0.3s ease;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
@@ -80,14 +89,14 @@
                         <div id="trainingDropdownMenu" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible transition-all duration-200 z-50">
                             <div class="py-1">
                                 <a href="tx-trainer.html" class="block px-4 py-2 text-sm text-blue-400 hover:bg-gray-700">📡 TX Trainer</a>
-                                <a href="koch-cw-trainer.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">🎧 KOCH Trainer</a>
-                                <a href="morse-runner.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">🏁 Morse Runner</a>
+                                <button type="button" id="kochTrainerButton" class="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">🎧 KOCH Trainer</button>
+                                <button type="button" id="morseRunnerButton" class="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">🏁 Morse Runner</button>
                             </div>
                         </div>
                     </div>
-                    <a href="statistics.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">📊 Statistics</a>
-                    <a href="account.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">👤 Account</a>
-                    <a href="help.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">❓ Help</a>
+                    <button id="statisticsButton" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">📊 Statistics</button>
+                    <button id="accountButton" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">👤 Account</button>
+                    <button id="helpButton" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">❓ Help</button>
                     <button id="logoutButton" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">🚪 Logout</button>
                 </nav>
             </div>
@@ -348,9 +357,26 @@
         }
     });
 
-    // Initialize session check when page loads
+    // Section toggle functionality
     document.addEventListener('DOMContentLoaded', () => {
         checkUserSession();
+        
+        // Handle collapsible sections
+        document.querySelectorAll('.section-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const section = header.closest('.section');
+                const dataId = section.getAttribute('data-id');
+                const content = document.getElementById(`${dataId}-content`);
+                const icon = document.querySelector(`[data-id="${dataId}-icon"]`);
+                
+                if (content) {
+                    content.classList.toggle('hidden');
+                    if (icon) {
+                        icon.classList.toggle('rotate-180');
+                    }
+                }
+            });
+        });
     });
     </script>
     <script src="Sortable.min.js"></script>
