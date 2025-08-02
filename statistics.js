@@ -39,6 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'account.html';
     });
 
+    // Help button navigation
+    const helpFromStats = document.getElementById('helpFromStats');
+    if (helpFromStats) {
+        helpFromStats.addEventListener('click', () => {
+            window.location.href = 'help.html';
+        });
+    }
+
     document.getElementById('logoutButton').addEventListener('click', () => {
         sessionStorage.clear();
         window.location.href = 'index.html';

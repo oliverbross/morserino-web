@@ -121,6 +121,8 @@ class KochTrainer {
             // Navigation
             backToTrainingFromKoch: document.getElementById('backToTrainingFromKoch'),
             viewStatisticsFromKoch: document.getElementById('viewStatisticsFromKoch'),
+            accountFromKoch: document.getElementById('accountFromKoch'),
+            helpFromKoch: document.getElementById('helpFromKoch'),
             resetProgressButton: document.getElementById('resetProgressButton'),
             
             // User status
@@ -148,6 +150,19 @@ class KochTrainer {
         this.elements.viewStatisticsFromKoch.addEventListener('click', () => {
             window.location.href = 'statistics.html';
         });
+        
+        if (this.elements.accountFromKoch) {
+            this.elements.accountFromKoch.addEventListener('click', () => {
+                window.location.href = 'account.html';
+            });
+        }
+        
+        if (this.elements.helpFromKoch) {
+            this.elements.helpFromKoch.addEventListener('click', () => {
+                window.location.href = 'help.html';
+            });
+        }
+        
         this.elements.resetProgressButton.addEventListener('click', () => this.resetProgress());
         
         // Keyboard input for training

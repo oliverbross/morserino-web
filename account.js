@@ -688,6 +688,20 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Back button not found in DOM!');
     }
 
+    // Help button navigation
+    const helpFromAccount = document.getElementById('helpFromAccount');
+    if (helpFromAccount) {
+        console.log('Adding click listener to help button...');
+        helpFromAccount.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Help button clicked - navigating to help.html');  
+            window.location.href = 'help.html';
+        });
+        console.log('Help button click listener added successfully');
+    } else {
+        console.error('Help button not found in DOM!');
+    }
+
     // Initialize session check
     showAllSections();
     checkSession();

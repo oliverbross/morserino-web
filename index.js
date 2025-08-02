@@ -335,6 +335,13 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = '/morserino/account.html';
     });
 
+    const helpButton = document.getElementById('helpButton');
+    if (helpButton) {
+        helpButton.addEventListener('click', () => {
+            window.location.href = 'help.html';
+        });
+    }
+
     kochTrainerButton.addEventListener('click', () => {
         window.location.href = 'koch-cw-trainer.html';
     });

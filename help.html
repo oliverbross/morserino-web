@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OM0RX Professional CW Trainer - Help & Documentation</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        .section-header {
+            position: relative !important;
+            display: flex !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            width: 100% !important;
+            min-height: 40px !important;
+            padding: 8px 40px 8px 8px !important;
+        }
+        .section-header h2 {
+            flex: 1 1 auto !important;
+            margin: 0 !important;
+            font-size: 1.25rem !important;
+        }
+        .icon-container {
+            position: absolute !important;
+            right: 8px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            width: 24px !important;
+            height: 24px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .section-header svg {
+            width: 24px !important;
+            height: 24px !important;
+            stroke: white !important;
+        }
+        .section.collapsed .section-header svg {
+            transform: rotate(-90deg) !important;
+        }
+        .bg-audio-demo {
+            background: linear-gradient(90deg, #1f2937 0%, #374151 100%);
+        }
+        .help-card {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            border: 1px solid #4b5563;
+        }
+        .demo-button {
+            background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+            transition: all 0.3s ease;
+        }
+        .demo-button:hover {
+            background: linear-gradient(90deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-1px);
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+        .toc-link {
+            transition: all 0.2s ease;
+        }
+        .toc-link:hover {
+            background-color: #374151;
+            transform: translateX(4px);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-blue-400 mb-2">📚 OM0RX CW Trainer - Help & Documentation</h1>
+            <p class="text-gray-300 text-lg">Comprehensive guide to mastering Morse code with professional features</p>
+            <div class="mt-4">
+                <button onclick="window.location.href='index.html'" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">
+                    ← Back to Main App
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Navigation / Table of Contents -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-8">
+            <h2 class="text-2xl font-bold mb-4 text-center">📋 Quick Navigation</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <a href="#getting-started" class="toc-link block p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition">
+                    🚀 Getting Started
+                </a>
+                <a href="#koch-trainer" class="toc-link block p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition">
+                    🎧 Koch CW Trainer
+                </a>
+                <a href="#audio-effects" class="toc-link block p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition">
+                    🎵 Advanced Audio Effects
+                </a>
+                <a href="#training-modes" class="toc-link block p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition">
+                    📖 Training Modes
+                </a>
+                <a href="#device-setup" class="toc-link block p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition">
+                    🔌 Device Connection
+                </a>
+                <a href="#statistics" class="toc-link block p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition">
+                    📊 Statistics & Progress
+                </a>
+                <a href="#interface-features" class="toc-link block p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition">
+                    🎨 Interface & Customization
+                </a>
+                <a href="#troubleshooting" class="toc-link block p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition">
+                    🔧 Troubleshooting
+                </a>
+                <a href="#contact" class="toc-link block p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition">
+                    📞 Contact & Feedback
+                </a>
+            </div>
+        </div>
+
+        <!-- Sortable Help Sections -->
+        <div id="sortable-help-sections" class="space-y-6">
+
+            <!-- Getting Started Section -->
+            <div class="section bg-gray-800 p-6 rounded-lg help-card" data-id="getting-started" id="getting-started">
+                <div class="section-header cursor-pointer flex justify-between items-center">
+                    <h2 class="text-2xl font-semibold text-green-400">🚀 Getting Started</h2>
+                    <div class="icon-container">
+                        <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="section-content mt-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-xl font-bold mb-3 text-blue-400">👤 Account Setup</h3>
+                            <ol class="list-decimal list-inside space-y-2 text-gray-300">
+                                <li>Create an account or login with existing credentials</li>
+                                <li>Your progress is automatically saved and synced</li>
+                                <li>Access your account settings to customize preferences</li>
+                                <li>View detailed statistics of your training sessions</li>
+                            </ol>
+                        </div>
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-xl font-bold mb-3 text-purple-400">🎯 Quick Start Guide</h3>
+                            <ol class="list-decimal list-inside space-y-2 text-gray-300">
+                                <li><strong>Choose a training mode:</strong> Koch Trainer (recommended for beginners) or traditional word practice</li>
+                                <li><strong>Connect your device:</strong> Optional Morserino-32 hardware connection</li>
+                                <li><strong>Start training:</strong> Listen to Morse code and type what you hear</li>
+                                <li><strong>Track progress:</strong> View your accuracy and improvement over time</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 bg-blue-900 bg-opacity-50 p-4 rounded-lg border border-blue-500">
+                        <h4 class="text-lg font-bold text-blue-300 mb-2">💡 Pro Tips for Beginners</h4>
+                        <ul class="list-disc list-inside space-y-1 text-gray-300">
+                            <li><strong>Start with Koch Method:</strong> Learn characters progressively for fastest results</li>
+                            <li><strong>Use headphones:</strong> Better audio quality improves learning speed</li>
+                            <li><strong>Practice daily:</strong> 15-20 minutes daily is better than long infrequent sessions</li>
+                            <li><strong>Don't count dits/dahs:</strong> Learn the sound patterns, not the code structure</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Koch CW Trainer Section -->
+            <div class="section bg-gray-800 p-6 rounded-lg help-card" data-id="koch-trainer" id="koch-trainer">
+                <div class="section-header cursor-pointer flex justify-between items-center">
+                    <h2 class="text-2xl font-semibold text-green-400">🎧 Koch CW Trainer - Revolutionary Learning Method</h2>
+                    <div class="icon-container">
+                        <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="section-content mt-6">
+                    <div class="mb-6 bg-green-900 bg-opacity-50 p-4 rounded-lg border border-green-500">
+                        <h3 class="text-xl font-bold text-green-300 mb-2">🎯 What is the Koch Method?</h3>
+                        <p class="text-gray-300 mb-3">
+                            The Koch method is scientifically proven to be the fastest way to learn Morse code. Instead of learning all letters at slow speed, 
+                            you learn characters one by one at full speed, mastering each before adding the next.
+                        </p>
+                        <div class="bg-gray-700 p-3 rounded">
+                            <strong class="text-green-400">Koch Character Order:</strong><br>
+                            <code class="text-blue-300">K M R S U A P T L O W I N J E F 0 Y V G 5 Q 9 Z H 8 B ? 4 X C D 6 7 1 2 3 &lt;AR&gt; &lt;SK&gt; &lt;KN&gt; &lt;BT&gt;</code>
+                        </div>
+                    </div>
+
+                    <div class="feature-grid">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="text-lg font-bold mb-3 text-blue-400">📈 Progressive Learning</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Start with just K and M</li>
+                                <li>Master each character at 90% accuracy</li>
+                                <li>Automatically advance to next character</li>
+                                <li>43 characters total including prosigns</li>
+                                <li>Real-time mastery tracking</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="text-lg font-bold mb-3 text-purple-400">⚡ Speed Controls</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li><strong>Character Speed:</strong> 15-80 WPM</li>
+                                <li><strong>Effective Speed:</strong> 4-35 WPM</li>
+                                <li><strong>Farnsworth Timing:</strong> Characters fast, spacing slower</li>
+                                <li>Prevents counting habits</li>
+                                <li>Builds instant recognition</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="text-lg font-bold mb-3 text-yellow-400">🎛️ Training Settings</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li><strong>Session Length:</strong> 1-30 minutes</li>
+                                <li><strong>Display Delay:</strong> 0-10 seconds</li>
+                                <li><strong>Audio Pitch:</strong> 300-1000 Hz</li>
+                                <li><strong>Volume Control:</strong> Adjustable levels</li>
+                                <li>Customizable for your preferences</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="text-lg font-bold mb-3 text-red-400">📊 Progress Tracking</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Character mastery percentages</li>
+                                <li>Session accuracy tracking</li>
+                                <li>Streak counters</li>
+                                <li>Time spent training</li>
+                                <li>Progress persistence across sessions</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-yellow-900 bg-opacity-50 p-4 rounded-lg border border-yellow-500">
+                        <h4 class="text-lg font-bold text-yellow-300 mb-2">🎯 How to Use Koch Trainer</h4>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-300">
+                            <li><strong>Click "🎧 KOCH Trainer"</strong> button from main menu</li>
+                            <li><strong>Adjust settings</strong> in the Training Settings panel (start with defaults)</li>
+                            <li><strong>Click "Start Training"</strong> - you'll hear K and M randomly</li>
+                            <li><strong>Type what you hear</strong> - don't worry about timing, just accuracy</li>
+                            <li><strong>Reach 90% accuracy</strong> on current characters to advance</li>
+                            <li><strong>Progress automatically</strong> through all 43 characters</li>
+                        </ol>
+                    </div>
+
+                    <div class="mt-6 bg-green-900 bg-opacity-50 p-4 rounded-lg border border-green-500">
+                        <h4 class="text-lg font-bold text-green-300 mb-2">🔬 Advanced Koch Features</h4>
+                        <ul class="list-disc list-inside space-y-2 text-gray-300">
+                            <li><strong>Automatic Progress Tracking:</strong> Your position in the Koch sequence is saved automatically</li>
+                            <li><strong>Character Mastery Display:</strong> Visual grid shows your progress through all 43 characters</li>
+                            <li><strong>Real-time Accuracy:</strong> Instant feedback on your typing accuracy</li>
+                            <li><strong>Session Statistics:</strong> Track streaks, session time, and overall performance</li>
+                            <li><strong>Farnsworth Timing:</strong> Characters sent at full speed, spacing adjusted for learning</li>
+                            <li><strong>Progress Persistence:</strong> Resume exactly where you left off between sessions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Audio Effects Section -->
+            <div class="section bg-gray-800 p-6 rounded-lg help-card" data-id="audio-effects" id="audio-effects">
+                <div class="section-header cursor-pointer flex justify-between items-center">
+                    <h2 class="text-2xl font-semibold text-green-400">🎵 Advanced Audio Effects - Realistic HF Training</h2>
+                    <div class="icon-container">
+                        <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="section-content mt-6">
+                    <div class="mb-6 bg-blue-900 bg-opacity-50 p-4 rounded-lg border border-blue-500">
+                        <h3 class="text-xl font-bold text-blue-300 mb-2">🌊 Why Realistic Audio Effects?</h3>
+                        <p class="text-gray-300">
+                            Real-world amateur radio conditions include fading, interference, and equipment characteristics. 
+                            Training with these effects prepares you for actual on-air conditions and improves your copying skills dramatically.
+                        </p>
+                    </div>
+
+                    <div class="feature-grid">
+                        <div class="bg-audio-demo p-4 rounded-lg border border-gray-600">
+                            <h4 class="text-lg font-bold mb-3 text-blue-400">📡 Signal Strength (S-Meter)</h4>
+                            <div class="space-y-2">
+                                <div class="bg-gray-600 p-2 rounded text-sm">
+                                    <strong>S1-S3:</strong> Very weak signals (DX stations)
+                                </div>
+                                <div class="bg-gray-600 p-2 rounded text-sm">
+                                    <strong>S5-S7:</strong> Moderate signals (normal conditions)
+                                </div>
+                                <div class="bg-gray-600 p-2 rounded text-sm">
+                                    <strong>S9:</strong> Strong signals (local stations)
+                                </div>
+                            </div>
+                            <button class="demo-button w-full mt-3 px-4 py-2 rounded-lg text-white font-semibold" onclick="playSignalDemo('strength')">
+                                🔊 Demo Signal Strengths
+                            </button>
+                        </div>
+
+                        <div class="bg-audio-demo p-4 rounded-lg border border-gray-600">
+                            <h4 class="text-lg font-bold mb-3 text-purple-400">🌊 QSB (Fading)</h4>
+                            <div class="space-y-2 text-sm text-gray-300">
+                                <p><strong>Effect:</strong> Gradual signal strength changes</p>
+                                <p><strong>Cycle:</strong> 7-second fade in/out pattern</p>
+                                <p><strong>Depth:</strong> 20% to 100% volume variation</p>
+                                <p><strong>Cause:</strong> Ionospheric propagation changes</p>
+                            </div>
+                            <button class="demo-button w-full mt-3 px-4 py-2 rounded-lg text-white font-semibold" onclick="playSignalDemo('qsb')">
+                                🔊 Demo QSB Fading
+                            </button>
+                        </div>
+
+                        <div class="bg-audio-demo p-4 rounded-lg border border-gray-600">
+                            <h4 class="text-lg font-bold mb-3 text-green-400">🎵 Chirp Effect</h4>
+                            <div class="space-y-2 text-sm text-gray-300">
+                                <p><strong>Effect:</strong> Frequency slides at tone start</p>
+                                <p><strong>Amount:</strong> 50 Hz frequency shift</p>
+                                <p><strong>Duration:</strong> 50ms chirp period</p>
+                                <p><strong>Sound:</strong> "wee" on each dit/dah</p>
+                            </div>
+                            <button class="demo-button w-full mt-3 px-4 py-2 rounded-lg text-white font-semibold" onclick="playSignalDemo('chirp')">
+                                🔊 Demo Chirp Effect
+                            </button>
+                        </div>
+
+                        <div class="bg-audio-demo p-4 rounded-lg border border-gray-600">
+                            <h4 class="text-lg font-bold mb-3 text-yellow-400">🔑 Straight Key</h4>
+                            <div class="space-y-2 text-sm text-gray-300">
+                                <p><strong>Effect:</strong> Human keying irregularities</p>
+                                <p><strong>Timing:</strong> ±20% element duration variation</p>
+                                <p><strong>Keying:</strong> Variable rise/fall times</p>
+                                <p><strong>Realism:</strong> Operator "fist print"</p>
+                            </div>
+                            <button class="demo-button w-full mt-3 px-4 py-2 rounded-lg text-white font-semibold" onclick="playSignalDemo('straight')">
+                                🔊 Demo Straight Key
+                            </button>
+                        </div>
+
+                        <div class="bg-audio-demo p-4 rounded-lg border border-gray-600">
+                            <h4 class="text-lg font-bold mb-3 text-red-400">📻 QRM (Interference)</h4>
+                            <div class="space-y-2 text-sm text-gray-300">
+                                <p><strong>Type:</strong> Competing CW station</p>
+                                <p><strong>Frequency:</strong> +75 Hz offset</p>
+                                <p><strong>Level:</strong> 30% of main signal</p>
+                                <p><strong>Pattern:</strong> Random morse at 25 WPM</p>
+                            </div>
+                            <button class="demo-button w-full mt-3 px-4 py-2 rounded-lg text-white font-semibold" onclick="playSignalDemo('qrm')">
+                                🔊 Demo QRM Interference
+                            </button>
+                        </div>
+
+                        <div class="bg-audio-demo p-4 rounded-lg border border-gray-600">
+                            <h4 class="text-lg font-bold mb-3 text-orange-400">🔊 Background Noise</h4>
+                            <div class="space-y-2 text-sm text-gray-300">
+                                <p><strong>Type:</strong> Pink noise (1/f spectrum)</p>
+                                <p><strong>Levels:</strong> S3, S5, S7, S9 noise floor</p>
+                                <p><strong>Effect:</strong> Atmospheric HF noise</p>
+                                <p><strong>Realism:</strong> Band-specific characteristics</p>
+                            </div>
+                            <button class="demo-button w-full mt-3 px-4 py-2 rounded-lg text-white font-semibold" onclick="playSignalDemo('noise')">
+                                🔊 Demo Background Noise
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-red-900 bg-opacity-50 p-4 rounded-lg border border-red-500">
+                        <h4 class="text-lg font-bold text-red-300 mb-2">🎯 Training Scenarios</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                            <div class="bg-gray-700 p-3 rounded">
+                                <strong class="text-blue-400">DX Pedition:</strong><br>
+                                <span class="text-sm text-gray-300">S2 signal + QSB + Noise S7</span>
+                            </div>
+                            <div class="bg-gray-700 p-3 rounded">
+                                <strong class="text-purple-400">Contest:</strong><br>
+                                <span class="text-sm text-gray-300">S8 signal + QRM interference</span>
+                            </div>
+                            <div class="bg-gray-700 p-3 rounded">
+                                <strong class="text-green-400">Vintage Radio:</strong><br>
+                                <span class="text-sm text-gray-300">S6 signal + Chirp + Straight Key</span>
+                            </div>
+                            <div class="bg-gray-700 p-3 rounded">
+                                <strong class="text-yellow-400">Emergency:</strong><br>
+                                <span class="text-sm text-gray-300">S4 signal + Fast QSB + Noise</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-indigo-900 bg-opacity-50 p-4 rounded-lg border border-indigo-500">
+                        <h4 class="text-lg font-bold text-indigo-300 mb-2">⌨️ Keyboard Shortcuts & Controls</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-gray-700 p-3 rounded">
+                                <strong class="text-blue-400">Training Controls:</strong><br>
+                                <ul class="text-sm text-gray-300 mt-1">
+                                    <li>• <strong>Space:</strong> Start/Pause training</li>
+                                    <li>• <strong>Escape:</strong> Stop training</li>
+                                    <li>• <strong>Enter:</strong> Next character (manual advance)</li>
+                                    <li>• <strong>Backspace:</strong> Clear current input</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-700 p-3 rounded">
+                                <strong class="text-green-400">Interface Controls:</strong><br>
+                                <ul class="text-sm text-gray-300 mt-1">
+                                    <li>• <strong>Tab:</strong> Navigate between sections</li>
+                                    <li>• <strong>Type characters:</strong> Direct input recognition</li>
+                                    <li>• <strong>Case insensitive:</strong> Upper/lower case both work</li>
+                                    <li>• <strong>Real-time feedback:</strong> Instant accuracy display</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Traditional Training Modes Section -->
+            <div class="section bg-gray-800 p-6 rounded-lg help-card" data-id="training-modes" id="training-modes">
+                <div class="section-header cursor-pointer flex justify-between items-center">
+                    <h2 class="text-2xl font-semibold text-green-400">📖 Traditional Training Modes</h2>
+                    <div class="icon-container">
+                        <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="section-content mt-6">
+                    <div class="feature-grid">
+                        <div class="bg-blue-700 bg-opacity-50 p-4 rounded-lg border border-blue-500">
+                            <h4 class="text-lg font-bold mb-3 text-blue-300">📝 Real Words</h4>
+                            <p class="text-gray-300 text-sm mb-3">Practice with common English words to build vocabulary recognition.</p>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Common everyday words</li>
+                                <li>Variable length words</li>
+                                <li>Perfect for building speed</li>
+                                <li>1-200 words per session</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-purple-700 bg-opacity-50 p-4 rounded-lg border border-purple-500">
+                            <h4 class="text-lg font-bold mb-3 text-purple-300">📻 Callsigns</h4>
+                            <p class="text-gray-300 text-sm mb-3">Amateur radio callsign practice for contest and DX work.</p>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Realistic amateur callsigns</li>
+                                <li>Various prefixes and suffixes</li>
+                                <li>Contest preparation</li>
+                                <li>DX station practice</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-green-700 bg-opacity-50 p-4 rounded-lg border border-green-500">
+                            <h4 class="text-lg font-bold mb-3 text-green-300">🔤 Abbreviations</h4>
+                            <p class="text-gray-300 text-sm mb-3">Common CW abbreviations used in amateur radio.</p>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Standard amateur abbreviations</li>
+                                <li>Contest abbreviations</li>
+                                <li>Technical terms</li>
+                                <li>Operating procedure codes</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-yellow-700 bg-opacity-50 p-4 rounded-lg border border-yellow-500">
+                            <h4 class="text-lg font-bold mb-3 text-yellow-300">📱 QR-Codes</h4>
+                            <p class="text-gray-300 text-sm mb-3">International Q-code practice for professional operation.</p>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>QRS, QRT, QSL, QTH, etc.</li>
+                                <li>Essential operating codes</li>
+                                <li>Emergency communications</li>
+                                <li>Professional terminology</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-red-700 bg-opacity-50 p-4 rounded-lg border border-red-500">
+                            <h4 class="text-lg font-bold mb-3 text-red-300">⭐ Top Words in CW</h4>
+                            <p class="text-gray-300 text-sm mb-3">Most frequently used words in CW communications.</p>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Statistically common words</li>
+                                <li>High-frequency patterns</li>
+                                <li>Efficient learning path</li>
+                                <li>Practical vocabulary</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-indigo-700 bg-opacity-50 p-4 rounded-lg border border-indigo-500">
+                            <h4 class="text-lg font-bold mb-3 text-indigo-300">🎲 Mixed Mode</h4>
+                            <p class="text-gray-300 text-sm mb-3">Combination of all training modes for comprehensive practice.</p>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Random selection from all modes</li>
+                                <li>Varied practice sessions</li>
+                                <li>Comprehensive skill building</li>
+                                <li>Realistic operating conditions</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Device Connection Section -->
+            <div class="section bg-gray-800 p-6 rounded-lg help-card" data-id="device-setup" id="device-setup">
+                <div class="section-header cursor-pointer flex justify-between items-center">
+                    <h2 class="text-2xl font-semibold text-green-400">🔌 Morserino-32 Device Connection</h2>
+                    <div class="icon-container">
+                        <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="section-content mt-6">
+                    <div class="mb-6 bg-green-900 bg-opacity-50 p-4 rounded-lg border border-green-500">
+                        <h3 class="text-xl font-bold text-green-300 mb-2">📱 What is the Morserino-32?</h3>
+                        <p class="text-gray-300">
+                            The Morserino-32 is a versatile, portable Morse code trainer and transceiver designed for learning and practicing CW. 
+                            Our web app can connect directly to your Morserino-32 via USB for enhanced training capabilities.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="text-lg font-bold mb-3 text-blue-400">🔧 Hardware Requirements</h4>
+                            <ul class="list-disc list-inside space-y-2 text-gray-300">
+                                <li><strong>Morserino-32 device</strong> with USB cable</li>
+                                <li><strong>CP2102 USB driver</strong> installed on your computer</li>
+                                <li><strong>Modern browser:</strong> Chrome 89+, Edge 89+, or Firefox 55+</li>
+                                <li><strong>HTTPS connection</strong> (required for Web Serial API)</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="text-lg font-bold mb-3 text-purple-400">🌐 Browser Compatibility</h4>
+                            <div class="space-y-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-green-400">✅</span>
+                                    <span class="text-gray-300">Chrome 89+ (Full support)</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-green-400">✅</span>
+                                    <span class="text-gray-300">Edge 89+ (Full support)</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-yellow-400">⚠️</span>
+                                    <span class="text-gray-300">Firefox 55+ (Limited support)</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-red-400">❌</span>
+                                    <span class="text-gray-300">Safari/iOS (Not supported)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-blue-900 bg-opacity-50 p-4 rounded-lg border border-blue-500">
+                        <h4 class="text-lg font-bold text-blue-300 mb-3">🔗 Connection Steps</h4>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-300">
+                            <li><strong>Install CP2102 driver</strong> on your computer if not already installed</li>
+                            <li><strong>Connect Morserino-32</strong> to your computer via USB cable</li>
+                            <li><strong>Open the web app</strong> in Chrome or Edge browser</li>
+                            <li><strong>Click "Connect to Morserino"</strong> button in the Connection section</li>
+                            <li><strong>Select your device</strong> from the browser's device picker dialog</li>
+                            <li><strong>Verify connection</strong> - status should show "Connected"</li>
+                        </ol>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-yellow-900 bg-opacity-50 p-4 rounded-lg border border-yellow-500">
+                            <h5 class="text-lg font-bold text-yellow-300 mb-2">💡 Connection Benefits</h5>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Send training content to device</li>
+                                <li>Receive keyer input from device</li>
+                                <li>Synchronize training progress</li>
+                                <li>Use device's built-in features</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-red-900 bg-opacity-50 p-4 rounded-lg border border-red-500">
+                            <h5 class="text-lg font-bold text-red-300 mb-2">⚠️ Troubleshooting</h5>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Check USB cable connection</li>
+                                <li>Install/update CP2102 driver</li>
+                                <li>Try different USB port</li>
+                                <li>Use Chrome or Edge browser</li>
+                                <li>Ensure HTTPS (not HTTP)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-purple-900 bg-opacity-50 p-4 rounded-lg border border-purple-500">
+                        <h4 class="text-lg font-bold text-purple-300 mb-2">🌐 Web Serial API Technical Details</h4>
+                        <div class="space-y-3 text-sm text-gray-300">
+                            <div>
+                                <strong class="text-blue-400">What is Web Serial API?</strong><br>
+                                A modern web standard that allows web applications to communicate directly with serial devices like the Morserino-32.
+                            </div>
+                            <div>
+                                <strong class="text-green-400">Security Requirements:</strong><br>
+                                HTTPS connection required for security reasons - the API won't work on HTTP sites.
+                            </div>
+                            <div>
+                                <strong class="text-yellow-400">User Permission:</strong><br>
+                                Browser will ask for permission to access the device - this is normal security behavior.
+                            </div>
+                            <div>
+                                <strong class="text-purple-400">Device Recognition:</strong><br>
+                                The CP2102 USB-to-serial chip in Morserino-32 appears as a serial port to your computer.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Section -->
+            <div class="section bg-gray-800 p-6 rounded-lg help-card" data-id="statistics" id="statistics">
+                <div class="section-header cursor-pointer flex justify-between items-center">
+                    <h2 class="text-2xl font-semibold text-green-400">📊 Statistics & Progress Tracking</h2>
+                    <div class="icon-container">
+                        <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="section-content mt-6">
+                    <div class="feature-grid">
+                        <div class="bg-blue-700 bg-opacity-50 p-4 rounded-lg border border-blue-500">
+                            <h4 class="text-lg font-bold mb-3 text-blue-300">📈 Session Statistics</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Real-time accuracy percentage</li>
+                                <li>Correct vs total characters</li>
+                                <li>Current and maximum streak</li>
+                                <li>Session duration and timing</li>
+                                <li>Characters per minute (CPM)</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-purple-700 bg-opacity-50 p-4 rounded-lg border border-purple-500">
+                            <h4 class="text-lg font-bold mb-3 text-purple-300">🎯 Progress Tracking</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Long-term accuracy trends</li>
+                                <li>Training mode performance</li>
+                                <li>Daily practice statistics</li>
+                                <li>Improvement over time graphs</li>
+                                <li>Goal setting and achievements</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-green-700 bg-opacity-50 p-4 rounded-lg border border-green-500">
+                            <h4 class="text-lg font-bold mb-3 text-green-300">🎧 Koch Method Stats</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Character mastery percentages</li>
+                                <li>Current learning position</li>
+                                <li>Characters learned vs total</li>
+                                <li>Session-by-session improvement</li>
+                                <li>Time to master each character</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-yellow-700 bg-opacity-50 p-4 rounded-lg border border-yellow-500">
+                            <h4 class="text-lg font-bold mb-3 text-yellow-300">📊 Visual Charts</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Accuracy trend lines</li>
+                                <li>Speed progression charts</li>
+                                <li>Character mastery grids</li>
+                                <li>Session comparison graphs</li>
+                                <li>Export data capabilities</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-indigo-900 bg-opacity-50 p-4 rounded-lg border border-indigo-500">
+                        <h4 class="text-lg font-bold text-indigo-300 mb-2">📱 Access Your Statistics</h4>
+                        <p class="text-gray-300 mb-3">
+                            Click the "📊 Statistics" button from the main menu to view detailed charts and progress tracking. 
+                            All data is automatically saved to your account and synced across devices.
+                        </p>
+                        <div class="bg-gray-700 p-3 rounded">
+                            <strong class="text-blue-400">Pro Tip:</strong> 
+                            <span class="text-gray-300">Regular review of your statistics helps identify weak areas and track improvement patterns.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Troubleshooting Section -->
+            <div class="section bg-gray-800 p-6 rounded-lg help-card" data-id="troubleshooting" id="troubleshooting">
+                <div class="section-header cursor-pointer flex justify-between items-center">
+                    <h2 class="text-2xl font-semibold text-green-400">🔧 Troubleshooting & FAQ</h2>
+                    <div class="icon-container">
+                        <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="section-content mt-6">
+                    <div class="space-y-6">
+                        <div class="bg-red-700 bg-opacity-50 p-4 rounded-lg border border-red-500">
+                            <h4 class="text-lg font-bold mb-3 text-red-300">🔊 Audio Issues</h4>
+                            <div class="space-y-3">
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <strong class="text-blue-400">Problem:</strong> No audio playing<br>
+                                    <strong class="text-green-400">Solution:</strong> Click anywhere on the page first (browser security), check volume settings, try Chrome/Firefox
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <strong class="text-blue-400">Problem:</strong> Audio effects not working<br>
+                                    <strong class="text-green-400">Solution:</strong> Start training session first, then enable effects in Advanced Settings
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <strong class="text-blue-400">Problem:</strong> Audio cutting out<br>
+                                    <strong class="text-green-400">Solution:</strong> Reduce browser tabs, close other audio applications, check system audio settings
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-700 bg-opacity-50 p-4 rounded-lg border border-blue-500">
+                            <h4 class="text-lg font-bold mb-3 text-blue-300">🔌 Connection Issues</h4>
+                            <div class="space-y-3">
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <strong class="text-blue-400">Problem:</strong> Can't connect to Morserino-32<br>
+                                    <strong class="text-green-400">Solution:</strong> Install CP2102 driver, use Chrome/Edge, check USB cable, try different port
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <strong class="text-blue-400">Problem:</strong> Device not recognized<br>
+                                    <strong class="text-green-400">Solution:</strong> Update browser, check device manager, restart browser, verify HTTPS connection
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <strong class="text-blue-400">Problem:</strong> Connection drops<br>
+                                    <strong class="text-green-400">Solution:</strong> Check USB power settings, avoid USB hubs, use shorter cables
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-green-700 bg-opacity-50 p-4 rounded-lg border border-green-500">
+                            <h4 class="text-lg font-bold mb-3 text-green-300">👤 Account & Data Issues</h4>
+                            <div class="space-y-3">
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <strong class="text-blue-400">Problem:</strong> Progress not saving<br>
+                                    <strong class="text-green-400">Solution:</strong> Ensure logged in, check internet connection, try refreshing page
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <strong class="text-blue-400">Problem:</strong> Statistics not updating<br>
+                                    <strong class="text-green-400">Solution:</strong> Complete full training sessions, check browser cache, verify account login
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <strong class="text-blue-400">Problem:</strong> Koch progress reset<br>
+                                    <strong class="text-green-400">Solution:</strong> Use Reset Progress button intentionally only, contact support if accidental
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-purple-700 bg-opacity-50 p-4 rounded-lg border border-purple-500">
+                            <h4 class="text-lg font-bold mb-3 text-purple-300">🖥️ Browser & Performance</h4>
+                            <div class="space-y-3">
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <strong class="text-blue-400">Problem:</strong> Slow performance<br>
+                                    <strong class="text-green-400">Solution:</strong> Close other tabs, disable browser extensions, update browser, restart computer
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <strong class="text-blue-400">Problem:</strong> Interface not responsive<br>
+                                    <strong class="text-green-400">Solution:</strong> Refresh page, clear browser cache, check internet connection
+                                </div>
+                                <div class="bg-gray-700 p-3 rounded">
+                                    <strong class="text-blue-400">Problem:</strong> Mobile issues<br>
+                                    <strong class="text-green-400">Solution:</strong> Use landscape mode, ensure iOS Safari 14+, some features limited on mobile
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-yellow-900 bg-opacity-50 p-4 rounded-lg border border-yellow-500">
+                        <h4 class="text-lg font-bold text-yellow-300 mb-2">💡 Performance Tips</h4>
+                        <ul class="list-disc list-inside space-y-1 text-gray-300">
+                            <li><strong>Use wired headphones</strong> for best audio quality and lowest latency</li>
+                            <li><strong>Close unnecessary browser tabs</strong> to free up system resources</li>
+                            <li><strong>Use Chrome or Edge</strong> for full feature compatibility</li>
+                            <li><strong>Keep browser updated</strong> for latest Web Audio API improvements</li>
+                            <li><strong>Ensure stable internet</strong> for progress saving and account sync</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact & Feedback Section -->
+            <div class="section bg-gray-800 p-6 rounded-lg help-card" data-id="contact" id="contact">
+                <div class="section-header cursor-pointer flex justify-between items-center">
+                    <h2 class="text-2xl font-semibold text-green-400">📞 Contact & Feedback</h2>
+                    <div class="icon-container">
+                        <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="section-content mt-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="text-lg font-bold mb-3 text-blue-400">📧 Get in Touch</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-blue-400">🌐</span>
+                                    <div>
+                                        <strong>Website:</strong><br>
+                                        <a href="https://om0rx.com/morserino" class="text-blue-300 hover:text-blue-200" target="_blank">
+                                            https://om0rx.com/morserino
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-green-400">📻</span>
+                                    <div>
+                                        <strong>Amateur Radio:</strong><br>
+                                        <span class="text-gray-300">Callsign: OM0RX</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-purple-400">🐙</span>
+                                    <div>
+                                        <strong>GitHub:</strong><br>
+                                        <a href="https://github.com/oliverbross/morserino-web" class="text-blue-300 hover:text-blue-200" target="_blank">
+                                            oliverbross/morserino-web
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="text-lg font-bold mb-3 text-green-400">💬 Feedback Form</h4>
+                            <form id="feedbackForm" class="space-y-4">
+                                <div>
+                                    <label for="feedbackType" class="block text-sm font-medium mb-1">Type:</label>
+                                    <select id="feedbackType" class="w-full bg-gray-600 border border-gray-500 rounded px-3 py-2 text-white">
+                                        <option value="bug">🐛 Bug Report</option>
+                                        <option value="feature">💡 Feature Request</option>
+                                        <option value="improvement">📈 Improvement Suggestion</option>
+                                        <option value="question">❓ Question</option>
+                                        <option value="compliment">⭐ Compliment</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="feedbackSubject" class="block text-sm font-medium mb-1">Subject:</label>
+                                    <input type="text" id="feedbackSubject" placeholder="Brief description..." 
+                                           class="w-full bg-gray-600 border border-gray-500 rounded px-3 py-2 text-white">
+                                </div>
+                                <div>
+                                    <label for="feedbackMessage" class="block text-sm font-medium mb-1">Message:</label>
+                                    <textarea id="feedbackMessage" rows="4" placeholder="Please provide details..." 
+                                              class="w-full bg-gray-600 border border-gray-500 rounded px-3 py-2 text-white"></textarea>
+                                </div>
+                                <div>
+                                    <label for="feedbackEmail" class="block text-sm font-medium mb-1">Email (optional):</label>
+                                    <input type="email" id="feedbackEmail" placeholder="your@email.com" 
+                                           class="w-full bg-gray-600 border border-gray-500 rounded px-3 py-2 text-white">
+                                </div>
+                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition">
+                                    📤 Send Feedback
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-blue-900 bg-opacity-50 p-4 rounded-lg border border-blue-500">
+                        <h4 class="text-lg font-bold text-blue-300 mb-2">🚀 Feature Roadmap</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <strong class="text-green-400">✅ Recently Added:</strong>
+                                <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm mt-1">
+                                    <li>Koch Method CW Trainer</li>
+                                    <li>Advanced Audio Effects (QSB, Chirp, etc.)</li>
+                                    <li>Progressive character learning</li>
+                                    <li>Real-time progress tracking</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <strong class="text-yellow-400">🔄 Coming Soon:</strong>
+                                <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm mt-1">
+                                    <li>Enhanced statistics dashboard</li>
+                                    <li>Custom word lists</li>
+                                    <li>QSO practice mode</li>
+                                    <li>Mobile app improvements</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-green-900 bg-opacity-50 p-4 rounded-lg border border-green-500">
+                        <h4 class="text-lg font-bold text-green-300 mb-2">🤝 Contributing</h4>
+                        <p class="text-gray-300 mb-3">
+                            This is an open-source project! We welcome contributions, translations, and improvements from the amateur radio community.
+                        </p>
+                        <div class="space-y-2">
+                            <div><strong>Code contributions:</strong> Submit pull requests on GitHub</div>
+                            <div><strong>Translations:</strong> Help translate the interface to other languages</div>
+                            <div><strong>Testing:</strong> Report bugs and test new features</div>
+                            <div><strong>Documentation:</strong> Improve help content and tutorials</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interface Features Section -->
+            <div class="section bg-gray-800 p-6 rounded-lg help-card" data-id="interface-features" id="interface-features">
+                <div class="section-header cursor-pointer flex justify-between items-center">
+                    <h2 class="text-2xl font-semibold text-green-400">🎨 Interface Features & Customization</h2>
+                    <div class="icon-container">
+                        <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="section-content mt-6">
+                    <div class="feature-grid">
+                        <div class="bg-blue-700 bg-opacity-50 p-4 rounded-lg border border-blue-500">
+                            <h4 class="text-lg font-bold mb-3 text-blue-300">📱 Collapsible Sections</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Click section headers to expand/collapse</li>
+                                <li>Organize interface to your preference</li>
+                                <li>Focus on sections you use most</li>
+                                <li>Visual icons show expand/collapse state</li>
+                                <li>Settings preserved during session</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-purple-700 bg-opacity-50 p-4 rounded-lg border border-purple-500">
+                            <h4 class="text-lg font-bold mb-3 text-purple-300">🔄 Sortable Interface</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Drag and drop sections to reorder</li>
+                                <li>Customize layout to match your workflow</li>
+                                <li>Section order saved automatically</li>
+                                <li>Professional drag-and-drop animations</li>
+                                <li>Works on both desktop and mobile devices</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-green-700 bg-opacity-50 p-4 rounded-lg border border-green-500">
+                            <h4 class="text-lg font-bold mb-3 text-green-300">🎯 User Experience</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Professional amateur radio design</li>
+                                <li>Consistent color coding throughout</li>
+                                <li>Responsive design for all screen sizes</li>
+                                <li>High contrast for visibility</li>
+                                <li>Accessibility-focused interface</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-yellow-700 bg-opacity-50 p-4 rounded-lg border border-yellow-500">
+                            <h4 class="text-lg font-bold mb-3 text-yellow-300">💾 Persistence</h4>
+                            <ul class="list-disc list-inside space-y-1 text-gray-300 text-sm">
+                                <li>Interface preferences saved locally</li>
+                                <li>Training progress synced to account</li>
+                                <li>Session state preserved on refresh</li>
+                                <li>Cross-device synchronization</li>
+                                <li>Automatic backup of settings</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-orange-900 bg-opacity-50 p-4 rounded-lg border border-orange-500">
+                        <h4 class="text-lg font-bold text-orange-300 mb-2">🎨 How to Customize Your Interface</h4>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-300">
+                            <li><strong>Collapse unused sections:</strong> Click section headers to hide content you don't need</li>
+                            <li><strong>Reorder sections:</strong> Drag section headers to rearrange them in your preferred order</li>
+                            <li><strong>Focus on what matters:</strong> Keep frequently used controls at the top</li>
+                            <li><strong>Mobile optimization:</strong> On smaller screens, collapse more sections to save space</li>
+                            <li><strong>Session consistency:</strong> Your layout preferences are remembered during your session</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="help.js"></script>
+</body>
+</html>
