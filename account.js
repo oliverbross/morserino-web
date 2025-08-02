@@ -13,15 +13,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveSettingsButton = document.getElementById('saveSettingsButton');
     // Statistics elements removed - now on dedicated statistics page
     const deleteAccountButton = document.getElementById('deleteAccountButton');
-    const accountLogoutButton = document.getElementById('accountLogoutButton');
-    const backToTrainingFromAccount = document.getElementById('backToTrainingFromAccount');
+    const accountLogoutButton = document.getElementById('logoutButton');
+    const backToTrainingFromAccount = null; // Not used in current implementation
     const sortableSections = document.getElementById('sortable-sections');
 
     // Verify DOM elements
     const requiredElements = {
         currentUsername, accountDebug, newPassword, confirmPassword, changePasswordButton,
         recoveryEmail, saveEmailButton, dateFormatSelect, timeFormatSelect, saveSettingsButton,
-        deleteAccountButton, accountLogoutButton, backToTrainingFromAccount, sortableSections
+        deleteAccountButton, accountLogoutButton, sortableSections
     };
     for (const [key, element] of Object.entries(requiredElements)) {
         if (!element) {

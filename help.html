@@ -94,25 +94,25 @@
                 <!-- Logo and Title -->
                 <div class="flex items-center space-x-4">
                     <div class="morse-logo text-center">
-                        —•—• •——<span class="word-separator">/</span>•——• •—• ———<span class="word-separator">/</span><br>
+                        —•—• •——/•——• •—• ———/<br>
                         — •—• •— •• —• • •—•
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-white">CW Pro Trainer</h1>
-                        <p class="text-sm text-gray-400">Professional Morse Code Training for Radio Enthusiasts</p>
+                        <p class="text-sm text-gray-400">Professional Morse Code Training<br>for Radio Enthusiasts</p>
                     </div>
                 </div>
                 
                 <!-- Main Navigation -->
                 <nav class="flex items-center space-x-4">
-                    <div class="relative group">
-                        <button class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center">
-                            Training Programs
+                    <div class="relative">
+                        <button id="trainingDropdown" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                            🎯 Training
                             <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
                         </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div id="trainingDropdownMenu" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible transition-all duration-200 z-50">
                             <div class="py-1">
                                 <a href="tx-trainer.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">📡 TX Trainer</a>
                                 <a href="koch-cw-trainer.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">🎧 KOCH Trainer</a>
@@ -1219,6 +1219,24 @@
     <script>
     // API configuration
     const apiBaseUrl = 'https://om0rx.com/morserino/api';
+    
+    // Dropdown functionality
+    document.getElementById('trainingDropdown').addEventListener('click', (e) => {
+        e.preventDefault();
+        const menu = document.getElementById('trainingDropdownMenu');
+        menu.classList.toggle('opacity-0');
+        menu.classList.toggle('invisible');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('trainingDropdown');
+        const menu = document.getElementById('trainingDropdownMenu');
+        if (!dropdown.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.add('opacity-0');
+            menu.classList.add('invisible');
+        }
+    });
     
     // Logout functionality
     document.getElementById('logoutButton').addEventListener('click', async () => {
