@@ -66,9 +66,9 @@
         <img src="cwkey.jpeg" alt="CW Key Background" class="w-full h-full object-cover">
     </div>
     
-    <div class="flex-grow flex items-center justify-center background-pattern">
+    <div class="flex-grow flex items-center justify-center background-pattern px-4">
         <!-- Login/Register Card -->
-        <div class="login-card rounded-2xl shadow-2xl p-8 border border-gray-600">
+        <div class="w-full max-w-md mx-auto login-card rounded-2xl shadow-2xl p-8 border border-gray-600">
             <!-- Tab Navigation -->
             <div class="flex rounded-lg overflow-hidden mb-6">
                 <button id="loginTab" class="flex-1 py-3 px-4 text-center font-semibold transition-all duration-300 tab-active">
@@ -289,18 +289,16 @@
                     }
                 }
                 
-                // Not logged in, stay on login page
-                console.log('Not logged in, showing login form');
+                // Not logged in (expected), stay on login page
             } catch (error) {
-                // Not logged in or error, stay on login page
-                console.log('Session check failed, showing login form:', error);
+                // Not logged in or error (expected for 401), stay on login page
             }
         });
     </script>
 
     <!-- Professional Footer -->
-    <footer class="bg-gray-800 border-t border-gray-700 mt-auto">
-        <div class="w-full px-6 py-8">
+    <footer class="bg-gray-800 border-t border-gray-700 mt-auto w-full">
+        <div class="px-6 py-8">
             <div class="text-center space-y-4">
                 <p class="text-gray-300 text-sm leading-relaxed">
                     This website is dedicated to helping amateur radio operators improve their Morse code skills.
