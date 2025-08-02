@@ -45,6 +45,11 @@ class KochTrainer {
 
         // Audio context and settings
         this.audioContext = null;
+        this.noiseNode = null;
+        this.qsbInterval = null;
+        this.qsbGainNode = null;
+        this.qrmOscillator = null;
+        this.qrmGainNode = null;
         this.settings = {
             characterCount: 2,
             charSpeed: 20,
@@ -233,10 +238,16 @@ class KochTrainer {
         // Advanced settings
         this.elements.signalStrengthSelect.addEventListener('change', (e) => {
             this.settings.signalStrength = e.target.value;
+            console.log('Signal strength changed to:', e.target.value);
         });
         
         this.elements.noiseLevelSelect.addEventListener('change', (e) => {
             this.settings.noiseLevel = e.target.value;
+            console.log('Noise level changed to:', e.target.value);
+            // Restart noise if training is active
+            if (this.isTraining && !this.isPaused) {
+                this.startNoise();
+            }
         });
         
         // Effect toggles
@@ -245,6 +256,17 @@ class KochTrainer {
             if (toggle) {
                 toggle.addEventListener('change', (e) => {
                     this.settings[effect] = e.target.checked;
+                    console.log(`${effect} effect changed to:`, e.target.checked);
+                    
+                    // Restart effects if training is active
+                    if (this.isTraining && !this.isPaused) {
+                        if (effect === 'qsb') {
+                            this.startQSB();
+                        } else if (effect === 'qrm') {
+                            this.startQRM();
+                        }
+                        // chirp and straightKey effects are applied per-tone, no restart needed
+                    }
                 });
             }
         });
@@ -372,11 +394,36 @@ class KochTrainer {
         
         document.body.classList.add('training-active');
         
+        // Start audio effects based on settings
+        this.startAudioEffects();
+        
         // Start the training loop
         this.nextCharacter();
         this.startSessionTimer();
         
-        console.log('Koch training session started');
+        console.log('Koch training session started with effects:', {
+            signalStrength: this.settings.signalStrength,
+            noiseLevel: this.settings.noiseLevel,
+            qsb: this.settings.qsb,
+            chirp: this.settings.chirp,
+            straightKey: this.settings.straightKey,
+            qrm: this.settings.qrm
+        });
+    }
+
+    startAudioEffects() {
+        // Start background noise
+        this.startNoise();
+        
+        // Start QSB fading if enabled
+        if (this.settings.qsb) {
+            this.startQSB();
+        }
+        
+        // Start QRM interference if enabled
+        if (this.settings.qrm) {
+            this.startQRM();
+        }
     }
 
     pauseTraining() {
@@ -401,6 +448,9 @@ class KochTrainer {
     stopTraining() {
         this.isTraining = false;
         this.isPaused = false;
+        
+        // Stop all audio effects
+        this.stopAllEffects();
         
         // Update UI
         this.elements.startTrainingButton.classList.remove('hidden');
@@ -474,20 +524,256 @@ class KochTrainer {
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
         
+        // Create audio chain: Oscillator -> Gain -> Effects -> Destination
         oscillator.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
         
-        oscillator.frequency.setValueAtTime(this.settings.pitch, startTime);
+        // Apply signal strength (S-meter simulation)
+        const signalStrength = this.getSignalStrengthValue();
+        const baseVolume = this.settings.volume * (signalStrength / 10.0);
+        
+        // Configure oscillator
+        let frequency = this.settings.pitch;
         oscillator.type = 'sine';
         
-        // Apply envelope to prevent clicks
-        gainNode.gain.setValueAtTime(0, startTime);
-        gainNode.gain.linearRampToValueAtTime(this.settings.volume, startTime + 0.005);
-        gainNode.gain.setValueAtTime(this.settings.volume, startTime + duration - 0.005);
-        gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
+        // CHIRP EFFECT - Frequency shift at start of each element
+        if (this.settings.chirp) {
+            const chirpAmount = 50; // Hz shift
+            const chirpDuration = 0.05; // 50ms chirp
+            const startFreq = frequency - chirpAmount;
+            const endFreq = frequency;
+            
+            oscillator.frequency.setValueAtTime(startFreq, startTime);
+            oscillator.frequency.exponentialRampToValueAtTime(endFreq, startTime + chirpDuration);
+        } else {
+            oscillator.frequency.setValueAtTime(frequency, startTime);
+        }
+        
+        // STRAIGHT KEY EFFECT - Add timing irregularities
+        if (this.settings.straightKey) {
+            // Add slight timing variations (±10%)
+            const variance = (Math.random() - 0.5) * 0.2;
+            duration = duration * (1 + variance);
+            
+            // Irregular key-up/key-down timing
+            const riseTime = 0.003 + (Math.random() * 0.007); // 3-10ms rise
+            const fallTime = 0.005 + (Math.random() * 0.010); // 5-15ms fall
+            
+            gainNode.gain.setValueAtTime(0, startTime);
+            gainNode.gain.linearRampToValueAtTime(baseVolume, startTime + riseTime);
+            gainNode.gain.setValueAtTime(baseVolume, startTime + duration - fallTime);
+            gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
+        } else {
+            // Clean electronic keying
+            gainNode.gain.setValueAtTime(0, startTime);
+            gainNode.gain.linearRampToValueAtTime(baseVolume, startTime + 0.005);
+            gainNode.gain.setValueAtTime(baseVolume, startTime + duration - 0.005);
+            gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
+        }
+        
+        // Connect through QSB gain node if fading is enabled
+        if (this.settings.qsb && this.qsbGainNode) {
+            gainNode.connect(this.qsbGainNode);
+            this.qsbGainNode.connect(this.audioContext.destination);
+        } else {
+            gainNode.connect(this.audioContext.destination);
+        }
         
         oscillator.start(startTime);
         oscillator.stop(startTime + duration);
+    }
+
+    getSignalStrengthValue() {
+        const strengthMap = {
+            'S1': 1, 'S2': 2, 'S3': 3, 'S4': 4, 'S5': 5,
+            'S6': 6, 'S7': 7, 'S8': 8, 'S9': 9
+        };
+        return strengthMap[this.settings.signalStrength] || 9;
+    }
+
+    // Generate noise for background effects
+    generateNoise(type = 'pink') {
+        const bufferSize = 2 * this.audioContext.sampleRate;
+        const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        let lastOutput = 0;
+        
+        for (let i = 0; i < bufferSize; i++) {
+            if (type === 'white') {
+                data[i] = Math.random() * 2 - 1;
+            } else if (type === 'pink') {
+                // Pink noise (1/f power spectrum)
+                const rand = Math.random() * 2 - 1;
+                lastOutput = (lastOutput * 0.98) + (rand * 0.02);
+                data[i] = lastOutput * 15; // Scale up pink noise
+            } else if (type === 'impulse') {
+                // Impulse noise (crackles)
+                data[i] = Math.random() < 0.001 ? (Math.random() * 4 - 2) : 0;
+            }
+        }
+        
+        const source = this.audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true;
+        return source;
+    }
+
+    // Start noise based on noise level setting
+    startNoise() {
+        if (this.noiseNode) {
+            this.noiseNode.stop();
+            this.noiseNode = null;
+        }
+        
+        if (this.settings.noiseLevel === 'off') return;
+        
+        const noiseLevelMap = {
+            'S3': 0.15,
+            'S5': 0.30,
+            'S7': 0.50,
+            'S9': 0.80
+        };
+        
+        const noiseLevel = noiseLevelMap[this.settings.noiseLevel] || 0;
+        if (noiseLevel === 0) return;
+        
+        this.noiseNode = this.generateNoise('pink');
+        const noiseGain = this.audioContext.createGain();
+        noiseGain.gain.value = noiseLevel * 0.1; // Scale to prevent clipping
+        
+        this.noiseNode.connect(noiseGain);
+        noiseGain.connect(this.audioContext.destination);
+        this.noiseNode.start();
+    }
+
+    // QSB (Fading) effect - modulate gain over time
+    startQSB() {
+        if (this.qsbInterval) {
+            clearInterval(this.qsbInterval);
+            this.qsbInterval = null;
+        }
+        
+        if (!this.settings.qsb || !this.audioContext) {
+            // Clean up QSB gain node if disabling
+            if (this.qsbGainNode) {
+                this.qsbGainNode.disconnect();
+                this.qsbGainNode = null;
+            }
+            return;
+        }
+        
+        // Create a dedicated gain node for QSB if it doesn't exist
+        if (!this.qsbGainNode) {
+            this.qsbGainNode = this.audioContext.createGain();
+            this.qsbGainNode.gain.value = 1.0;
+        }
+        
+        // Slow fading cycle (5-10 seconds)
+        const fadeTime = 7; // seconds
+        let fadingDown = true;
+        
+        this.qsbInterval = setInterval(() => {
+            if (!this.qsbGainNode) return;
+            
+            const currentTime = this.audioContext.currentTime;
+            const targetGain = fadingDown ? 0.2 : 1.0; // Fade between 20% and 100%
+            
+            this.qsbGainNode.gain.cancelScheduledValues(currentTime);
+            this.qsbGainNode.gain.setValueAtTime(this.qsbGainNode.gain.value, currentTime);
+            this.qsbGainNode.gain.exponentialRampToValueAtTime(targetGain, currentTime + fadeTime);
+            
+            fadingDown = !fadingDown;
+        }, fadeTime * 1000);
+    }
+
+    // QRM (Interference) - Add competing CW signal
+    startQRM() {
+        if (this.qrmOscillator) {
+            this.qrmOscillator.stop();
+            this.qrmOscillator = null;
+        }
+        
+        if (!this.settings.qrm || !this.audioContext) return;
+        
+        // Create competing CW station slightly off frequency
+        this.qrmOscillator = this.audioContext.createOscillator();
+        this.qrmGainNode = this.audioContext.createGain();
+        
+        this.qrmOscillator.frequency.value = this.settings.pitch + 75; // 75 Hz offset
+        this.qrmOscillator.type = 'sine';
+        this.qrmGainNode.gain.value = 0; // Start silent, modulate for morse code
+        
+        this.qrmOscillator.connect(this.qrmGainNode);
+        this.qrmGainNode.connect(this.audioContext.destination);
+        
+        // Send random morse code pattern
+        this.qrmOscillator.start();
+        this.sendRandomQRM();
+    }
+
+    sendRandomQRM() {
+        if (!this.qrmOscillator || !this.qrmGainNode) return;
+        
+        const patterns = ['.- -...', '... ---', '.--', '-.-.', '-..']; // A B, S O, W, C, D
+        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+        const dotTime = 1200 / 25; // 25 WPM interference
+        
+        let currentTime = this.audioContext.currentTime;
+        
+        // Send the pattern by modulating the gain
+        for (let char of pattern) {
+            if (char === '.') {
+                // Dit - turn on
+                this.qrmGainNode.gain.setValueAtTime(0.3, currentTime);
+                currentTime += dotTime / 1000;
+                this.qrmGainNode.gain.setValueAtTime(0, currentTime);
+                currentTime += dotTime / 1000; // Element gap
+            } else if (char === '-') {
+                // Dah - turn on for longer
+                this.qrmGainNode.gain.setValueAtTime(0.3, currentTime);
+                currentTime += (dotTime * 3) / 1000;
+                this.qrmGainNode.gain.setValueAtTime(0, currentTime);
+                currentTime += dotTime / 1000; // Element gap
+            } else if (char === ' ') {
+                // Space between characters
+                currentTime += (dotTime * 3) / 1000;
+            }
+        }
+        
+        // Schedule next random QRM after delay
+        setTimeout(() => {
+            if (this.qrmOscillator && this.settings.qrm) {
+                this.sendRandomQRM();
+            }
+        }, (Math.random() * 5000) + 3000); // 3-8 seconds between QRM
+    }
+
+    // Stop all effects
+    stopAllEffects() {
+        if (this.noiseNode) {
+            this.noiseNode.stop();
+            this.noiseNode = null;
+        }
+        
+        if (this.qsbInterval) {
+            clearInterval(this.qsbInterval);
+            this.qsbInterval = null;
+        }
+        
+        if (this.qsbGainNode) {
+            this.qsbGainNode.disconnect();
+            this.qsbGainNode = null;
+        }
+        
+        if (this.qrmOscillator) {
+            this.qrmOscillator.stop();
+            this.qrmOscillator = null;
+        }
+        
+        if (this.qrmGainNode) {
+            this.qrmGainNode.disconnect();
+            this.qrmGainNode = null;
+        }
     }
 
     handleKeyboardInput(event) {
