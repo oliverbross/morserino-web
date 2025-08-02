@@ -13,6 +13,12 @@ class MorseRunner {
         this.contestDuration = 5; // minutes
         this.contestTimer = null;
         
+        // Contest flow state
+        this.waitingForCQ = true; // User needs to call CQ first
+        this.currentCallingStations = []; // Stations currently calling
+        this.lastQSOCallsign = null; // For verification
+        this.lastQSOExchange = null; // For verification
+        
         // Contest data
         this.contestLog = [];
         this.callsignDatabase = [];
@@ -28,11 +34,18 @@ class MorseRunner {
         // Audio engine
         this.audioEngine = null;
         
-        // Contest settings
+        // Contest settings (simplified to CQ WW CW only)
         this.settings = {
-            contestType: 'cqww',
+            contestType: 'cqww', // Only CQ WW CW supported for now
+            contestMode: 'pileup', // pileup, single, wpx
+            duration: 5, // minutes
             myCallsign: 'OM0RX',
-            speedRange: [20, 30],
+            myZone: '15', // CQ Zone
+            pitch: 600,
+            volume: 0.7,
+            speedRange: '25-35', // Speed range for stations
+            exactSpeed: 'auto', // Or specific WPM
+            activityLevel: 5, // Number of stations that can call
             bandConditions: {
                 qrn: false,
                 qrm: false,
@@ -40,9 +53,7 @@ class MorseRunner {
                 qsb: false,
                 lids: false,
                 pileup: false
-            },
-            pitch: 600,
-            volume: 0.7
+            }
         };
         
         this.initializeElements();
@@ -105,7 +116,34 @@ class MorseRunner {
             
             // User status
             currentUsername: document.getElementById('currentUsername'),
-            userStatus: document.getElementById('userStatus')
+            userStatus: document.getElementById('userStatus'),
+            
+            // Settings modal elements
+            contestSettingsModal: document.getElementById('contestSettingsModal'),
+            closeSettingsModal: document.getElementById('closeSettingsModal'),
+            saveSettings: document.getElementById('saveSettings'),
+            resetSettings: document.getElementById('resetSettings'),
+            
+            // Settings form elements
+            contestModeRadios: document.querySelectorAll('input[name="contestMode"]'),
+            speedRange: document.getElementById('speedRange'),
+            exactSpeed: document.getElementById('exactSpeed'),
+            cwPitch: document.getElementById('cwPitch'),
+            volumeSlider: document.getElementById('volumeSlider'),
+            volumeValue: document.getElementById('volumeValue'),
+            modalMyCallsign: document.getElementById('modalMyCallsign'),
+            myZone: document.getElementById('myZone'),
+            activityLevel: document.getElementById('activityLevel'),
+            activityValue: document.getElementById('activityValue'),
+            modalContestDuration: document.getElementById('modalContestDuration'),
+            
+            // Band condition checkboxes in modal
+            modalQrnToggle: document.getElementById('modalQrnToggle'),
+            modalQrmToggle: document.getElementById('modalQrmToggle'),
+            modalFlutterToggle: document.getElementById('modalFlutterToggle'),
+            modalQsbToggle: document.getElementById('modalQsbToggle'),
+            modalLidsToggle: document.getElementById('modalLidsToggle'),
+            modalPileupToggle: document.getElementById('modalPileupToggle')
         };
     }
 
@@ -140,8 +178,53 @@ class MorseRunner {
                 toggle.addEventListener('change', () => this.updateBandConditions());
             }
         });
+
+        // Settings button - make it functional
+        this.elements.settingsButton.addEventListener('click', () => {
+            this.openSettingsModal();
+        });
+
+        // Settings modal event listeners
+        if (this.elements.closeSettingsModal) {
+            this.elements.closeSettingsModal.addEventListener('click', () => {
+                this.closeSettingsModal();
+            });
+        }
+
+        if (this.elements.saveSettings) {
+            this.elements.saveSettings.addEventListener('click', () => {
+                this.saveSettingsFromModal();
+            });
+        }
+
+        if (this.elements.resetSettings) {
+            this.elements.resetSettings.addEventListener('click', () => {
+                this.resetSettingsToDefaults();
+            });
+        }
+
+        // Volume slider
+        if (this.elements.volumeSlider) {
+            this.elements.volumeSlider.addEventListener('input', (e) => {
+                this.elements.volumeValue.textContent = e.target.value;
+            });
+        }
+
+        // Activity level slider
+        if (this.elements.activityLevel) {
+            this.elements.activityLevel.addEventListener('input', (e) => {
+                this.elements.activityValue.textContent = e.target.value;
+            });
+        }
+
+        // Speed range change - populate exact speed options
+        if (this.elements.speedRange) {
+            this.elements.speedRange.addEventListener('change', () => {
+                this.populateExactSpeedOptions();
+            });
+        }
         
-        // Function keys
+        // Function keys - make them fully functional
         document.querySelectorAll('.function-key').forEach(key => {
             key.addEventListener('click', (e) => this.handleFunctionKey(e.target.dataset.key));
         });
@@ -258,7 +341,8 @@ class MorseRunner {
             const response = await fetch('data/callsigns.txt');
             const text = await response.text();
             
-            this.callsignDatabase = text.split('\n')
+            // Process all callsigns first
+            const allCallsigns = text.split('\n')
                 .map(line => line.trim())
                 .filter(line => line.length > 0 && !line.startsWith('#'))
                 .map(callsign => ({
@@ -267,11 +351,22 @@ class MorseRunner {
                     zone: this.getCQZone(callsign),
                     country: this.getCountry(callsign)
                 }));
-                
-            console.log(`Loaded ${this.callsignDatabase.length} callsigns`);
             
-            // Initialize band activity based on callsign count
+            // Load first 2500 callsigns for faster startup
+            this.callsignDatabase = allCallsigns.slice(0, 2500);
+            console.log(`Loaded ${this.callsignDatabase.length} callsigns (optimized for fast startup)`);
+            
+            // Initialize band activity with subset
             this.updateBandActivity();
+            
+            // Load remaining callsigns in background after 2 seconds
+            if (allCallsigns.length > 2500) {
+                setTimeout(() => {
+                    this.callsignDatabase = allCallsigns;
+                    console.log(`Full database loaded: ${this.callsignDatabase.length} callsigns`);
+                    this.updateBandActivity();
+                }, 2000);
+            }
             
         } catch (error) {
             console.error('Error loading callsign database:', error);
@@ -328,15 +423,11 @@ class MorseRunner {
         
         console.log('Starting contest...');
         this.contestActive = true;
+        this.contestPaused = false;
         this.contestStartTime = new Date();
-        this.contestDuration = parseInt(this.elements.contestDurationSelect.value);
+        this.contestDuration = this.settings.duration;
         
-        // Update UI
-        this.elements.startContestButton.classList.add('hidden');
-        this.elements.pauseContestButton.classList.remove('hidden');
-        this.elements.stopContestButton.classList.remove('hidden');
-        
-        // Clear previous log
+        // Reset contest data and flow state
         this.contestLog = [];
         this.scoreData = {
             totalQSOs: 0,
@@ -345,18 +436,37 @@ class MorseRunner {
             totalScore: 0,
             currentRate: 0
         };
+        
+        // Reset contest flow
+        this.waitingForCQ = true;
+        this.currentCallingStations = [];
+        this.lastQSOCallsign = null;
+        this.lastQSOExchange = null;
+        
+        // Update UI
+        this.elements.startContestButton.classList.add('hidden');
+        this.elements.pauseContestButton.classList.remove('hidden');
+        this.elements.stopContestButton.classList.remove('hidden');
+        this.elements.contestStatus.textContent = 'CONTEST ACTIVE - Call CQ to start!';
+        this.elements.contestStatus.className = 'text-green-400 font-bold';
+        
         this.updateScoreDisplay();
         
         // Start contest timer
         this.startContestTimer();
         
-        // Begin generating contest activity
-        this.startContestActivity();
+        // Setup audio with contest settings
+        this.setupContestAudio();
+        
+        // Start background QRN (atmospheric noise) but no stations yet
+        this.startBackgroundNoise();
         
         // Focus on callsign input
         this.elements.callsignInput.focus();
         
-        this.showToast('Contest started! Good luck!', 'bg-green-600');
+        this.showToast('Contest started! Press F1 or call CQ to begin!', 'bg-green-600');
+        
+        console.log(`Contest mode: ${this.settings.contestMode}, Activity level: ${this.settings.activityLevel}`);
     }
 
     pauseContest() {
@@ -593,16 +703,14 @@ class MorseRunner {
     }
 
     generateExchange(station) {
-        switch (this.settings.contestType) {
-            case 'cqww':
-                return `599 ${station.zone}`;
-            case 'arrldx':
-                return `599 ${Math.floor(Math.random() * 1500) + 100}`;
-            case 'cqwpx':
-                return `599 ${String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')}`;
-            default:
-                return '599';
-        }
+        // Only CQ WW CW contest supported - exchange is always 599 + CQ Zone
+        return `599 ${station.zone || this.getRandomZone()}`;
+    }
+
+    getRandomZone() {
+        // Common CQ zones for realistic contest simulation
+        const zones = ['1', '2', '3', '4', '5', '14', '15', '16', '20', '25', '30'];
+        return zones[Math.floor(Math.random() * zones.length)];
     }
 
     getNextTransmissionDelay() {
@@ -764,20 +872,29 @@ class MorseRunner {
         console.log(`Function key ${key} pressed`);
         
         const messages = {
-            'F1': 'CQ OM0RX TEST',
-            'F2': '599 14',
+            'F1': `CQ CQ TEST ${this.settings.myCallsign} ${this.settings.myCallsign}`,
+            'F2': this.lastQSOCallsign ? `${this.lastQSOCallsign} TU 599 ${this.settings.myZone}` : `TU 599 ${this.settings.myZone}`,
             'F3': 'TU QRZ',
-            'F4': 'OM0RX',
-            'F5': 'QRL?',
-            'F6': 'QRZ?',
-            'F7': 'AGN?',
-            'F8': 'QRT 73'
+            'F4': 'QRZ?',
+            'F5': 'AGN?',
+            'F6': 'QSL',
+            'F7': '73',
+            'F8': 'QRT'
         };
         
         const message = messages[key];
         if (message) {
             this.sendCWMessage(message);
             this.showToast(`Sent: ${message}`, 'bg-blue-600');
+            
+            // Handle contest flow based on function key
+            if (key === 'F1') {
+                // CQ sent - expect stations to call
+                this.handleCQSent();
+            } else if (key === 'F2') {
+                // Exchange sent - log the QSO if callsign is entered
+                this.handleExchangeSent();
+            }
         }
     }
 
@@ -810,43 +927,95 @@ class MorseRunner {
             return;
         }
         
+        // Check for duplicate
+        const isDuplicate = this.contestLog.some(qso => qso.callsign === callsign);
+        
+        if (isDuplicate) {
+            this.showToast(`Duplicate: ${callsign} already worked!`, 'bg-red-600');
+            return;
+        }
+        
+        // Verify against the sent callsign (if we have one from contest flow)
+        let isVerified = true;
+        let verificationNote = '';
+        
+        if (this.lastQSOCallsign) {
+            if (callsign === this.lastQSOCallsign) {
+                isVerified = true;
+                verificationNote = '✓ Correct';
+            } else {
+                isVerified = false;
+                verificationNote = `✗ Sent: ${this.lastQSOCallsign}`;
+            }
+        } else {
+            // No reference callsign - assume correct but mark as unverified
+            verificationNote = '? No reference';
+        }
+        
+        // Find station data for scoring
+        const stationData = this.callsignDatabase.find(s => s.call === callsign);
+        
+        // Calculate points - only if verified
+        let points = 0;
+        if (isVerified && stationData) {
+            // Points based on continent (CQ WW CW rules)
+            points = stationData.continent === 'EU' ? 1 : 3; // Same continent = 1, different = 3
+            
+            // Add multiplier only if verified
+            this.scoreData.multipliers.add(stationData.zone);
+        }
+        
         // Create QSO record
         const qso = {
             timestamp: new Date(),
+            time: new Date().toLocaleTimeString(),
             callsign: callsign,
-            exchange: exchange,
-            frequency: '14025', // Default frequency
+            exchange: exchange || (this.lastQSOExchange || `599 ${this.settings.myZone}`),
             rstSent: '599',
             rstReceived: '599',
-            points: this.calculatePoints(callsign),
-            multiplier: this.isMultiplier(callsign),
-            verified: true, // For now, assume all QSOs are verified
-            duplicate: this.isDuplicate(callsign)
+            points: points,
+            multiplier: stationData ? stationData.zone : '??',
+            verified: isVerified,
+            note: verificationNote,
+            duplicate: false
         };
-        
-        // Check for duplicates
-        if (qso.duplicate) {
-            this.showToast('Duplicate QSO!', 'bg-red-600');
-            return;
-        }
         
         // Add to log
         this.contestLog.push(qso);
         
         // Update score
-        this.updateScore(qso);
+        this.scoreData.totalQSOs++;
+        if (isVerified) {
+            this.scoreData.verifiedQSOs++;
+            this.scoreData.totalScore += points;
+        }
         
-        // Add to display
-        this.addQSOToDisplay(qso);
+        // Update display
+        this.updateScoreDisplay();
+        this.updateContestLog();
         
-        // Clear input
+        // Clear input and reset contest flow
         this.clearInput();
+        this.lastQSOCallsign = null;
+        this.lastQSOExchange = null;
+        this.waitingForCQ = true; // Ready for next CQ
         
-        // Show success
-        const points = qso.points + (qso.multiplier ? ' + MULT' : '');
-        this.showToast(`Logged ${callsign} for ${points} points`, 'bg-green-600');
+        // Show confirmation with verification status
+        const statusColor = isVerified ? 'bg-green-600' : 'bg-orange-600';
+        const statusText = isVerified ? 'VERIFIED' : 'UNVERIFIED';
+        this.showToast(`Logged: ${callsign} (${points} pts) - ${statusText}`, statusColor);
         
         console.log('QSO logged:', qso);
+        
+        // In single mode, automatically generate next calling station
+        if (this.settings.contestMode === 'single' && this.contestActive && !this.contestPaused) {
+            setTimeout(() => {
+                this.generateCallingStations();
+                setTimeout(() => {
+                    this.startCallingStations();
+                }, 1000 + Math.random() * 2000);
+            }, 500);
+        }
     }
 
     clearInput() {
@@ -1067,7 +1236,7 @@ class MorseRunner {
             const history = this.loadContestHistory();
             if (history.length === 0) return;
 
-            // Calculate summary statistics
+            // Calculate summary statistics  
             const totalContests = history.length;
             const avgScore = Math.round(history.reduce((sum, contest) => sum + contest.finalScore, 0) / totalContests);
             const bestScore = Math.max(...history.map(contest => contest.finalScore));
@@ -1088,6 +1257,377 @@ class MorseRunner {
             });
         } catch (error) {
             console.error('Error displaying contest history:', error);
+        }
+    }
+
+    // Settings Modal Methods
+    openSettingsModal() {
+        if (this.elements.contestSettingsModal) {
+            // Populate modal with current settings
+            this.populateSettingsModal();
+            this.elements.contestSettingsModal.classList.remove('hidden');
+        }
+    }
+
+    closeSettingsModal() {
+        if (this.elements.contestSettingsModal) {
+            this.elements.contestSettingsModal.classList.add('hidden');
+        }
+    }
+
+    populateSettingsModal() {
+        // Contest mode
+        const modeRadio = document.querySelector(`input[name="contestMode"][value="${this.settings.contestMode}"]`);
+        if (modeRadio) modeRadio.checked = true;
+
+        // Speed settings
+        if (this.elements.speedRange) {
+            this.elements.speedRange.value = this.settings.speedRange;
+            this.populateExactSpeedOptions();
+        }
+        
+        if (this.elements.exactSpeed) {
+            this.elements.exactSpeed.value = this.settings.exactSpeed;
+        }
+
+        // Audio settings
+        if (this.elements.cwPitch) {
+            this.elements.cwPitch.value = this.settings.pitch;
+        }
+        
+        if (this.elements.volumeSlider) {
+            this.elements.volumeSlider.value = Math.round(this.settings.volume * 100);
+            this.elements.volumeValue.textContent = Math.round(this.settings.volume * 100);
+        }
+
+        // Station settings
+        if (this.elements.modalMyCallsign) {
+            this.elements.modalMyCallsign.value = this.settings.myCallsign;
+        }
+        
+        if (this.elements.myZone) {
+            this.elements.myZone.value = this.settings.myZone;
+        }
+
+        // Activity settings
+        if (this.elements.activityLevel) {
+            this.elements.activityLevel.value = this.settings.activityLevel;
+            this.elements.activityValue.textContent = this.settings.activityLevel;
+        }
+        
+        if (this.elements.modalContestDuration) {
+            this.elements.modalContestDuration.value = this.settings.duration;
+        }
+
+        // Band conditions
+        ['qrn', 'qrm', 'flutter', 'qsb', 'lids', 'pileup'].forEach(condition => {
+            const checkbox = this.elements[`modal${condition.charAt(0).toUpperCase() + condition.slice(1)}Toggle`];
+            if (checkbox) {
+                checkbox.checked = this.settings.bandConditions[condition];
+            }
+        });
+    }
+
+    populateExactSpeedOptions() {
+        if (!this.elements.exactSpeed || !this.elements.speedRange) return;
+
+        const speedRange = this.elements.speedRange.value;
+        const [minSpeed, maxSpeed] = speedRange.split('-').map(Number);
+        
+        // Clear existing options
+        this.elements.exactSpeed.innerHTML = '<option value="auto">Auto (varies in range)</option>';
+        
+        // Add speed options in 5 WPM increments
+        for (let speed = 10; speed <= 80; speed += 5) {
+            if (speed >= minSpeed && speed <= maxSpeed) {
+                const option = document.createElement('option');
+                option.value = speed;
+                option.textContent = `${speed} WPM`;
+                this.elements.exactSpeed.appendChild(option);
+            }
+        }
+    }
+
+    saveSettingsFromModal() {
+        try {
+            // Contest mode
+            const selectedMode = document.querySelector('input[name="contestMode"]:checked');
+            if (selectedMode) {
+                this.settings.contestMode = selectedMode.value;
+            }
+
+            // Speed settings
+            if (this.elements.speedRange) {
+                this.settings.speedRange = this.elements.speedRange.value;
+            }
+            
+            if (this.elements.exactSpeed) {
+                this.settings.exactSpeed = this.elements.exactSpeed.value;
+            }
+
+            // Audio settings
+            if (this.elements.cwPitch) {
+                this.settings.pitch = parseInt(this.elements.cwPitch.value);
+            }
+            
+            if (this.elements.volumeSlider) {
+                this.settings.volume = parseInt(this.elements.volumeSlider.value) / 100;
+            }
+
+            // Station settings
+            if (this.elements.modalMyCallsign) {
+                this.settings.myCallsign = this.elements.modalMyCallsign.value.toUpperCase();
+            }
+            
+            if (this.elements.myZone) {
+                this.settings.myZone = this.elements.myZone.value;
+            }
+
+            // Activity settings
+            if (this.elements.activityLevel) {
+                this.settings.activityLevel = parseInt(this.elements.activityLevel.value);
+            }
+            
+            if (this.elements.modalContestDuration) {
+                this.settings.duration = parseInt(this.elements.modalContestDuration.value);
+            }
+
+            // Band conditions
+            ['qrn', 'qrm', 'flutter', 'qsb', 'lids', 'pileup'].forEach(condition => {
+                const checkbox = this.elements[`modal${condition.charAt(0).toUpperCase() + condition.slice(1)}Toggle`];
+                if (checkbox) {
+                    this.settings.bandConditions[condition] = checkbox.checked;
+                }
+            });
+            
+            // Update audio engine with new settings  
+            this.updateAudioSettings();
+            
+            // Update UI elements with new settings
+            this.updateUIFromSettings();
+            
+            this.closeSettingsModal();
+            this.showToast('Settings saved successfully!', 'bg-green-600');
+            
+            console.log('Contest settings updated:', this.settings);
+            
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            this.showToast('Error saving settings', 'bg-red-600');
+        }
+    }
+
+    resetSettingsToDefaults() {
+        // Reset to default values
+        this.settings = {
+            contestType: 'cqww',
+            contestMode: 'pileup',
+            duration: 5,
+            myCallsign: 'OM0RX',
+            myZone: '15',
+            pitch: 600,
+            volume: 0.7,
+            speedRange: '25-35',
+            exactSpeed: 'auto',
+            activityLevel: 5,
+            bandConditions: {
+                qrn: false,
+                qrm: false,
+                flutter: false,
+                qsb: false,
+                lids: false,
+                pileup: false
+            }
+        };
+        
+        // Repopulate modal with defaults
+        this.populateSettingsModal();
+        
+        this.showToast('Settings reset to defaults', 'bg-yellow-600');
+    }
+
+    updateUIFromSettings() {
+        // Update main UI elements with settings from modal
+        if (this.elements.myCallsignInput) {
+            this.elements.myCallsignInput.value = this.settings.myCallsign;
+        }
+        
+        if (this.elements.contestDurationSelect) {
+            this.elements.contestDurationSelect.value = this.settings.duration;
+        }
+        
+        // Update band condition toggles in main UI
+        ['qrn', 'qrm', 'flutter', 'qsb', 'lids', 'pileup'].forEach(condition => {
+            const toggle = this.elements[condition + 'Toggle'];
+            if (toggle) {
+                toggle.checked = this.settings.bandConditions[condition];
+            }
+        });
+    }
+
+    // Contest Flow Methods
+    handleCQSent() {
+        console.log('CQ sent - waiting for stations to call');
+        this.waitingForCQ = false;
+        
+        // Generate calling stations based on activity level and contest mode
+        this.generateCallingStations();
+        
+        // Start transmitting calling stations after brief delay
+        setTimeout(() => {
+            this.startCallingStations();
+        }, 1000 + Math.random() * 2000); // 1-3 second delay
+    }
+
+    generateCallingStations() {
+        this.currentCallingStations = [];
+        
+        let stationCount;
+        switch (this.settings.contestMode) {
+            case 'single':
+                stationCount = 1;
+                break;
+            case 'pileup':
+                stationCount = Math.min(this.settings.activityLevel, Math.floor(Math.random() * this.settings.activityLevel) + 1);
+                break;
+            case 'wpx':
+                stationCount = Math.floor(Math.random() * 3) + 1; // 1-3 stations
+                break;
+            default:
+                stationCount = 1;
+        }
+        
+        for (let i = 0; i < stationCount; i++) {
+            const station = this.createRandomStation();
+            this.currentCallingStations.push(station);
+        }
+        
+        console.log(`Generated ${stationCount} calling stations:`, this.currentCallingStations.map(s => s.callsign));
+    }
+
+    async startCallingStations() {
+        if (this.currentCallingStations.length === 0) return;
+        
+        // In pile-up mode, stations might transmit simultaneously or in quick succession
+        if (this.settings.contestMode === 'pileup' && this.currentCallingStations.length > 1) {
+            // Stagger transmissions slightly
+            this.currentCallingStations.forEach((station, index) => {
+                setTimeout(() => {
+                    this.transmitCallingStation(station);
+                }, index * 500); // 500ms between stations
+            });
+        } else {
+            // Single station or single mode
+            const station = this.currentCallingStations[0];
+            this.transmitCallingStation(station);
+        }
+    }
+
+    async transmitCallingStation(station) {
+        if (!this.audioEngine || !station) return;
+        
+        // Station calls with just their callsign
+        const message = station.callsign;
+        
+        console.log(`Station calling: ${message}`);
+        
+        try {
+            await this.audioEngine.playMorseString(message, {
+                callsign: station.callsign,
+                speed: station.speed,
+                pitch: this.settings.pitch + (Math.random() - 0.5) * 100, // ±50Hz variation
+                signalStrength: station.signal,
+                chirp: station.chirp,
+                straightKey: station.straightKey
+            });
+            
+            // Store this as the station we're working
+            this.lastQSOCallsign = station.callsign;
+            this.lastQSOExchange = this.generateExchange(station);
+            
+        } catch (error) {
+            console.error('Error transmitting calling station:', error);
+        }
+    }
+
+    handleExchangeSent() {
+        // After sending exchange, the station should reply with their exchange
+        if (this.lastQSOCallsign && this.lastQSOExchange) {
+            console.log(`Exchange sent to ${this.lastQSOCallsign}, expecting their exchange: ${this.lastQSOExchange}`);
+            
+            // Station replies with their exchange after delay
+            setTimeout(() => {
+                this.sendStationReply();
+            }, 2000 + Math.random() * 1000); // 2-3 second delay
+        }
+    }
+
+    async sendStationReply() {
+        if (!this.lastQSOCallsign || !this.lastQSOExchange || !this.audioEngine) return;
+        
+        const replyMessage = this.lastQSOExchange;
+        console.log(`${this.lastQSOCallsign} replying with: ${replyMessage}`);
+        
+        try {
+            // Find the station data
+            const station = this.currentCallingStations.find(s => s.callsign === this.lastQSOCallsign) || {
+                callsign: this.lastQSOCallsign,
+                speed: 25,
+                signal: 'S7'
+            };
+            
+            await this.audioEngine.playMorseString(replyMessage, {
+                callsign: station.callsign,
+                speed: station.speed,
+                pitch: this.settings.pitch + (Math.random() - 0.5) * 100,
+                signalStrength: station.signal,
+                chirp: station.chirp,
+                straightKey: station.straightKey
+            });
+            
+            // Now user should log this QSO
+            console.log('QSO ready to be logged');
+            
+        } catch (error) {
+            console.error('Error sending station reply:', error);
+        }
+    }
+
+    // Audio Methods
+    setupContestAudio() {
+        if (this.audioEngine) {
+            // Apply current settings to audio engine
+            this.audioEngine.updateSettings({
+                pitch: this.settings.pitch,
+                volume: this.settings.volume,
+                bandConditions: this.settings.bandConditions
+            });
+            
+            console.log('Contest audio setup complete');
+        }
+    }
+
+    updateAudioSettings() {
+        if (this.audioEngine) {
+            this.audioEngine.updateSettings({
+                pitch: this.settings.pitch,
+                volume: this.settings.volume,
+                bandConditions: this.settings.bandConditions
+            });
+            
+            console.log('Audio settings updated:', {
+                pitch: this.settings.pitch,
+                volume: this.settings.volume,
+                bandConditions: this.settings.bandConditions
+            });
+        }
+    }
+
+    startBackgroundNoise() {
+        if (this.audioEngine && this.settings.bandConditions.qrn) {
+            // Start atmospheric noise in background
+            this.audioEngine.startBackgroundEffects();
+            console.log('Background QRN started');
         }
     }
 

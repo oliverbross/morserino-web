@@ -418,6 +418,198 @@
         </div>
     </div>
 
+    <!-- Contest Settings Modal -->
+    <div id="contestSettingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-gray-900 p-6 rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-white">⚙️ Contest Settings</h2>
+                <button id="closeSettingsModal" class="text-gray-400 hover:text-white text-2xl">×</button>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Contest Mode -->
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-blue-400 mb-3">Contest Mode</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="radio" name="contestMode" value="pileup" id="pileupMode" class="mr-3" checked>
+                            <div>
+                                <div class="text-white font-medium">Pile-Up Mode</div>
+                                <div class="text-gray-400 text-sm">Multiple stations call after CQ (good for copying skills)</div>
+                            </div>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="contestMode" value="single" id="singleMode" class="mr-3">
+                            <div>
+                                <div class="text-white font-medium">Single Calls Mode</div>
+                                <div class="text-gray-400 text-sm">One station calls after each QSO (good for typing skills)</div>
+                            </div>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="contestMode" value="wpx" id="wpxMode" class="mr-3">
+                            <div>
+                                <div class="text-white font-medium">WPX Competition Mode</div>
+                                <div class="text-gray-400 text-sm">Fixed band conditions with user-controlled speed and activity</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- CW Speed Settings -->
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-green-400 mb-3">CW Speed Settings</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Speed Range</label>
+                            <select id="speedRange" class="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white">
+                                <option value="15-25">15-25 WPM (Beginner)</option>
+                                <option value="20-30">20-30 WPM (Intermediate)</option>
+                                <option value="25-35" selected>25-35 WPM (Advanced)</option>
+                                <option value="30-40">30-40 WPM (Expert)</option>
+                                <option value="35-45">35-45 WPM (Contest)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Exact Speed (WPM)</label>
+                            <select id="exactSpeed" class="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white">
+                                <option value="auto" selected>Auto (varies in range)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audio Settings -->
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-yellow-400 mb-3">Audio Settings</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">CW Pitch (Hz)</label>
+                            <select id="cwPitch" class="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white">
+                                <option value="400">400 Hz</option>
+                                <option value="500">500 Hz</option>
+                                <option value="600" selected>600 Hz</option>
+                                <option value="700">700 Hz</option>
+                                <option value="800">800 Hz</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Volume</label>
+                            <input type="range" id="volumeSlider" min="0" max="100" value="70" class="w-full">
+                            <div class="text-center text-sm text-gray-400 mt-1"><span id="volumeValue">70</span>%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Station Settings -->
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-purple-400 mb-3">Station Settings</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">My Callsign</label>
+                            <input type="text" id="modalMyCallsign" class="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white uppercase" maxlength="10" value="OM0RX">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">My Zone (CQ WW)</label>
+                            <select id="myZone" class="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white">
+                                <option value="15" selected>Zone 15 (OM/OK)</option>
+                                <option value="1">Zone 1 (W/VE East)</option>
+                                <option value="2">Zone 2 (W/VE Central)</option>
+                                <option value="3">Zone 3 (W/VE West)</option>
+                                <option value="4">Zone 4 (W/VE Pacific)</option>
+                                <option value="5">Zone 5 (W/VE Mountain)</option>
+                                <option value="14">Zone 14 (Europe West)</option>
+                                <option value="16">Zone 16 (Europe East)</option>
+                                <option value="25">Zone 25 (Asia)</option>
+                                <option value="30">Zone 30 (Oceania)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Settings -->
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-orange-400 mb-3">Activity Settings</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Activity Level</label>
+                            <input type="range" id="activityLevel" min="1" max="10" value="5" class="w-full">
+                            <div class="text-center text-sm text-gray-400 mt-1">
+                                <span id="activityValue">5</span> stations can call after CQ/QSO
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Contest Duration</label>
+                            <select id="modalContestDuration" class="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white">
+                                <option value="5" selected>5 minutes</option>
+                                <option value="10">10 minutes</option>
+                                <option value="15">15 minutes</option>
+                                <option value="30">30 minutes</option>
+                                <option value="60">1 hour</option>
+                                <option value="120">2 hours</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Band Conditions -->
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-red-400 mb-3">Band Conditions</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="modalQrnToggle" class="mr-2 w-4 h-4">
+                            <span class="text-sm">QRN (Noise)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="modalQrmToggle" class="mr-2 w-4 h-4">
+                            <span class="text-sm">QRM (Interference)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="modalFlutterToggle" class="mr-2 w-4 h-4">
+                            <span class="text-sm">Flutter</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="modalQsbToggle" class="mr-2 w-4 h-4">
+                            <span class="text-sm">QSB (Fading)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="modalLidsToggle" class="mr-2 w-4 h-4">
+                            <span class="text-sm">LID's</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="modalPileupToggle" class="mr-2 w-4 h-4">
+                            <span class="text-sm">Pile-ups</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Function Key Messages -->
+                <div class="bg-gray-800 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-cyan-400 mb-3">Function Key Messages</h3>
+                    <div class="grid grid-cols-1 gap-2">
+                        <div class="grid grid-cols-4 gap-2 text-sm">
+                            <div class="font-mono text-gray-400">F1 (CQ):</div>
+                            <div class="col-span-3 text-gray-300">CQ CQ TEST [CALLSIGN] [CALLSIGN]</div>
+                            <div class="font-mono text-gray-400">F2 (Exchange):</div>
+                            <div class="col-span-3 text-gray-300">[CALLSIGN] TU 599 [ZONE]</div>
+                            <div class="font-mono text-gray-400">F3 (TU QRZ):</div>
+                            <div class="col-span-3 text-gray-300">TU QRZ</div>
+                            <div class="font-mono text-gray-400">F4 (QRZ):</div>
+                            <div class="col-span-3 text-gray-300">QRZ?</div>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-2">
+                            * Function keys will be customizable in future updates
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 mt-6">
+                <button id="resetSettings" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">Reset Defaults</button>
+                <button id="saveSettings" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
     <script src="morse-runner-audio.js"></script>
     <script src="morse-runner.js?v=1.0"></script>
 </body>
