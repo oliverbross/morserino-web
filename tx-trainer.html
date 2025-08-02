@@ -6,6 +6,50 @@
     <title>TX Trainer - CW Pro Trainer</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .morse-logo {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: #60a5fa;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            border-radius: 8px;
+            border: 1px solid #4b5563;
+            display: inline-block;
+        }
+
+        .word-separator {
+            font-size: 14px;
+            color: #9ca3af;
+            margin: 0 3px;
+        }
+
+        /* Slider styling */
+        .slider {
+            background: linear-gradient(to right, #4f46e5 0%, #06b6d4 100%);
+        }
+        
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .slider::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+    </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
     <!-- New Professional Header -->
@@ -14,8 +58,9 @@
             <div class="flex items-center justify-between">
                 <!-- Logo and Title -->
                 <div class="flex items-center space-x-4">
-                    <div class="morse-logo">
-                        —•—• •——<span class="word-separator">/</span>•——• •—• ———<span class="word-separator">/</span>— •—• •— •• —• • •—•
+                    <div class="morse-logo text-center">
+                        —•—• •——<span class="word-separator">/</span>•——• •—• ———<span class="word-separator">/</span><br>
+                        — •—• •— •• —• • •—•
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-white">CW Pro Trainer</h1>
@@ -25,14 +70,14 @@
                 
                 <!-- Main Navigation -->
                 <nav class="flex items-center space-x-4">
-                    <div class="relative group">
-                        <button class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                    <div class="relative">
+                        <button id="trainingDropdown" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center">
                             Training Programs
                             <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
                         </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div id="trainingDropdownMenu" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible transition-all duration-200 z-50">
                             <div class="py-1">
                                 <a href="tx-trainer.html" class="block px-4 py-2 text-sm text-blue-400 hover:bg-gray-700">📡 TX Trainer</a>
                                 <a href="koch-cw-trainer.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">🎧 KOCH Trainer</a>
@@ -50,6 +95,12 @@
     </header>
 
     <div class="container max-w-4xl mx-auto p-6">
+        <!-- Page Title -->
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-white">📡 TX Trainer</h2>
+            <p class="text-gray-400 mt-2">Professional Morse Code Training with Morserino-32 Integration</p>
+        </div>
+
         <div id="debug" class="hidden bg-red-600 text-white p-4 rounded-lg mb-4"></div>
         <div id="notLoggedIn" class="hidden">
             <div class="text-center p-8">
@@ -60,11 +111,7 @@
             </div>
         </div>
         <div id="loggedIn" class="hidden">
-            <div class="text-center mb-6">
-                <h2 class="text-3xl font-bold text-white mb-2">📡 TX Trainer</h2>
-                <p class="text-lg text-gray-300">Morse Code Transmission Training with Morserino-32</p>
-                <p class="text-sm text-gray-400 mt-2">Logged in as: <span id="currentUsername" class="font-semibold text-blue-400"></span></p>
-            </div>
+            <p class="text-lg mb-4 text-center">Logged in as: <span id="currentUsername" class="font-semibold"></span></p>
         </div>
         <div id="sortable-sections" class="space-y-4">
 
@@ -83,20 +130,16 @@
                         <button id="topWordsButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition text-sm">Top Words in CW</button>
                         <button id="mixedButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition text-sm">Mixed</button>
                     </div>
-                    <!-- Number of Items Slider -->
-                    <div class="bg-gray-700 p-4 rounded-lg">
-                        <div class="flex justify-between items-center mb-2">
-                            <label for="numItemsSlider" class="text-sm font-semibold text-gray-300">Number of Items:</label>
-                            <span id="numItemsValue" class="text-lg font-bold text-blue-400">5</span>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label for="numItemsSlider" class="text-sm font-medium text-gray-300">Number of Items:</label>
+                            <span id="numItemsValue" class="text-lg font-bold text-green-400">10</span>
                         </div>
-                        <input type="range" id="numItemsSlider" min="1" max="200" value="5" 
-                               class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider">
-                        <div class="flex justify-between text-xs text-gray-500 mt-1">
-                            <span>1</span>
+                        <input type="range" id="numItemsSlider" min="5" max="50" value="10" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider">
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>5</span>
+                            <span>25</span>
                             <span>50</span>
-                            <span>100</span>
-                            <span>150</span>
-                            <span>200</span>
                         </div>
                     </div>
                 </div>
@@ -163,27 +206,24 @@
                 </div>
                 <div id="live-tracking-content" class="mt-4 hidden">
                     <!-- Stats counters grid -->
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <!-- Correct Words Box -->
-                        <div class="bg-green-600 p-3 rounded-lg text-center">
-                            <div class="text-xs font-semibold text-green-100">Correct Words</div>
-                            <div id="correctWords" class="text-2xl font-bold text-white">0</div>
-                        </div>
-                        <!-- Total Words Box -->
+                    <div class="grid grid-cols-3 gap-3 mb-4">
+                        <!-- Letters Box -->
                         <div class="bg-blue-600 p-3 rounded-lg text-center">
-                            <div class="text-xs font-semibold text-blue-100">Total Words</div>
-                            <div id="totalWords" class="text-2xl font-bold text-white">0</div>
+                            <div class="text-sm font-semibold text-blue-100">Letters</div>
+                            <div id="lettersCount" class="text-2xl font-bold text-white">0</div>
                         </div>
-                        <!-- Word Accuracy Box -->
+                        <!-- Numbers Box -->
+                        <div class="bg-green-600 p-3 rounded-lg text-center">
+                            <div class="text-sm font-semibold text-green-100">Numbers</div>
+                            <div id="numbersCount" class="text-2xl font-bold text-white">0</div>
+                        </div>
+                        <!-- Signs Box -->
                         <div class="bg-purple-600 p-3 rounded-lg text-center">
-                            <div class="text-xs font-semibold text-purple-100">Word Accuracy</div>
-                            <div id="wordAccuracy" class="text-2xl font-bold text-white">100.0%</div>
+                            <div class="text-sm font-semibold text-purple-100">Signs</div>
+                            <div id="signsCount" class="text-2xl font-bold text-white">0</div>
                         </div>
-                        <!-- WPM Box -->
-                        <div class="bg-orange-600 p-3 rounded-lg text-center">
-                            <div class="text-xs font-semibold text-orange-100">Current WPM</div>
-                            <div id="currentWPM" class="text-2xl font-bold text-white">0</div>
-                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
                         <!-- Character Accuracy Box -->
                         <div class="bg-cyan-600 p-3 rounded-lg text-center">
                             <div class="text-xs font-semibold text-cyan-100">Character Accuracy</div>
@@ -241,29 +281,58 @@
         </div>
     </footer>
 
-    <style>
-    .morse-logo {
-        font-family: 'Courier New', monospace;
-        font-size: 16px;
-        letter-spacing: 2px;
-        color: #60a5fa;
-        padding: 8px 12px;
-        background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-        border-radius: 8px;
-        border: 1px solid #4b5563;
-        display: inline-block;
-    }
-
-    .word-separator {
-        font-size: 14px;
-        color: #9ca3af;
-        margin: 0 3px;
-    }
-    </style>
-
     <script>
-    // API configuration
+    // API configuration and session check for tx-trainer
     const apiBaseUrl = 'https://om0rx.com/morserino/api';
+    
+    // Session check functionality
+    async function checkUserSession() {
+        try {
+            const response = await fetch(`${apiBaseUrl}/session.php`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.username) {
+                    // User is logged in
+                    document.getElementById('loggedIn').classList.remove('hidden');
+                    document.getElementById('notLoggedIn').classList.add('hidden');
+                    document.getElementById('currentUsername').textContent = data.username;
+                    return;
+                }
+            }
+            
+            // User is not logged in (either 401 response or no username)
+            document.getElementById('loggedIn').classList.add('hidden');
+            document.getElementById('notLoggedIn').classList.remove('hidden');
+            
+        } catch (error) {
+            console.error('Session check failed:', error);
+            // Show login interface on any error
+            document.getElementById('loggedIn').classList.add('hidden');
+            document.getElementById('notLoggedIn').classList.remove('hidden');
+        }
+    }
+    
+    // Dropdown functionality
+    document.getElementById('trainingDropdown').addEventListener('click', (e) => {
+        e.preventDefault();
+        const menu = document.getElementById('trainingDropdownMenu');
+        menu.classList.toggle('opacity-0');
+        menu.classList.toggle('invisible');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('trainingDropdown');
+        const menu = document.getElementById('trainingDropdownMenu');
+        if (!dropdown.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.add('opacity-0');
+            menu.classList.add('invisible');
+        }
+    });
     
     // Navigation and logout functionality
     document.getElementById('logoutButton').addEventListener('click', async () => {
@@ -277,6 +346,11 @@
             console.error('Logout failed:', error);
             window.location.href = 'login.html';
         }
+    });
+
+    // Initialize session check when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        checkUserSession();
     });
     </script>
     <script src="Sortable.min.js"></script>

@@ -22,22 +22,59 @@
             background-image: radial-gradient(circle at 25% 25%, #3b82f6 0%, transparent 50%), 
                               radial-gradient(circle at 75% 75%, #10b981 0%, transparent 50%);
         }
+        .morse-logo {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: #60a5fa;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            border-radius: 8px;
+            border: 1px solid #4b5563;
+            display: inline-block;
+        }
+
+        .word-separator {
+            font-size: 14px;
+            color: #9ca3af;
+            margin: 0 3px;
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center background-pattern">
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+    <!-- New Professional Header -->
+    <header class="bg-gray-800 border-b border-gray-700 shadow-lg">
+        <div class="container max-w-6xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-center">
+                <!-- Logo and Title -->
+                <div class="flex items-center space-x-4">
+                    <div class="morse-logo text-center">
+                        —•—• •——<span class="word-separator">/</span>•——• •—• ———<span class="word-separator">/</span><br>
+                        — •—• •— •• —• • •—•
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">CW Pro Trainer</h1>
+                        <p class="text-sm text-gray-400">Professional Morse Code Training for Radio Enthusiasts</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
     <!-- Background CW Key Image -->
     <div class="fixed inset-0 opacity-5 z-0">
         <img src="cwkey.jpeg" alt="CW Key Background" class="w-full h-full object-cover">
     </div>
     
-    <div class="container max-w-md mx-auto p-6 relative z-10">
-        <!-- Professional Header -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center mb-6">
-                <div class="relative bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-4 rounded-lg shadow-xl overflow-hidden">
-                    <!-- Background CW Key Image -->
-                    <div class="absolute inset-0 opacity-20">
-                        <img src="cwkey.jpeg" alt="CW Key Background" class="w-full h-full object-cover rounded-lg">
+    <div class="flex-grow flex items-center justify-center background-pattern">
+        <div class="container max-w-md mx-auto p-6 relative z-10">
+            <!-- Professional Header -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center mb-6">
+                    <div class="relative bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-4 rounded-lg shadow-xl overflow-hidden">
+                        <!-- Background CW Key Image -->
+                        <div class="absolute inset-0 opacity-20">
+                            <img src="cwkey.jpeg" alt="CW Key Background" class="w-full h-full object-cover rounded-lg">
                     </div>
                     <div class="relative flex items-center space-x-4 z-10">
                         <div class="w-12 h-12 rounded-full bg-white/20 p-2">
@@ -286,7 +323,7 @@
     </script>
 
     <!-- Professional Footer -->
-    <footer class="bg-gray-800 border-t border-gray-700 mt-12">
+    <footer class="bg-gray-800 border-t border-gray-700 mt-auto">
         <div class="container max-w-6xl mx-auto px-6 py-8">
             <div class="text-center space-y-4">
                 <p class="text-gray-300 text-sm leading-relaxed">
