@@ -223,10 +223,13 @@
     </footer>
 
     <script>
+    // API configuration
+    const apiBaseUrl = 'https://om0rx.com/morserino/api';
+    
     // Navigation and logout functionality
     document.getElementById('logoutButton').addEventListener('click', async () => {
         try {
-            await fetch('/api/logout.php', {
+            await fetch(`${apiBaseUrl}/logout.php`, {
                 method: 'POST',
                 credentials: 'include'
             });

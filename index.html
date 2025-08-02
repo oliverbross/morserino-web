@@ -209,10 +209,13 @@
     </style>
 
     <script>
+    // API configuration
+    const apiBaseUrl = 'https://om0rx.com/morserino/api';
+    
     // Simple login check and navigation
     async function checkUserSession() {
         try {
-            const response = await fetch('/api/session.php', {
+            const response = await fetch(`${apiBaseUrl}/session.php`, {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -247,7 +250,7 @@
     // Logout functionality
     document.getElementById('logoutButton').addEventListener('click', async () => {
         try {
-            await fetch('/api/logout.php', {
+            await fetch(`${apiBaseUrl}/logout.php`, {
                 method: 'POST',
                 credentials: 'include'
             });

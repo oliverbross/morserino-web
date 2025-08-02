@@ -261,6 +261,24 @@
     }
     </style>
 
+    <script>
+    // API configuration
+    const apiBaseUrl = 'https://om0rx.com/morserino/api';
+    
+    // Navigation and logout functionality
+    document.getElementById('logoutButton').addEventListener('click', async () => {
+        try {
+            await fetch(`${apiBaseUrl}/logout.php`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+            window.location.href = 'login.html';
+        } catch (error) {
+            console.error('Logout failed:', error);
+            window.location.href = 'login.html';
+        }
+    });
+    </script>
     <script src="Sortable.min.js"></script>
     <script src="index.js"></script>
 </body>
