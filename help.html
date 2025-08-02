@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OM0RX Professional CW Trainer - Help & Documentation</title>
+    <title>Help & Documentation - CW Pro Trainer</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -67,19 +67,72 @@
             background-color: #374151;
             transform: translateX(4px);
         }
+        .morse-logo {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: #60a5fa;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            border-radius: 8px;
+            border: 1px solid #4b5563;
+            display: inline-block;
+        }
+
+        .word-separator {
+            font-size: 14px;
+            color: #9ca3af;
+            margin: 0 3px;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-blue-400 mb-2">📚 OM0RX CW Trainer - Help & Documentation</h1>
-            <p class="text-gray-300 text-lg">Comprehensive guide to mastering Morse code with professional features</p>
-            <div class="mt-4">
-                <button onclick="window.location.href='index.html'" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">
-                    ← Back to Main App
-                </button>
+    <!-- New Professional Header -->
+    <header class="bg-gray-800 border-b border-gray-700 shadow-lg">
+        <div class="container max-w-6xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo and Title -->
+                <div class="flex items-center space-x-4">
+                    <div class="morse-logo">
+                        —•—• •——<span class="word-separator">/</span>•——• •—• ———<span class="word-separator">/</span>— •—• •— •• —• • •—•
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">CW Pro Trainer</h1>
+                        <p class="text-sm text-gray-400">Professional Morse Code Training for Radio Enthusiasts</p>
+                    </div>
+                </div>
+                
+                <!-- Main Navigation -->
+                <nav class="flex items-center space-x-4">
+                    <div class="relative group">
+                        <button class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                            Training Programs
+                            <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="py-1">
+                                <a href="tx-trainer.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">📡 TX Trainer</a>
+                                <a href="koch-cw-trainer.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">🎧 KOCH Trainer</a>
+                                <a href="morse-runner.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">🏁 Morse Runner</a>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="statistics.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">📊 Statistics</a>
+                    <a href="account.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">👤 Account</a>
+                    <a href="help.html" class="text-blue-400 px-3 py-2 rounded-md text-sm font-medium">❓ Help</a>
+                    <button id="logoutButton" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">🚪 Logout</button>
+                </nav>
             </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Page Title -->
+        <div class="text-center mb-8">
+            <h2 class="text-4xl font-bold text-blue-400 mb-2">📚 Help & Documentation</h2>
+            <p class="text-gray-300 text-lg">Comprehensive guide to mastering Morse code with professional features</p>
         </div>
 
         <!-- Quick Navigation / Table of Contents -->
@@ -427,7 +480,7 @@
                     <div class="mb-6 p-4 bg-orange-900 bg-opacity-50 rounded-lg border border-orange-500">
                         <h3 class="text-xl font-bold text-orange-300 mb-3">🎯 What is Morse Runner?</h3>
                         <p class="text-gray-300 mb-3">
-                            Morse Runner is a realistic CW contest simulator that recreates the intensity and challenge of major amateur radio contests like CQWW, ARRL DX, and CQ WPX. Experience the thrill of rapid-fire CW exchanges, pile-ups, and challenging band conditions.
+                            Morse Runner is a realistic CW contest simulator focused on CQ World Wide CW contest. Experience authentic contest flow with proper CQ calling, station responses, and exchange verification - just like real contest operation!
                         </p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="bg-gray-700 p-3 rounded">
@@ -443,26 +496,26 @@
 
                     <div class="feature-grid">
                         <div class="bg-blue-700 bg-opacity-50 p-4 rounded-lg border border-blue-500">
-                            <h4 class="text-lg font-bold mb-3 text-blue-300">🏁 Contest Types</h4>
+                            <h4 class="text-lg font-bold mb-3 text-blue-300">🏁 Contest Modes</h4>
                             <ul class="list-disc list-inside space-y-2 text-gray-300 text-sm">
-                                <li><strong>CQ World Wide CW:</strong> Work all zones and countries</li>
-                                <li><strong>ARRL DX CW:</strong> DX stations work W/VE for power/state</li>
-                                <li><strong>CQ WPX CW:</strong> Work unique prefixes worldwide</li>
-                                <li><strong>Custom Contest:</strong> Create your own rules and scoring</li>
-                                <li><strong>Practice Modes:</strong> 5 minutes to 2+ hours</li>
-                                <li><strong>Realistic Exchanges:</strong> Authentic contest formats</li>
+                                <li><strong>Pile-Up Mode:</strong> Multiple stations (1-10) call after your CQ - great for copying skills</li>
+                                <li><strong>Single Calls Mode:</strong> One station calls after each QSO - perfect for typing practice</li>
+                                <li><strong>WPX Competition Mode:</strong> Fixed band conditions with user-controlled speed and activity</li>
+                                <li><strong>Activity Levels:</strong> Adjust 1-10 stations that can call after CQ</li>
+                                <li><strong>CQ WW CW Only:</strong> Exchange is always 599 + CQ Zone (e.g., "599 15")</li>
+                                <li><strong>Duration Options:</strong> 5 minutes to 2+ hours practice sessions</li>
                             </ul>
                         </div>
 
                         <div class="bg-purple-700 bg-opacity-50 p-4 rounded-lg border border-purple-500">
                             <h4 class="text-lg font-bold mb-3 text-purple-300">⚡ Contest Features</h4>
                             <ul class="list-disc list-inside space-y-2 text-gray-300 text-sm">
-                                <li><strong>Real Callsign Database:</strong> Authentic calls from worldwide database</li>
-                                <li><strong>Live Contest Log:</strong> Real-time QSO logging with verification</li>
-                                <li><strong>Smart Scoring:</strong> Automatic points and multiplier calculation</li>
-                                <li><strong>Rate Tracking:</strong> QSOs per hour with trend analysis</li>
-                                <li><strong>Duplicate Detection:</strong> Instant dupe checking and warnings</li>
-                                <li><strong>Function Keys:</strong> F1-F8 programmable contest messages</li>
+                                <li><strong>Fast Startup:</strong> 2,500 callsigns load instantly, remainder in background</li>
+                                <li><strong>QSO Verification:</strong> Real-time verification against transmitted callsigns</li>
+                                <li><strong>Comprehensive Settings:</strong> Modal with all contest parameters (⚙️ button)</li>
+                                <li><strong>Speed Control:</strong> 10-80 WPM in 5 WPM increments or ranges</li>
+                                <li><strong>Visual Feedback:</strong> Green=Verified, Orange=Unverified QSOs</li>
+                                <li><strong>Active Function Keys:</strong> F1=CQ, F2=Exchange with dynamic callsigns</li>
                             </ul>
                         </div>
 
@@ -492,17 +545,56 @@
                     </div>
 
                     <div class="mt-6 bg-yellow-900 bg-opacity-50 p-4 rounded-lg border border-yellow-500">
-                        <h4 class="text-lg font-bold text-yellow-300 mb-2">🚀 How to Use Morse Runner</h4>
+                        <h4 class="text-lg font-bold text-yellow-300 mb-2">🚀 How to Use Morse Runner (New Improved Flow!)</h4>
                         <ol class="list-decimal list-inside space-y-2 text-gray-300">
-                            <li><strong>Choose Contest Type:</strong> Select from CQWW, ARRL DX, WPX, or Custom</li>
-                            <li><strong>Set Duration:</strong> Pick your practice time (5 minutes to 2+ hours)</li>
-                            <li><strong>Configure Conditions:</strong> Enable QRN, QRM, pile-ups for realism</li>
-                            <li><strong>Enter Your Callsign:</strong> Set your station call in settings</li>
-                            <li><strong>Click Start Contest:</strong> Begin the simulation</li>
-                            <li><strong>Work Stations:</strong> Type callsigns as you hear them</li>
-                            <li><strong>Log QSOs:</strong> Enter to log, watch your score grow</li>
-                            <li><strong>Use Function Keys:</strong> F1-F8 for quick contest messages</li>
+                            <li><strong>Configure Settings:</strong> Click ⚙️ Settings button - choose contest mode, speed, activity level</li>
+                            <li><strong>Set Your Station:</strong> Enter your callsign and CQ zone in settings modal</li>
+                            <li><strong>Start Contest:</strong> Click "Start Contest" - you'll hear background QRN but no stations yet</li>
+                            <li><strong>Call CQ:</strong> Press F1 or type your CQ message to start calling</li>
+                            <li><strong>Stations Respond:</strong> Based on your activity level, 1-10 stations will call you</li>
+                            <li><strong>Copy Callsigns:</strong> Type the callsign you hear in the callsign field</li>
+                            <li><strong>Send Exchange:</strong> Press F2 to send "599 + your zone"</li>
+                            <li><strong>Log QSO:</strong> Station replies with their exchange, then log the QSO</li>
+                            <li><strong>Verification:</strong> QSO is verified against transmitted callsign (Green=correct, Orange=error)</li>
                         </ol>
+                    </div>
+
+                    <div class="mt-6 bg-cyan-900 bg-opacity-50 p-4 rounded-lg border border-cyan-500">
+                        <h4 class="text-lg font-bold text-cyan-300 mb-2">⚙️ Settings Modal (NEW!)</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-gray-700 p-3 rounded">
+                                <strong class="text-green-400">Contest Modes:</strong>
+                                <ul class="text-sm text-gray-300 mt-1 space-y-1">
+                                    <li>• Pile-Up: Multiple stations call</li>
+                                    <li>• Single: One station per QSO</li>
+                                    <li>• WPX: Competition mode</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-700 p-3 rounded">
+                                <strong class="text-blue-400">Speed Control:</strong>
+                                <ul class="text-sm text-gray-300 mt-1 space-y-1">
+                                    <li>• Ranges: 15-25 to 35-45 WPM</li>
+                                    <li>• Exact: 10-80 WPM (5 WPM steps)</li>
+                                    <li>• Auto: Varies within range</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-700 p-3 rounded">
+                                <strong class="text-yellow-400">Audio Settings:</strong>
+                                <ul class="text-sm text-gray-300 mt-1 space-y-1">
+                                    <li>• CW Pitch: 400-800 Hz</li>
+                                    <li>• Volume: 0-100%</li>
+                                    <li>• Band conditions toggles</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-700 p-3 rounded">
+                                <strong class="text-purple-400">Station Setup:</strong>
+                                <ul class="text-sm text-gray-300 mt-1 space-y-1">
+                                    <li>• Your callsign and CQ zone</li>
+                                    <li>• Activity level (1-10 stations)</li>
+                                    <li>• Contest duration</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mt-6 bg-indigo-900 bg-opacity-50 p-4 rounded-lg border border-indigo-500">
@@ -1100,6 +1192,44 @@
         </div>
     </div>
 
+    <!-- Professional Footer -->
+    <footer class="bg-gray-800 border-t border-gray-700 mt-12">
+        <div class="container max-w-6xl mx-auto px-6 py-8">
+            <div class="text-center space-y-4">
+                <p class="text-gray-300 text-sm leading-relaxed">
+                    This website is dedicated to helping amateur radio operators improve their Morse code skills.
+                </p>
+                <p class="text-gray-400 text-xs">
+                    <strong>Acknowledgements:</strong> Vincenzo IW7DMH, Ludwig Koch, and Alex Shovkoplyas VE3NEA. I did take a lot of ideas from them.
+                </p>
+                <p class="text-gray-400 text-xs">
+                    This website is provided 'as is' for educational purposes. The owner disclaims any liability for damages resulting from its use.
+                </p>
+                <p class="text-gray-400 text-xs">
+                    For more information, contact <strong>OM0RX</strong> - <a href="mailto:oliver@om0rx.com" class="text-blue-400 hover:text-blue-300">oliver@om0rx.com</a>
+                </p>
+                <p class="text-gray-500 text-xs border-t border-gray-700 pt-4">
+                    Copyright © 2025 OM0RX. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    // Logout functionality
+    document.getElementById('logoutButton').addEventListener('click', async () => {
+        try {
+            await fetch('/api/logout.php', {
+                method: 'POST',
+                credentials: 'include'
+            });
+            window.location.href = 'login.html';
+        } catch (error) {
+            console.error('Logout failed:', error);
+            window.location.href = 'login.html';
+        }
+    });
+    </script>
     <script src="help.js"></script>
 </body>
 </html>

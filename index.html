@@ -3,204 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OM0RX Professional CW Trainer</title>
+    <title>CW Pro Trainer - Professional Morse Code Training</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center">
-    <div class="container max-w-4xl mx-auto p-6">
-        <!-- Professional Header -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center mb-4">
-                <div class="relative bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-4 rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden">
-                    <!-- Background CW Key Image -->
-                    <div class="absolute inset-0 opacity-20">
-                        <img src="cwkey.jpeg" alt="CW Key Background" class="w-full h-full object-cover rounded-lg">
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- New Professional Header -->
+    <header class="bg-gray-800 border-b border-gray-700 shadow-lg">
+        <div class="container max-w-6xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo and Title -->
+                <div class="flex items-center space-x-4">
+                    <div class="morse-logo">
+                        —•—• •——<span class="word-separator">/</span>•——• •—• ———<span class="word-separator">/</span>— •—• •— •• —• • •—•
                     </div>
-                    <div class="relative flex items-center space-x-4 z-10">
-                        <div class="w-12 h-12 rounded-full bg-white/20 p-2">
-                            <img src="cwkey.jpeg" alt="CW Key" class="w-full h-full object-cover rounded-full">
-                        </div>
-                        <div>
-                            <div class="text-2xl font-bold tracking-wider text-white drop-shadow-lg">OM0RX</div>
-                            <div class="text-sm opacity-90 tracking-wide text-white drop-shadow">Professional CW Trainer</div>
-                        </div>
-                        <div class="text-3xl animate-pulse">⚡</div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">CW Pro Trainer</h1>
+                        <p class="text-sm text-gray-400">Professional Morse Code Training for Radio Enthusiasts</p>
                     </div>
                 </div>
+                
+                <!-- Main Navigation (hidden when not logged in) -->
+                <nav id="mainNav" class="hidden items-center space-x-4">
+                    <div class="relative group">
+                        <button class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                            Training Programs
+                            <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="py-1">
+                                <a href="tx-trainer.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">📡 TX Trainer</a>
+                                <a href="koch-cw-trainer.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">🎧 KOCH Trainer</a>
+                                <a href="morse-runner.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">🏁 Morse Runner</a>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="statistics.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">📊 Statistics</a>
+                    <a href="account.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">👤 Account</a>
+                    <a href="help.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">❓ Help</a>
+                    <button id="logoutButton" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">🚪 Logout</button>
+                </nav>
             </div>
         </div>
-        <div id="debug" class="hidden bg-red-600 text-white p-4 rounded-lg mb-4"></div>
+    </header>
+
+    <div class="container max-w-6xl mx-auto p-6 min-h-screen">
+        <!-- Not Logged In State -->
         <div id="notLoggedIn" class="hidden">
-            <div class="text-center p-8">
-                <p class="text-lg mb-4">Please log in to start training.</p>
-                <button onclick="window.location.href='login.html'" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
-                    Go to Login
-                </button>
+            <div class="text-center py-16">
+                <div class="max-w-md mx-auto">
+                    <h2 class="text-3xl font-bold text-white mb-4">Welcome to CW Pro Trainer</h2>
+                    <p class="text-lg text-gray-300 mb-8">Please log in to access our professional Morse code training programs.</p>
+                    <button onclick="window.location.href='login.html'" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105">
+                        Go to Login
+                    </button>
+                </div>
             </div>
         </div>
+
+        <!-- Logged In State - Training Program Selection -->
         <div id="loggedIn" class="hidden">
-            <p class="text-lg mb-4 text-center">Logged in as: <span id="currentUsername" class="font-semibold"></span></p>
-            <div class="flex flex-wrap justify-center gap-2 mb-4">
-                <button id="kochTrainerButton" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg transition text-sm">🎧 KOCH Trainer</button>
-                <button id="morseRunnerButton" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg transition text-sm">🏁 Morse Runner</button>
-                <button id="statisticsButton" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg transition text-sm">📊 Statistics</button>
-                <button id="accountButton" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg transition text-sm">👤 Account</button>
-                <button id="helpButton" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition text-sm">❓ Help</button>
-                <button id="logoutButton" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg transition text-sm">🚪 Logout</button>
+            <!-- Welcome Section -->
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-white mb-4">Welcome to CW Pro Trainer</h2>
+                <p class="text-xl text-gray-300 mb-2">Choose your training program to begin improving your Morse code skills</p>
+                <p class="text-sm text-gray-400">Logged in as: <span id="currentUsername" class="font-semibold text-blue-400"></span></p>
             </div>
-        </div>
-        <div id="sortable-sections" class="space-y-4">
 
-            <!-- Mode Selection -->
-            <div class="section bg-gray-800 p-4 rounded-lg" data-id="mode-selection">
-                <div class="section-header cursor-pointer flex justify-between items-center">
-                    <h2 class="text-xl font-semibold">Mode Selection</h2>
-                    <svg class="w-6 h-6 transform transition-transform" data-id="mode-selection-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
-                <div id="mode-selection-content" class="mt-4 hidden">
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <button id="realWordsButton" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition text-sm">Real Words</button>
-                        <button id="abbreviationsButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition text-sm">Abbreviations</button>
-                        <button id="callsignsButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition text-sm">Callsigns</button>
-                        <button id="qrCodesButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition text-sm">QR-codes</button>
-                        <button id="topWordsButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition text-sm">Top Words in CW</button>
-                        <button id="mixedButton" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition text-sm">Mixed</button>
-                    </div>
-                    <!-- Number of Items Slider -->
-                    <div class="bg-gray-700 p-4 rounded-lg">
-                        <div class="flex justify-between items-center mb-2">
-                            <label for="numItemsSlider" class="text-sm font-semibold text-gray-300">Number of Items:</label>
-                            <span id="numItemsValue" class="text-lg font-bold text-blue-400">5</span>
+            <!-- Training Programs Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                <!-- TX Trainer Card -->
+                <div class="bg-gradient-to-br from-blue-800 to-blue-900 p-6 rounded-xl shadow-xl border border-blue-700 hover:border-blue-500 transition-all duration-300 transform hover:scale-105">
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">📡</div>
+                        <h3 class="text-2xl font-bold text-white mb-3">TX Trainer</h3>
+                        <p class="text-blue-200 text-sm mb-6 leading-relaxed">
+                            Master Morse code transmission with your Morserino-32. Practice with real words, callsigns, abbreviations, and more.
+                        </p>
+                        <div class="bg-green-600 text-white text-xs px-3 py-1 rounded-full mb-4 inline-block">
+                            ✅ FULLY FUNCTIONAL
                         </div>
-                        <input type="range" id="numItemsSlider" min="1" max="200" value="5" 
-                               class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider">
-                        <div class="flex justify-between text-xs text-gray-500 mt-1">
-                            <span>1</span>
-                            <span>50</span>
-                            <span>100</span>
-                            <span>150</span>
-                            <span>200</span>
-                        </div>
+                        <button onclick="window.location.href='tx-trainer.html'" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200">
+                            Start TX Training
+                        </button>
                     </div>
                 </div>
-            </div>
-            <!-- Connection -->
-            <div class="section bg-gray-800 p-4 rounded-lg" data-id="connection">
-                <div class="section-header cursor-pointer flex justify-between items-center">
-                    <h2 class="text-xl font-semibold">Connection</h2>
-                    <svg class="w-6 h-6 transform transition-transform" data-id="connection-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
-                <div id="connection-content" class="mt-4 hidden">
-                    <button id="connectButton" class="w-full bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition">Connect to Morserino</button>
-                    <p id="connectionStatus" class="text-lg mt-2"></p>
-                </div>
-            </div>
-            <!-- Training -->
-            <div class="section bg-gray-800 p-4 rounded-lg" data-id="training">
-                <div class="section-header cursor-pointer flex justify-between items-center">
-                    <h2 class="text-xl font-semibold">Training</h2>
-                    <svg class="w-6 h-6 transform transition-transform" data-id="training-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
-                <div id="training-content" class="mt-4 hidden">
-                    <button id="startButton" class="w-full bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition">Start Session</button>
-                    
-                    <!-- Training Display (hidden when not active) -->
-                    <div id="trainingDisplay" class="hidden">
-                        <!-- Current Training Word Display -->
-                        <div class="mt-4 p-4 bg-gray-900 rounded-lg border-2 border-blue-500">
-                            <div class="text-center">
-                                <div class="text-sm text-gray-400 mb-2">Current Word:</div>
-                                <div id="target" class="text-3xl font-mono font-bold text-blue-400 tracking-wider"></div>
-                            </div>
+
+                <!-- KOCH Trainer Card -->
+                <div class="bg-gradient-to-br from-green-800 to-green-900 p-6 rounded-xl shadow-xl border border-green-700 hover:border-green-500 transition-all duration-300 transform hover:scale-105">
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">🎧</div>
+                        <h3 class="text-2xl font-bold text-white mb-3">KOCH Trainer</h3>
+                        <p class="text-green-200 text-sm mb-6 leading-relaxed">
+                            Learn Morse code from scratch using the proven Koch method. Progressive character introduction with audio training.
+                        </p>
+                        <div class="bg-yellow-600 text-white text-xs px-3 py-1 rounded-full mb-4 inline-block">
+                            🔧 95% COMPLETE
                         </div>
-                        
-                        <!-- Character-by-character input display -->
-                        <div class="mt-4 p-3 bg-gray-800 rounded-lg border border-gray-600">
-                            <div class="text-center">
-                                <div class="text-xs text-gray-500 mb-1">Your Input:</div>
-                                <div id="inputDisplay" class="text-xl font-mono font-bold text-yellow-400 tracking-wider min-h-[32px]"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Session Progress -->
-                    <div id="sessionProgress" class="mt-4 text-center text-gray-400 hidden">
-                        <p>Progress: <span id="currentProgress">0</span> / <span id="totalProgress">0</span></p>
-                    </div>
-                    
-                    <!-- User Input (hidden initially) -->
-                    <input id="userInput" class="w-full p-2 bg-gray-700 text-white rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 mt-4 hidden" readonly>
-                    
-                    <!-- Control Buttons -->
-                    <div class="mt-4 space-y-2">
-                        <button id="nextButton" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded-lg transition hidden">Skip to Next</button>
-                        <button id="endSessionButton" class="w-full bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition hidden">End Session</button>
+                        <button onclick="window.location.href='koch-cw-trainer.html'" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200">
+                            Start KOCH Method
+                        </button>
                     </div>
                 </div>
-            </div>
-            <!-- Live Session Tracking -->
-            <div class="section bg-gray-800 p-4 rounded-lg" data-id="live-tracking">
-                <div class="section-header cursor-pointer flex justify-between items-center">
-                    <h2 class="text-xl font-semibold">Live Session Tracking</h2>
-                    <svg class="w-6 h-6 transform transition-transform" data-id="live-tracking-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
-                <div id="live-tracking-content" class="mt-4 hidden">
-                    <!-- Stats counters grid -->
-                    <div class="grid grid-cols-3 gap-3 mb-4">
-                        <!-- Letters Box -->
-                        <div class="bg-blue-600 p-3 rounded-lg text-center">
-                            <div class="text-sm font-semibold text-blue-100">Letters</div>
-                            <div id="lettersCount" class="text-2xl font-bold text-white">0</div>
+
+                <!-- Morse Runner Card -->
+                <div class="bg-gradient-to-br from-orange-800 to-orange-900 p-6 rounded-xl shadow-xl border border-orange-700 hover:border-orange-500 transition-all duration-300 transform hover:scale-105">
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">🏁</div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Morse Runner</h3>
+                        <p class="text-orange-200 text-sm mb-6 leading-relaxed">
+                            Contest simulator for CQ WW CW. Experience realistic contest conditions with pile-ups and QSO verification.
+                        </p>
+                        <div class="bg-orange-600 text-white text-xs px-3 py-1 rounded-full mb-4 inline-block">
+                            🚧 IN DEVELOPMENT
                         </div>
-                        <!-- Numbers Box -->
-                        <div class="bg-green-600 p-3 rounded-lg text-center">
-                            <div class="text-sm font-semibold text-green-100">Numbers</div>
-                            <div id="numbersCount" class="text-2xl font-bold text-white">0</div>
-                        </div>
-                        <!-- Signs Box -->
-                        <div class="bg-purple-600 p-3 rounded-lg text-center">
-                            <div class="text-sm font-semibold text-purple-100">Signs</div>
-                            <div id="signsCount" class="text-2xl font-bold text-white">0</div>
-                        </div>
+                        <button onclick="window.location.href='morse-runner.html'" class="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200">
+                            Try Contest Sim
+                        </button>
                     </div>
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <!-- Character Accuracy Box -->
-                        <div class="bg-cyan-600 p-3 rounded-lg text-center">
-                            <div class="text-xs font-semibold text-cyan-100">Character Accuracy</div>
-                            <div id="characterAccuracy" class="text-2xl font-bold text-white">100.0%</div>
-                        </div>
-                        <!-- Character Errors Box -->
-                        <div class="bg-red-600 p-3 rounded-lg text-center">
-                            <div class="text-xs font-semibold text-red-100">Character Errors</div>
-                            <div id="errorsCount" class="text-2xl font-bold text-white">0</div>
-                        </div>
-                    </div>
-                    <!-- Time Box - Larger, centered -->
-                    <div class="bg-gray-700 border-2 border-gray-500 p-4 rounded-lg text-center">
-                        <div class="text-lg font-semibold text-gray-200">Session Time</div>
-                        <div id="sessionTimer" class="text-4xl font-mono font-bold text-white">00:00.0</div>
-                    </div>
-                </div>
-            </div>
-            <!-- Session Report -->
-            <div class="section bg-gray-800 p-4 rounded-lg" data-id="session-report">
-                <div class="section-header cursor-pointer flex justify-between items-center">
-                    <h2 class="text-xl font-semibold">Session Report</h2>
-                    <svg class="w-6 h-6 transform transition-transform" data-id="session-report-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
-                <div id="session-report-content" class="mt-4 hidden">
-                    <div id="sessionStats" class="bg-blue-900 p-3 rounded-lg text-sm mb-3">Session will appear here after completion</div>
-                    <div id="sessionReport" class="bg-gray-900 p-4 rounded-lg font-mono text-sm whitespace-pre-line">No session completed yet</div>
-                    <button id="startNewSession" class="w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition mt-4 hidden">Start New Session</button>
                 </div>
             </div>
 
+            <!-- Status Message -->
+            <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 mb-8">
+                <div class="flex items-start space-x-4">
+                    <div class="text-2xl">ℹ️</div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-white mb-2">Training Program Status</h4>
+                        <div class="text-sm text-gray-300 space-y-2">
+                            <p><span class="text-green-400 font-semibold">TX Trainer:</span> Fully functional with complete Morserino-32 integration and session tracking.</p>
+                            <p><span class="text-yellow-400 font-semibold">KOCH Trainer:</span> 95% complete - core functionality working, final optimizations in progress.</p>
+                            <p><span class="text-orange-400 font-semibold">Morse Runner:</span> Contest simulator started but has bugs and is in constant development. Expected completion in the next few days.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Quick Stats Overview -->
+            <div class="bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg p-6 border border-gray-600">
+                <h4 class="text-lg font-semibold text-white mb-4 text-center">Your Training Journey</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div class="bg-gray-700 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-blue-400">0</div>
+                        <div class="text-sm text-gray-400">Total Sessions</div>
+                    </div>
+                    <div class="bg-gray-700 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-green-400">0%</div>
+                        <div class="text-sm text-gray-400">Average Accuracy</div>
+                    </div>
+                    <div class="bg-gray-700 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-purple-400">0</div>
+                        <div class="text-sm text-gray-400">Hours Practiced</div>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="statistics.html" class="text-blue-400 hover:text-blue-300 text-sm font-medium">View Detailed Statistics →</a>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="Sortable.min.js"></script>
-    <script src="index.js"></script>
+    <!-- Professional Footer -->
+    <footer class="bg-gray-800 border-t border-gray-700">
+        <div class="container max-w-6xl mx-auto px-6 py-8">
+            <div class="text-center space-y-4">
+                <p class="text-gray-300 text-sm leading-relaxed">
+                    This website is dedicated to helping amateur radio operators improve their Morse code skills.
+                </p>
+                <p class="text-gray-400 text-xs">
+                    <strong>Acknowledgements:</strong> Vincenzo IW7DMH, Ludwig Koch, and Alex Shovkoplyas VE3NEA. I did take a lot of ideas from them.
+                </p>
+                <p class="text-gray-400 text-xs">
+                    This website is provided 'as is' for educational purposes. The owner disclaims any liability for damages resulting from its use.
+                </p>
+                <p class="text-gray-400 text-xs">
+                    For more information, contact <strong>OM0RX</strong> - <a href="mailto:oliver@om0rx.com" class="text-blue-400 hover:text-blue-300">oliver@om0rx.com</a>
+                </p>
+                <p class="text-gray-500 text-xs border-t border-gray-700 pt-4">
+                    Copyright © 2025 OM0RX. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+    .morse-logo {
+        font-family: 'Courier New', monospace;
+        font-size: 16px;
+        letter-spacing: 2px;
+        color: #60a5fa;
+        padding: 8px 12px;
+        background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+        border-radius: 8px;
+        border: 1px solid #4b5563;
+        display: inline-block;
+    }
+
+    .word-separator {
+        font-size: 14px;
+        color: #9ca3af;
+        margin: 0 3px;
+    }
+    </style>
+
+    <script>
+    // Simple login check and navigation
+    async function checkUserSession() {
+        try {
+            const response = await fetch('/api/session.php', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            
+            if (data.loggedIn) {
+                document.getElementById('loggedIn').classList.remove('hidden');
+                document.getElementById('notLoggedIn').classList.add('hidden');
+                document.getElementById('mainNav').classList.remove('hidden');
+                document.getElementById('mainNav').classList.add('flex');
+                document.getElementById('currentUsername').textContent = data.username;
+            } else {
+                document.getElementById('loggedIn').classList.add('hidden');
+                document.getElementById('notLoggedIn').classList.remove('hidden');
+                document.getElementById('mainNav').classList.add('hidden');
+            }
+        } catch (error) {
+            console.error('Session check failed:', error);
+            document.getElementById('loggedIn').classList.add('hidden');
+            document.getElementById('notLoggedIn').classList.remove('hidden');
+            document.getElementById('mainNav').classList.add('hidden');
+        }
+    }
+
+    // Logout functionality
+    document.getElementById('logoutButton').addEventListener('click', async () => {
+        try {
+            await fetch('/api/logout.php', {
+                method: 'POST',
+                credentials: 'include'
+            });
+            window.location.href = 'login.html';
+        } catch (error) {
+            console.error('Logout failed:', error);
+            window.location.href = 'login.html';
+        }
+    });
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', () => {
+        checkUserSession();
+    });
+    </script>
 </body>
 </html>

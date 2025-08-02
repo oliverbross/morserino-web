@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OM0RX Professional CW Trainer - Koch Method Training</title>
+    <title>KOCH Trainer - CW Pro Trainer</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -117,32 +117,72 @@
         .training-active .character-display {
             animation: pulse-green 2s infinite;
         }
+        .morse-logo {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: #60a5fa;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            border-radius: 8px;
+            border: 1px solid #4b5563;
+            display: inline-block;
+        }
+
+        .word-separator {
+            font-size: 14px;
+            color: #9ca3af;
+            margin: 0 3px;
+        }
     </style>
 </head>
-<body class="bg-gray-800 text-white min-h-screen flex flex-col items-center justify-center p-4">
-    <div class="container mx-auto max-w-4xl">
-        <!-- Professional Header -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center mb-4">
-                <div class="relative bg-gradient-to-r from-blue-600 to-green-600 text-white px-6 py-3 rounded-lg shadow-lg overflow-hidden">
-                    <!-- Background CW Key Image -->
-                    <div class="absolute inset-0 opacity-15">
-                        <img src="cwkey.jpeg" alt="CW Key Background" class="w-full h-full object-cover rounded-lg">
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- New Professional Header -->
+    <header class="bg-gray-800 border-b border-gray-700 shadow-lg">
+        <div class="container max-w-6xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo and Title -->
+                <div class="flex items-center space-x-4">
+                    <div class="morse-logo">
+                        —•—• •——<span class="word-separator">/</span>•——• •—• ———<span class="word-separator">/</span>— •—• •— •• —• • •—•
                     </div>
-                    <div class="relative flex items-center space-x-3 z-10">
-                        <div class="w-10 h-10 rounded-full bg-white/20 p-2">
-                            <img src="cwkey.jpeg" alt="CW Key" class="w-full h-full object-cover rounded-full">
-                        </div>
-                        <div>
-                            <div class="text-xl font-bold tracking-wide text-white drop-shadow">OM0RX</div>
-                            <div class="text-sm opacity-90 text-white drop-shadow">Professional CW Trainer</div>
-                        </div>
-                        <div class="text-2xl animate-pulse">🎧</div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">CW Pro Trainer</h1>
+                        <p class="text-sm text-gray-400">Professional Morse Code Training for Radio Enthusiasts</p>
                     </div>
                 </div>
+                
+                <!-- Main Navigation -->
+                <nav class="flex items-center space-x-4">
+                    <div class="relative group">
+                        <button class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                            Training Programs
+                            <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="py-1">
+                                <a href="tx-trainer.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">📡 TX Trainer</a>
+                                <a href="koch-cw-trainer.html" class="block px-4 py-2 text-sm text-blue-400 hover:bg-gray-700">🎧 KOCH Trainer</a>
+                                <a href="morse-runner.html" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">🏁 Morse Runner</a>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="statistics.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">📊 Statistics</a>
+                    <a href="account.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">👤 Account</a>
+                    <a href="help.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">❓ Help</a>
+                    <button id="logoutButton" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">🚪 Logout</button>
+                </nav>
             </div>
-            <h1 class="text-3xl font-bold text-gray-100">Koch Method CW Training</h1>
-            <p class="text-gray-300 mt-2">Progressive character learning system for Morse code mastery</p>
+        </div>
+    </header>
+
+    <div class="container mx-auto max-w-4xl p-6">
+        <!-- Page Title -->
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-white">🎧 Koch Method CW Training</h2>
+            <p class="text-gray-400 mt-2">Progressive character learning system for Morse code mastery</p>
         </div>
 
         <div id="kochDebug" class="error hidden bg-red-600 p-2 rounded mb-4">Debug: Check console for errors.</div>
@@ -434,16 +474,50 @@
 
         </div>
 
-        <!-- Navigation -->
-        <div class="flex flex-wrap justify-center gap-2 mt-6">
-            <button id="backToTrainingFromKoch" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">🏠 Back to Training</button>
-            <button id="viewStatisticsFromKoch" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">📊 Statistics</button>
-            <button id="accountFromKoch" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">👤 Account</button>
-            <button id="helpFromKoch" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">❓ Help</button>
-            <button id="resetProgressButton" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">🔄 Reset Progress</button>
+        <!-- Action Buttons -->
+        <div class="text-center mt-8">
+            <button id="resetProgressButton" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200 mr-4">🔄 Reset Progress</button>
         </div>
     </div>
 
+    <!-- Professional Footer -->
+    <footer class="bg-gray-800 border-t border-gray-700 mt-12">
+        <div class="container max-w-6xl mx-auto px-6 py-8">
+            <div class="text-center space-y-4">
+                <p class="text-gray-300 text-sm leading-relaxed">
+                    This website is dedicated to helping amateur radio operators improve their Morse code skills.
+                </p>
+                <p class="text-gray-400 text-xs">
+                    <strong>Acknowledgements:</strong> Vincenzo IW7DMH, Ludwig Koch, and Alex Shovkoplyas VE3NEA. I did take a lot of ideas from them.
+                </p>
+                <p class="text-gray-400 text-xs">
+                    This website is provided 'as is' for educational purposes. The owner disclaims any liability for damages resulting from its use.
+                </p>
+                <p class="text-gray-400 text-xs">
+                    For more information, contact <strong>OM0RX</strong> - <a href="mailto:oliver@om0rx.com" class="text-blue-400 hover:text-blue-300">oliver@om0rx.com</a>
+                </p>
+                <p class="text-gray-500 text-xs border-t border-gray-700 pt-4">
+                    Copyright © 2025 OM0RX. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    // Navigation and logout functionality
+    document.getElementById('logoutButton').addEventListener('click', async () => {
+        try {
+            await fetch('/api/logout.php', {
+                method: 'POST',
+                credentials: 'include'
+            });
+            window.location.href = 'login.html';
+        } catch (error) {
+            console.error('Logout failed:', error);
+            window.location.href = 'login.html';
+        }
+    });
+    </script>
     <script src="koch-cw-trainer.js?v=1.0"></script>
 </body>
 </html>

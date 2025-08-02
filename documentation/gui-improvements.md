@@ -67,3 +67,5 @@ Notes:
 
 - we are only making ui/ux changes, no chages to the actual functionality of the training programs
 - please, improve my instructions if you think there is a room for an improvement
+
+last thing, please, add a message to index.html file after the training modes, that only TX Trainer is fully working, with KOCH trainer finished to 95% and Morse Runner started but have bugs and it's in contstant development and should be finished in the next few days. Format the message professionally so it looks ok in the gui. 
